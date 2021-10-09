@@ -1,0 +1,11 @@
+﻿<div class="bg-white shadow-lg rounded-3xl flex justify-center items-center w-32 h-32"
+    @onclick='() => Clicked?.Invoke(KeyCode)'>
+</div>
+
+@code {
+    [Parameter]
+    public string KeyCode { get; set; }
+
+    [Parameter]
+    public Action<string> Clicked { get; set; }
+}

@@ -1,0 +1,20 @@
+﻿<div class="grid grid-rows-3 grid-flow-col">
+    <KeyboardButton KeyCode="key_1" Clicked="UiClicked"/>
+    <KeyboardButton KeyCode="key_3" Clicked="UiClicked"/>
+    <KeyboardButton KeyCode="key_5" Clicked="UiClicked"/>
+    <KeyboardButton KeyCode="key_2" Clicked="UiClicked"/>
+    <KeyboardButton KeyCode="key_4" Clicked="UiClicked"/>
+    <KeyboardButton KeyCode="key_6" Clicked="UiClicked"/>
+    <div class="flex justify-center items-center row-span-2 col-span-2">
+        <KeyboardEncoder Clicked="UiClicked"/>
+    </div>
+    <KeyboardButton KeyCode="key_7" Clicked="UiClicked"/>
+    <KeyboardButton KeyCode="key_8" Clicked="UiClicked"/>
+</div>
+
+@code {
+    private void UiClicked(string keycode)
+    {
+        Console.WriteLine(keycode);
+    }
+}
