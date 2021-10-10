@@ -1,7 +1,31 @@
 ﻿@inherits LayoutComponentBase
+@using ElectronNET.API
 
-<div class="page">
-    <div class="main">
+<div class="flex flex-col h-screen">
+    <header class="h-10">
+    </header>
+    <main class="mb-auto flex flex-col items-center">
         @Body
-    </div>
+    </main>
+    <Footer></Footer>
 </div>
+
+@code {
+    private void Minimize()
+    {
+        Console.WriteLine("Minimize");
+        foreach(var w in Electron.WindowManager.BrowserWindows)
+        {
+            w.Minimize();
+        }
+    }
+
+    private void Close()
+    {
+        Console.WriteLine("Close");
+        foreach(var w in Electron.WindowManager.BrowserWindows)
+        {
+            w.Close();
+        }
+    }
+}

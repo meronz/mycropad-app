@@ -59,7 +59,9 @@ namespace Mycropad.App
                 Width = 800,
                 Height = 600,
                 Show = false,
-                AutoHideMenuBar = true
+                AutoHideMenuBar = true,
+                Resizable = false,
+                Maximizable = false
             });
 
             await browserWindow.WebContents.Session.ClearCacheAsync();

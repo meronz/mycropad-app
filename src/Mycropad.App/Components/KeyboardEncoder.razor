@@ -1,8 +1,6 @@
-﻿
-<div class="bg-blue shadow-lg rounded-full m-12 w-48 h-48" @onclick='() => Clicked?.Invoke("rot_c")'></div>
+﻿<div class="bg-blue-500 shadow-lg rounded-full m-12 w-48 h-48" @onclick='() => Clicked?.Invoke("rot_c")'></div>
 
 @code {
     [Parameter]
     public Action<string> Clicked { get; set; }
 }
-
