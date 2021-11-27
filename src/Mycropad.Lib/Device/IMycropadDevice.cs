@@ -10,6 +10,7 @@ namespace Mycropad.Lib.Device
         Action OnDeviceDisconnected { get; set; }
 
         void Dispose();
+        bool Keepalive();
         bool NewKeymap(Keymap keymap);
         void Start();
     }

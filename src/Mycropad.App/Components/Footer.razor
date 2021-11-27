@@ -1,5 +1,8 @@
-﻿<footer class="p-2 mb-1">
-    @if(IsConnected)
+﻿@inject IMycropadDevice Device
+@implements IDisposable
+
+<footer class="p-2 mb-1">
+    @if(Device.Connected)
     {
         <div class="rounded-md bg-blue-500 text-white max-w-min px-3 py-1">
             Connected
@@ -13,5 +16,23 @@
 </footer>
 
 @code {
-    public bool IsConnected { get; set; }
+    private bool _connected = false;
+
+    override protected void OnInitialized()
+    {
+        Device.OnDeviceConnected += DeviceStatusChange;
+        Device.OnDeviceDisconnected += DeviceStatusChange;
+    }
+
+    public void Dispose()
+    {
+        Device.OnDeviceConnected -= DeviceStatusChange;
+        Device.OnDeviceDisconnected -= DeviceStatusChange;
+    }
+
+    void DeviceStatusChange()
+    {
+        _connected = Device.Connected;
+        _ = base.InvokeAsync(StateHasChanged);
+    }
 }

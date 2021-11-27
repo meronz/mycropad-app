@@ -5,6 +5,7 @@ using Microsoft.AspNetCore.Hosting;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
+using Mycropad.Lib.Device;
 
 namespace Mycropad.App
 {
@@ -21,6 +22,9 @@ namespace Mycropad.App
         {
             services.AddRazorPages();
             services.AddServerSideBlazor();
+
+            services.AddSingleton<IMycropadDevice>(MycropadDevice_Serial.Instance);
+            services.AddSingleton<DeviceManager>();
         }
 
         public void Configure(IApplicationBuilder app, IWebHostEnvironment env)
@@ -50,6 +54,9 @@ namespace Mycropad.App
                 ElectronBootstrap();
             }
 
+
+            // Start DeviceManager
+            app.ApplicationServices.GetRequiredService<DeviceManager>();
         }
 
         public async void ElectronBootstrap()

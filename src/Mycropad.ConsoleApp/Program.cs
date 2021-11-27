@@ -59,15 +59,15 @@ namespace Mycropad.ConsoleApp
             keymap.KeyCodes[9].Add(new(Consts.KEY_9));
             keymap.KeyCodes[10].Add(new(Consts.KEY_A));
 
-            MycropadDevice.Instance.Start();
+            MycropadDevice_Serial.Instance.Start();
 
-            while (MycropadDevice.Instance.Connected == false)
+            while (MycropadDevice_Serial.Instance.Connected == false)
             {
                 Console.Write(".");
                 await Task.Delay(100);
             }
 
-            MycropadDevice.Instance.NewKeymap(keymap);
+            MycropadDevice_Serial.Instance.NewKeymap(keymap);
 
         }
     }
