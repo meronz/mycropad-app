@@ -1,19 +1,22 @@
 <div class="flex flex-col h-full">
     <form class="h-80">
         <label
-            for="combination"
+            for="macro"
             class="text-sm font-medium text-gray-900 block mb-2">
-            Combination
+            Macro
         </label>
         <input 
             type="text" 
-            id="combination" 
+            id="macro" 
             class="bg-gray-50 border border-gray-300 text-gray-900 sm:text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5" 
-            placeholder="Press the combination you want"
+            placeholder="Write the combination you want"
             @bind-value="@_inputValue"
             @onkeydown="@KeyPress"
-            @onkeydown:preventDefault
             required>
+            @* @onkeydown:preventDefault *@
+        <span class="flex items-center font-medium tracking-wide text-red-500 text-xs mt-1 ml-1">
+            @_validationMessage
+        </span>
     </form>
     <div class="p-2">
         <button 
@@ -30,12 +33,14 @@
 </div>
 
 @code {
-    [Parameter] public string Key { get; set; }
+    [Parameter] public Keys Key { get; set; }
     [CascadingParameter] BlazoredModalInstance ModalInstance { get; set; }
+
+    private string _validationMessage = "";
 
     async Task Save()
     {
-        await ModalInstance.CloseAsync(ModalResult.Ok(_inputValue));
+        await ModalInstance.CloseAsync(ModalResult.Ok(MacroParser.Parse(_inputValue)));
     }
 
     async Task Cancel()
@@ -46,6 +51,22 @@
     private string _inputValue = "";
 
     private void KeyPress(KeyboardEventArgs e)
+    {
+        if(string.IsNullOrEmpty(_inputValue))
+            return;
+        try
+        {
+            MacroParser.Parse(_inputValue);
+            _validationMessage = "";
+        }
+        catch
+        {
+            _validationMessage = "Invalid macro!";
+        }
+    }
+
+
+    private void ParseKeyboardEventArgs(KeyboardEventArgs e)
     {
         var newValue = "";
         Console.WriteLine($"{e} {e.Code} {e.AltKey} {e.CtrlKey} {e.MetaKey} {e.ShiftKey}");

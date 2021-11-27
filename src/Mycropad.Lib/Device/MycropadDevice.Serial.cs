@@ -2,6 +2,7 @@ using System;
 using System.IO;
 using System.IO.Ports;
 using System.Runtime.InteropServices;
+using System.Threading;
 using Mycropad.Lib.Device.Messages;
 
 namespace Mycropad.Lib.Device
@@ -27,6 +28,7 @@ namespace Mycropad.Lib.Device
         }
 
         private readonly SerialPort _device = new();
+        private readonly object _deviceMutex = new();
         public bool Connected { get => _device.IsOpen; }
         public Action OnDeviceConnected { get; set; }
         public Action OnDeviceDisconnected { get; set; }
@@ -51,55 +53,67 @@ namespace Mycropad.Lib.Device
 
         public bool Heartbeat()
         {
-            var data = Command(CommandTypes.Heartbeat);
-            Write(data);
-            var (readData, readLength) = Read();
+            lock (_deviceMutex)
+            {
+                var data = Command(CommandTypes.Heartbeat);
+                Write(data);
+                var (readData, readLength) = Read();
 
-            var (cmd, ok, _) = Response(readData, readLength);
-            if (cmd != CommandTypes.Heartbeat) throw new Exception($"Bad CommandType {cmd}");
-            if (!ok) throw new Exception($"{cmd} failed!");
+                var (cmd, ok, _) = Response(readData, readLength);
+                if (cmd != CommandTypes.Heartbeat) throw new Exception($"Bad CommandType {cmd}");
+                if (!ok) throw new Exception($"{cmd} failed!");
 
-            return ok;
+                return ok;
+            }
         }
 
         public bool NewKeymap(Keymap keymap)
         {
-            var data = Command(CommandTypes.NewKeymap, keymap.Serialize());
-            Write(data);
+            lock (_deviceMutex)
+            {
+                var data = Command(CommandTypes.NewKeymap, keymap.ToBytes());
+                Write(data);
 
-            var (readData, readLength) = Read();
-            var (cmd, ok, _) = Response(readData, readLength);
-            if (cmd != CommandTypes.NewKeymap) throw new Exception($"Bad CommandType {cmd}");
-            if (!ok) throw new Exception($"{cmd} failed!");
+                var (readData, readLength) = Read();
+                var (cmd, ok, _) = Response(readData, readLength);
+                if (cmd != CommandTypes.NewKeymap) throw new Exception($"Bad CommandType {cmd}");
+                if (!ok) throw new Exception($"{cmd} failed!");
 
-            return ok;
+                return ok;
+            }
         }
 
         public Keymap ReadKeymap()
         {
-            var data = Command(CommandTypes.ReadKeymap);
-            Write(data);
+            lock (_deviceMutex)
+            {
+                var data = Command(CommandTypes.ReadKeymap);
+                Write(data);
 
-            var (readData, readLength) = Read();
-            var (cmd, ok, keymapBytes) = Response(readData, readLength);
+                var (readData, readLength) = Read();
+                var (cmd, ok, keymapBytes) = Response(readData, readLength);
 
-            if (cmd != CommandTypes.ReadKeymap) throw new Exception($"Bad CommandType {cmd}");
-            if (!ok) throw new Exception($"{cmd} failed!");
+                if (cmd != CommandTypes.ReadKeymap) throw new Exception($"Bad CommandType {cmd}");
+                if (!ok) throw new Exception($"{cmd} failed!");
 
-            return Keymap.FromBytes(keymapBytes);
+                return Keymap.FromBytes(keymapBytes);
+            }
         }
 
         public bool DefaultKeymap()
         {
-            var data = Command(CommandTypes.DefaultKeymap);
-            Write(data);
-            var (readData, readLength) = Read();
+            lock (_deviceMutex)
+            {
+                var data = Command(CommandTypes.DefaultKeymap);
+                Write(data);
+                var (readData, readLength) = Read();
 
-            var (cmd, ok, _) = Response(readData, readLength);
-            if (cmd != CommandTypes.DefaultKeymap) throw new Exception($"Bad CommandType {cmd}");
-            if (!ok) throw new Exception($"{cmd} failed!");
+                var (cmd, ok, _) = Response(readData, readLength);
+                if (cmd != CommandTypes.DefaultKeymap) throw new Exception($"Bad CommandType {cmd}");
+                if (!ok) throw new Exception($"{cmd} failed!");
 
-            return ok;
+                return ok;
+            }
         }
 
         private (byte[] data, int length) Read()

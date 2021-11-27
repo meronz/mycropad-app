@@ -21,7 +21,12 @@ namespace Mycropad.Lib
             }
         }
 
-        public byte[] Serialize()
+        public List<KeyCode> For(Keys key)
+        {
+            return KeyCodes[((int)key) - 1];
+        }
+
+        public byte[] ToBytes()
         {
             int size = KeyCodes.Sum(x => 1 + x.Count) * SizeOfKeycode;
             var buf = new byte[size];
@@ -53,7 +58,7 @@ namespace Mycropad.Lib
             for (int i = 0; i < MaxKeyNum; i++)
             {
                 bufOffset = i * (MaxKeycodesNum + 1) * SizeOfKeycode;
-                var len = (int)BitConverter.ToUInt16(keymapBytes, bufOffset) - 1;
+                var len = BitConverter.ToUInt16(keymapBytes, bufOffset) - 1;
                 bufOffset += SizeOfKeycode;
 
                 keymap.KeyCodes[i] = new(len);

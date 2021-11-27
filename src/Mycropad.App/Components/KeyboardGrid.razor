@@ -1,23 +1,36 @@
-﻿@inject IMycropadDevice Device
+﻿@inject DeviceManager DeviceManager
 
+@if(DeviceManager.Keymap != null)
+{
 <div class="grid grid-rows-3 grid-flow-col">
-    <KeyboardButton Key="key_1" Clicked="UiClicked"/>
-    <KeyboardButton Key="key_3" Clicked="UiClicked"/>
-    <KeyboardButton Key="key_5" Clicked="UiClicked"/>
-    <KeyboardButton Key="key_2" Clicked="UiClicked"/>
-    <KeyboardButton Key="key_4" Clicked="UiClicked"/>
-    <KeyboardButton Key="key_6" Clicked="UiClicked"/>
+    <KeyboardButton Key="Keys.Key1" KeyCodes="DeviceManager.Keymap.KeyCodes[0]" Clicked="UiClicked"/>
+    <KeyboardButton Key="Keys.Key3" KeyCodes="DeviceManager.Keymap.KeyCodes[2]" Clicked="UiClicked"/>
+    <KeyboardButton Key="Keys.Key5" KeyCodes="DeviceManager.Keymap.KeyCodes[4]" Clicked="UiClicked"/>
+    <KeyboardButton Key="Keys.Key2" KeyCodes="DeviceManager.Keymap.KeyCodes[1]" Clicked="UiClicked"/>
+    <KeyboardButton Key="Keys.Key4" KeyCodes="DeviceManager.Keymap.KeyCodes[3]" Clicked="UiClicked"/>
+    <KeyboardButton Key="Keys.Key6" KeyCodes="DeviceManager.Keymap.KeyCodes[5]" Clicked="UiClicked"/>
     <div class="flex justify-center items-center row-span-2 col-span-2">
         <KeyboardEncoder Clicked="UiClicked"/>
     </div>
-    <KeyboardButton Key="key_7" Clicked="UiClicked"/>
-    <KeyboardButton Key="key_8" Clicked="UiClicked"/>
+    <KeyboardButton Key="Keys.Key7" KeyCodes="DeviceManager.Keymap.KeyCodes[6]" Clicked="UiClicked"/>
+    <KeyboardButton Key="Keys.Key8" KeyCodes="DeviceManager.Keymap.KeyCodes[8]" Clicked="UiClicked"/>
 </div>
+}
 
 @code {
     [CascadingParameter] public IModalService Modal { get; set; }
 
-    private async Task UiClicked(string key)
+    protected override void OnInitialized()
+    {
+        DeviceManager.OnKeymapUpdated += () => base.InvokeAsync(StateHasChanged);
+    }
+
+    public void Dispose()
+    {
+        DeviceManager.OnKeymapUpdated -= () => base.InvokeAsync(StateHasChanged);
+    }
+
+    private async Task UiClicked(Keys key)
     {
         var parameters = new ModalParameters();
         parameters.Add(nameof(ButtonModal.Key), key);
@@ -28,16 +41,22 @@
             Class = "blazored-modal keyboard-modal"
         };
 
-        var modal = Modal.Show<ButtonModal>($"Key {key}", parameters, options);
+        var modal = Modal.Show<ButtonModal>($"{key} settings", parameters, options);
         var result = await modal.Result;
         if(!result.Cancelled)
         {
-            await SaveNewKey(key, (string) result.Data);
+            await SaveNewKey(key, (KeyCode) result.Data);
         }
     }
 
-    private async Task SaveNewKey(string key, string macro)
+    private async Task SaveNewKey(Keys key, KeyCode keycode)
     {
-        
+        await Task.Delay(0);
+        var keymap = DeviceManager.Keymap.For(key);
+
+        keymap.Clear();
+        keymap.Add(keycode);
+
+        DeviceManager.UpdateKeymap();
     }
 }

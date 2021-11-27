@@ -1,9 +1,12 @@
 ﻿<div class="bg-white shadow-lg rounded-3xl flex justify-center items-center w-32 h-32 m-2"
     @onclick='() => Clicked?.Invoke(Key)'>
+    @KeyCodes?.First()?.ToString();
 </div>
 
 @code {
-    [Parameter] public string Key { get; set; }
+    [Parameter] public Keys Key { get; set; }
 
-    [Parameter] public Func<string, Task> Clicked { get; set; }
+    [Parameter] public IEnumerable<KeyCode> KeyCodes { get; set; }
+
+    [Parameter] public Func<Keys, Task> Clicked { get; set; }
 }

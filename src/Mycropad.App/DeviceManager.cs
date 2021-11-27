@@ -14,6 +14,7 @@ namespace Mycropad.App
         private bool _closing;
 
         public Keymap Keymap { get; private set; }
+        public Action OnKeymapUpdated { get; set; }
 
         public DeviceManager(ILogger<DeviceManager> logger, IMycropadDevice device)
         {
@@ -21,6 +22,19 @@ namespace Mycropad.App
             _device = device;
             _deviceThread = new Thread(DeviceThread);
             _deviceThread.Start();
+        }
+
+        public void UpdateKeymap()
+        {
+            var ok = _device.NewKeymap(Keymap);
+            if (!ok)
+            {
+                // todo: error popup
+            }
+            else
+            {
+                OnKeymapUpdated?.Invoke();
+            }
         }
 
         private void DeviceThread(object state)
@@ -39,6 +53,7 @@ namespace Mycropad.App
                         if (Keymap == null)
                         {
                             Keymap = _device.ReadKeymap();
+                            OnKeymapUpdated?.Invoke();
                         }
 
                         _device.Heartbeat();

@@ -1,6 +1,6 @@
-﻿<div class="bg-blue-500 shadow-lg rounded-full m-12 w-48 h-48" @onclick='() => Clicked?.Invoke("rot_c")'></div>
+﻿<div class="bg-blue-500 shadow-lg rounded-full m-12 w-48 h-48" @onclick='() => Clicked?.Invoke(Keys.RotClick)'></div>
 
 @code {
     [Parameter]
-    public Func<string, Task> Clicked { get; set; }
+    public Func<Keys, Task> Clicked { get; set; }
 }
