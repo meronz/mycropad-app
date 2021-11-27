@@ -19,5 +19,25 @@ namespace Mycropad.Lib.Device
 
             return data;
         }
+
+        public static (CommandTypes cmd, bool ok, byte[] data) Response(byte[] responseData, int length)
+        {
+            if (responseData[0] != 0x02)
+            {
+                throw new Exception("Not starting with STX");
+            }
+
+            if (responseData[length - 1] != 0x03)
+            {
+                throw new Exception("Not ending with ETX");
+            }
+
+            var cmd = (CommandTypes)responseData[1];
+            var ok = responseData[2] == 0;
+            var responseSize = (int)BitConverter.ToUInt32(responseData, 3);
+            var response = responseData.AsSpan(7, responseSize).ToArray();
+
+            return (cmd, ok, response);
+        }
     }
 }

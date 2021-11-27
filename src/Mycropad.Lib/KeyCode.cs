@@ -1,3 +1,5 @@
+using System.Security.Cryptography;
+
 namespace Mycropad.Lib
 {
     public record KeyCode
@@ -9,6 +11,14 @@ namespace Mycropad.Lib
         {
             Key = key;
             Modifiers = modifiers;
+        }
+
+        public static KeyCode FromUInt16(ushort bytes)
+        {
+            return new(
+                (byte)(bytes & 0xFF),
+                (byte)(bytes >> 8 & 0xFF)
+            );
         }
 
         public ushort ToUInt16()

@@ -1,6 +1,7 @@
 using System;
 using System.Threading;
 using Microsoft.Extensions.Logging;
+using Mycropad.Lib;
 using Mycropad.Lib.Device;
 
 namespace Mycropad.App
@@ -9,41 +10,53 @@ namespace Mycropad.App
     {
         private readonly ILogger<DeviceManager> _logger;
         private readonly IMycropadDevice _device;
-        private readonly Timer _connectionTimer;
+        private readonly Thread _deviceThread;
+        private bool _closing;
+
+        public Keymap Keymap { get; private set; }
 
         public DeviceManager(ILogger<DeviceManager> logger, IMycropadDevice device)
         {
             _logger = logger;
             _device = device;
-            _connectionTimer = new Timer(
-                ConnectionCallback,
-                null,
-                TimeSpan.FromSeconds(0),
-                TimeSpan.FromSeconds(1));
+            _deviceThread = new Thread(DeviceThread);
+            _deviceThread.Start();
         }
 
-        private void ConnectionCallback(object state)
+        private void DeviceThread(object state)
         {
-            try
+            while (!_closing)
             {
-                if (!_device.Connected)
+                try
                 {
-                    _device.Start();
+                    if (!_device.Connected)
+                    {
+                        _device.Start();
+                    }
+                    else
+                    {
+
+                        if (Keymap == null)
+                        {
+                            Keymap = _device.ReadKeymap();
+                        }
+
+                        _device.Heartbeat();
+                    }
                 }
-                else
+                catch (Exception ex)
                 {
-                    _device.Keepalive();
+                    _logger.LogWarning(ex, "ConnectionCallback");
                 }
-            }
-            catch (Exception ex)
-            {
-                _logger.LogWarning(ex, "ConnectionCallback");
+
+                Thread.Sleep(2000);
             }
         }
 
         public void Dispose()
         {
-            _connectionTimer.Dispose();
+            _closing = true;
+            _deviceThread.Join();
             GC.SuppressFinalize(this);
         }
 

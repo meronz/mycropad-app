@@ -48,41 +48,120 @@ namespace Mycropad.Lib.Device
             _device.DiscardOutBuffer();
         }
 
+
+        public bool Heartbeat()
+        {
+            var data = Command(CommandTypes.Heartbeat);
+            Write(data);
+            var (readData, readLength) = Read();
+
+            var (cmd, ok, _) = Response(readData, readLength);
+            if (cmd != CommandTypes.Heartbeat) throw new Exception($"Bad CommandType {cmd}");
+            if (!ok) throw new Exception($"{cmd} failed!");
+
+            return ok;
+        }
+
         public bool NewKeymap(Keymap keymap)
         {
             var data = Command(CommandTypes.NewKeymap, keymap.Serialize());
             Write(data);
-            return Read();
+
+            var (readData, readLength) = Read();
+            var (cmd, ok, _) = Response(readData, readLength);
+            if (cmd != CommandTypes.NewKeymap) throw new Exception($"Bad CommandType {cmd}");
+            if (!ok) throw new Exception($"{cmd} failed!");
+
+            return ok;
         }
 
-        public bool Keepalive()
+        public Keymap ReadKeymap()
         {
-            var data = Command(CommandTypes.Heartbeat);
+            var data = Command(CommandTypes.ReadKeymap);
             Write(data);
-            return Read();
+
+            var (readData, readLength) = Read();
+            var (cmd, ok, keymapBytes) = Response(readData, readLength);
+
+            if (cmd != CommandTypes.ReadKeymap) throw new Exception($"Bad CommandType {cmd}");
+            if (!ok) throw new Exception($"{cmd} failed!");
+
+            return Keymap.FromBytes(keymapBytes);
         }
 
-        private bool Read()
+        public bool DefaultKeymap()
+        {
+            var data = Command(CommandTypes.DefaultKeymap);
+            Write(data);
+            var (readData, readLength) = Read();
+
+            var (cmd, ok, _) = Response(readData, readLength);
+            if (cmd != CommandTypes.DefaultKeymap) throw new Exception($"Bad CommandType {cmd}");
+            if (!ok) throw new Exception($"{cmd} failed!");
+
+            return ok;
+        }
+
+        private (byte[] data, int length) Read()
         {
             try
             {
+                var offset = 0;
+                bool stxReceived = false;
                 var responseData = new byte[1024];
-                _device.Read(responseData, 0, responseData.Length);
-                var ok = responseData[0] != 0;
-                return ok;
+                var toReceive = 0;
+
+                do
+                {
+                    var remainingLength = responseData.Length - offset;
+                    var bytesRead = _device.Read(responseData, offset, remainingLength);
+                    offset += bytesRead;
+
+                    if (remainingLength == 0)
+                    {
+                        var newBuf = new byte[responseData.Length + 1024];
+                        Buffer.BlockCopy(responseData, 0, newBuf, 0, responseData.Length);
+                        responseData = newBuf;
+                    }
+
+                    if (!stxReceived)
+                    {
+                        if (responseData[0] == 0x02)
+                        {
+                            stxReceived = true;
+                            toReceive = (int)BitConverter.ToUInt32(responseData, 3);
+                            toReceive += 8;
+                        }
+                        else
+                        {
+                            offset = 0;
+                            continue;
+                        }
+                    }
+
+                    if (stxReceived)
+                    {
+                        // etx received
+                        if (responseData[offset - 1] == 0x03 && toReceive == offset)
+                        {
+                            return (responseData, offset);
+                        }
+                    }
+                } while (true);
             }
             catch (Exception)
             {
                 _device.Close();
                 OnDeviceDisconnected?.Invoke();
             }
-            return false;
+            return (null, -1);
         }
 
         private void Write(byte[] data)
         {
             try
             {
+                _device.DiscardInBuffer();
                 _device.Write(data, 0, data.Length);
             }
             catch (Exception)
