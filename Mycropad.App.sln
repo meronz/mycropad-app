@@ -7,6 +7,8 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "src", "src", "{B37601C8-689
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Mycropad.App", "src\Mycropad.App\Mycropad.App.csproj", "{7779C870-ACA5-4DEC-94A7-E9F553E01AE0}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Mycropad.ConsoleApp", "src\Mycropad.ConsoleApp\Mycropad.ConsoleApp.csproj", "{30177ABC-D838-4B2E-854E-4BD451AC169A}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -20,8 +22,13 @@ Global
 		{7779C870-ACA5-4DEC-94A7-E9F553E01AE0}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{7779C870-ACA5-4DEC-94A7-E9F553E01AE0}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{7779C870-ACA5-4DEC-94A7-E9F553E01AE0}.Release|Any CPU.Build.0 = Release|Any CPU
+		{30177ABC-D838-4B2E-854E-4BD451AC169A}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{30177ABC-D838-4B2E-854E-4BD451AC169A}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{30177ABC-D838-4B2E-854E-4BD451AC169A}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{30177ABC-D838-4B2E-854E-4BD451AC169A}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(NestedProjects) = preSolution
 		{7779C870-ACA5-4DEC-94A7-E9F553E01AE0} = {B37601C8-689E-487C-987E-9AB7C4897A0E}
+		{30177ABC-D838-4B2E-854E-4BD451AC169A} = {B37601C8-689E-487C-987E-9AB7C4897A0E}
 	EndGlobalSection
 EndGlobal

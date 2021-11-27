@@ -7,9 +7,7 @@
             "type": "shell",
             "args": [
                 "build",
-                "${workspaceFolder}/src/Mycropad.App/Mycropad.App.csproj",
-                "/property:GenerateFullPaths=true",
-                "/consoleloggerparameters:NoSummary"
+                "${workspaceFolder}/Mycropad.App.sln",
             ],
             "problemMatcher": "$msCompile"
         },

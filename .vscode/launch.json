@@ -2,17 +2,28 @@
     "version": "0.2.0",
     "configurations": [
         {
+            "name": "ConsoleApp",
+            "type": "coreclr",
+            "request": "launch",
+            "preLaunchTask": "build",
+            "program": "${workspaceFolder}/src/Mycropad.ConsoleApp/bin/Debug/net5.0/Mycropad.ConsoleApp.dll",
+            "args": [],
+            "cwd": "${workspaceFolder}/src/Mycropad.ConsoleApp",
+            "stopAtEntry": false,
+            "console": "internalConsole"
+        },
+        {
             // Use IntelliSense to find out which attributes exist for C# debugging
             // Use hover for the description of the existing attributes
             // For further information visit https://github.com/OmniSharp/omnisharp-vscode/blob/master/debugger-launchjson.md
-            "name": ".NET Core Launch (web)",
+            "name": "App",
             "type": "coreclr",
             "request": "launch",
             "preLaunchTask": "build",
             // If you have changed target frameworks, make sure to update the program path.
-            "program": "${workspaceFolder}/bin/Debug/net5.0/Mycropad.App.dll",
+            "program": "${workspaceFolder}/src/Mycropad.App/bin/Debug/net5.0/Mycropad.App.dll",
             "args": [],
-            "cwd": "${workspaceFolder}",
+            "cwd": "${workspaceFolder}/src/Mycropad.App",
             "stopAtEntry": false,
             // Enable launching a web browser when ASP.NET Core starts. For more information: https://aka.ms/VSCode-CS-LaunchJson-WebBrowser
             "serverReadyAction": {
