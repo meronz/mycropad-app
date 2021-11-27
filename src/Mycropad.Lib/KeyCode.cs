@@ -11,9 +11,9 @@ namespace Mycropad.Lib
             Modifiers = modifiers;
         }
 
-        public uint ToUInt32()
+        public ushort ToUInt16()
         {
-            return (uint)((Modifiers << 8) | Key);
+            return (ushort)((Modifiers << 8) | Key);
         }
 
         public override string ToString() => $"{Modifiers:X02} : {Key:X02}";

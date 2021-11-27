@@ -7,7 +7,7 @@ namespace Mycropad.Lib
     public class Keymap
     {
         private const int MaxKeyNum = 11;
-        private const int SizeOfKeycode = 4;
+        private const int SizeOfKeycode = 2;
 
         public readonly List<KeyCode>[] KeyCodes;
 
@@ -36,7 +36,7 @@ namespace Mycropad.Lib
                 // write keycodes
                 foreach (var keyCode in c)
                 {
-                    Buffer.BlockCopy(BitConverter.GetBytes(keyCode.ToUInt32()), 0, buf, bufOffset, SizeOfKeycode);
+                    Buffer.BlockCopy(BitConverter.GetBytes(keyCode.ToUInt16()), 0, buf, bufOffset, SizeOfKeycode);
                     bufOffset += SizeOfKeycode;
                 }
             }
