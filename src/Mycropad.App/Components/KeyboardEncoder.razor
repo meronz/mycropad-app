@@ -2,5 +2,5 @@
 
 @code {
     [Parameter]
-    public Action<string> Clicked { get; set; }
+    public Func<string, Task> Clicked { get; set; }
 }

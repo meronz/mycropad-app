@@ -1,3 +1,4 @@
+using Blazored.Modal;
 using ElectronNET.API;
 using ElectronNET.API.Entities;
 using Microsoft.AspNetCore.Builder;
@@ -22,6 +23,7 @@ namespace Mycropad.App
         {
             services.AddRazorPages();
             services.AddServerSideBlazor();
+            services.AddBlazoredModal();
 
             services.AddSingleton<IMycropadDevice>(MycropadDevice_Serial.Instance);
             services.AddSingleton<DeviceManager>();

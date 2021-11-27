@@ -1,20 +1,43 @@
-﻿<div class="grid grid-rows-3 grid-flow-col">
-    <KeyboardButton KeyCode="key_1" Clicked="UiClicked"/>
-    <KeyboardButton KeyCode="key_3" Clicked="UiClicked"/>
-    <KeyboardButton KeyCode="key_5" Clicked="UiClicked"/>
-    <KeyboardButton KeyCode="key_2" Clicked="UiClicked"/>
-    <KeyboardButton KeyCode="key_4" Clicked="UiClicked"/>
-    <KeyboardButton KeyCode="key_6" Clicked="UiClicked"/>
+﻿@inject IMycropadDevice Device
+
+<div class="grid grid-rows-3 grid-flow-col">
+    <KeyboardButton Key="key_1" Clicked="UiClicked"/>
+    <KeyboardButton Key="key_3" Clicked="UiClicked"/>
+    <KeyboardButton Key="key_5" Clicked="UiClicked"/>
+    <KeyboardButton Key="key_2" Clicked="UiClicked"/>
+    <KeyboardButton Key="key_4" Clicked="UiClicked"/>
+    <KeyboardButton Key="key_6" Clicked="UiClicked"/>
     <div class="flex justify-center items-center row-span-2 col-span-2">
         <KeyboardEncoder Clicked="UiClicked"/>
     </div>
-    <KeyboardButton KeyCode="key_7" Clicked="UiClicked"/>
-    <KeyboardButton KeyCode="key_8" Clicked="UiClicked"/>
+    <KeyboardButton Key="key_7" Clicked="UiClicked"/>
+    <KeyboardButton Key="key_8" Clicked="UiClicked"/>
 </div>
 
 @code {
-    private void UiClicked(string keycode)
+    [CascadingParameter] public IModalService Modal { get; set; }
+
+    private async Task UiClicked(string key)
     {
-        Console.WriteLine(keycode);
+        var parameters = new ModalParameters();
+        parameters.Add(nameof(ButtonModal.Key), key);
+
+        var options = new ModalOptions()
+        {
+            HideCloseButton = true,
+            Class = "blazored-modal keyboard-modal"
+        };
+
+        var modal = Modal.Show<ButtonModal>($"Key {key}", parameters, options);
+        var result = await modal.Result;
+        if(!result.Cancelled)
+        {
+            await SaveNewKey(key, (string) result.Data);
+        }
+    }
+
+    private async Task SaveNewKey(string key, string macro)
+    {
+        
     }
 }
