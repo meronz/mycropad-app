@@ -1,5 +1,7 @@
 using System;
+using System.IO;
 using System.IO.Ports;
+using System.Runtime.InteropServices;
 using Mycropad.Lib.Device.Messages;
 
 namespace Mycropad.Lib.Device
@@ -7,8 +9,7 @@ namespace Mycropad.Lib.Device
     public class MycropadDevice : IDisposable, IMycropadDevice
     {
         private const int USB_VID = 0xcafe;
-        private const int USB_PID = 0x4004;
-
+        private const int USB_PID = 0x4005;
         private MycropadDevice() { }
         private static MycropadDevice _instance;
         public static MycropadDevice Instance
@@ -39,7 +40,7 @@ namespace Mycropad.Lib.Device
         {
             _device = new SerialPort
             {
-                PortName = "/dev/ttyACM0",
+                PortName = FindSerialPort(),
                 WriteTimeout = 500,
                 ReadTimeout = 500,
             };
@@ -92,6 +93,27 @@ namespace Mycropad.Lib.Device
             // Do not change this code. Put cleanup code in 'Dispose(bool disposing)' method
             Dispose(disposing: true);
             GC.SuppressFinalize(this);
+        }
+
+
+        private string FindSerialPort()
+        {
+            if (RuntimeInformation.IsOSPlatform(OSPlatform.Linux))
+            {
+                foreach (var devPath in Directory.EnumerateDirectories("/sys/class/tty/", "ttyACM*"))
+                {
+                    var modAlias = File.ReadAllText(Path.Combine($"{devPath}/device/modalias"));
+                    var vid = uint.Parse(modAlias[5..9], System.Globalization.NumberStyles.HexNumber);
+                    var pid = uint.Parse(modAlias[10..14], System.Globalization.NumberStyles.HexNumber);
+                    if (vid == USB_VID && pid == USB_PID)
+                    {
+                        return $"/dev/{devPath[15..]}";
+                    }
+                }
+                throw new Exception("Device not found");
+            }
+
+            throw new NotSupportedException($"{RuntimeInformation.OSDescription} not supported");
         }
     }
 }
