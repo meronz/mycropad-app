@@ -1,5 +1,5 @@
 using System;
-using Mycropad.Lib;
+using Mycropad.Lib.Types;
 
 namespace Mycropad.App.Entity
 {
@@ -9,5 +9,6 @@ namespace Mycropad.App.Entity
         public string Name { get; set; }
         public Keymap Keymap { get; set; }
         public bool IsDefault { get; set; }
+        public int Position { get; set; }
     }
 }

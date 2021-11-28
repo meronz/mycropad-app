@@ -1,8 +1,9 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using Mycropad.Lib.Enums;
 
-namespace Mycropad.Lib
+namespace Mycropad.Lib.Types
 {
     public class Keymap
     {
@@ -10,7 +11,7 @@ namespace Mycropad.Lib
         private const int MaxKeycodesNum = 10;
         private const int SizeOfKeycode = 2;
 
-        public readonly List<KeyCode>[] KeyCodes;
+        public List<KeyCode>[] KeyCodes { get; init; }
 
         public Keymap()
         {

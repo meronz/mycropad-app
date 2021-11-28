@@ -2,8 +2,8 @@ using System;
 using System.IO;
 using System.IO.Ports;
 using System.Runtime.InteropServices;
-using System.Threading;
 using Mycropad.Lib.Device.Messages;
+using Mycropad.Lib.Types;
 
 namespace Mycropad.Lib.Device
 {

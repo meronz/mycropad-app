@@ -1,7 +1,7 @@
 ﻿@page "/"
 @inject ILogger<Index> Logger
 @inject ProfileManager Profiles
-@inject DeviceManager DeviceManager
+@implements IDisposable
 
 <div class="flex flex-col">
     <div class="flex flex-row items-center w-full">
@@ -37,16 +37,23 @@
     </div>
 </div>
 <div class="mt-4">
-    <KeyboardGrid Keymap="@_selectedProfile?.Keymap"></KeyboardGrid>
+    <KeyboardGrid Profile="@_selectedProfile"></KeyboardGrid>
 </div>
 
 @code {
     private Guid _selectedProfileId;
-    private KeymapProfile _selectedProfile => Profiles.GetProfile(_selectedProfileId);
+    private KeymapProfile _selectedProfile => Profiles.GetProfile(Profiles.CurrentProfileId);
 
     protected override void OnInitialized()
     {
-        _selectedProfileId = Profiles.GetDefault().Id;
+        _selectedProfileId = Profiles.CurrentProfileId;
+        Profiles.OnProfilesUpdated += async () => await ProfileUpdated();
+    }
+
+    public void Dispose()
+    {
+        Profiles.OnProfilesUpdated -= async () => await ProfileUpdated();
+        GC.SuppressFinalize(this);
     }
 
     private async Task ProfileAdd()
@@ -61,11 +68,20 @@
 
     private async Task ProfileSelect(ChangeEventArgs e)
     {
-        await Task.Delay(0);
-        Logger.LogInformation($"Selected {_selectedProfile.Name}");
         _selectedProfileId = Guid.Parse(e.Value.ToString());
-        StateHasChanged();
+        await SwitchProfile();
+    }
 
-        DeviceManager.SwitchKeymap(_selectedProfile.Keymap);
+    private async Task ProfileUpdated()
+    {
+        _selectedProfileId = Profiles.CurrentProfileId;
+        await InvokeAsync(StateHasChanged);
+    }
+
+    private async Task SwitchProfile()
+    {
+        Logger.LogInformation($"Selected {_selectedProfile.Name}");
+        Profiles.SwitchProfile(_selectedProfileId);
+        await InvokeAsync(StateHasChanged);
     }
 }

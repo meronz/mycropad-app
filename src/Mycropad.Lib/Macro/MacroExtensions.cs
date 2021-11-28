@@ -1,6 +1,7 @@
 using System;
 using System.Linq;
-
+using Mycropad.Lib.Enums;
+using Mycropad.Lib.Types;
 
 namespace Mycropad.Lib.Macro
 {

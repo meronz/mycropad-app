@@ -1,38 +1,16 @@
-﻿using System;
-
-// Taken from:
-// https://gist.github.com/MightyPork/6da26e382a7ad91b5496ee55fdc73db2
-
-namespace Mycropad.Lib
+namespace Mycropad.Lib.Enums
 {
-    /**
-    * Modifier masks - used for the first byte in the HID report.
-    * NOTE: The second byte in the report is reserved, 0x00
-    */
-
-    public enum HidModifiers : byte
-    {
-        MOD_NONE = 0x00,
-        MOD_LCTRL = 0x01,
-        MOD_LSHIFT = 0x02,
-        MOD_LALT = 0x04,
-        MOD_LMETA = 0x08,
-        MOD_RCTRL = 0x10,
-        MOD_RSHIFT = 0x20,
-        MOD_RALT = 0x40,
-        MOD_RMETA = 0x80,
-    }
-
-
+    // Taken from:
+    // https://gist.github.com/MightyPork/6da26e382a7ad91b5496ee55fdc73db2
     public enum HidKeys : byte
     {
-        /**
-        * Scan codes - last N slots in the HID report (usually 6).
-        * 0x00 if no key pressed.
-        * 
-        * If more than N keys are pressed, the HID reports 
-        * KEY_ERR_OVF in all slots to indicate this condition.
-        */
+        //
+        // Scan codes - last N slots in the HID report (usually 6).
+        // 0x00 if no key pressed.
+        // 
+        // If more than N keys are pressed, the HID reports 
+        // KEY_ERR_OVF in all slots to indicate this condition.
+        //
 
         KEY_NONE = 0x00, // No key pressed
         KEY_ERR_OVF = 0x01, // Keyboard Error Roll Over - used for all slots if too many keys are pressed ("Phantom key")

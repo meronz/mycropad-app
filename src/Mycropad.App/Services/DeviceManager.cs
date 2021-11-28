@@ -1,8 +1,8 @@
 using System;
 using System.Threading;
 using Microsoft.Extensions.Logging;
-using Mycropad.Lib;
 using Mycropad.Lib.Device;
+using Mycropad.Lib.Types;
 
 namespace Mycropad.App.Services
 {
@@ -12,9 +12,6 @@ namespace Mycropad.App.Services
         private readonly IMycropadDevice _device;
         private readonly Thread _deviceThread;
         private bool _closing;
-
-        public Keymap Keymap { get; private set; }
-        public Action OnKeymapUpdated { get; set; }
 
         public DeviceManager(ILogger<DeviceManager> logger, IMycropadDevice device)
         {
@@ -26,42 +23,41 @@ namespace Mycropad.App.Services
 
         public void ResetKeymap()
         {
+            _logger.LogInformation("ResetKeymap start");
             var ok = _device.DefaultKeymap();
             if (!ok)
             {
                 // todo: error popup
+                _logger.LogError("ResetKeymap failed");
             }
             else
             {
-                Keymap = _device.ReadKeymap();
-                OnKeymapUpdated?.Invoke();
+                _logger.LogInformation("Reading default keymap");
             }
+            _logger.LogInformation("Resetting keymap done");
         }
-        public void UpdateKeymap()
+
+        public void SetDefaultKeymap(Keymap keymap)
         {
-            var ok = _device.SetKeymap(Keymap);
+            _logger.LogInformation("SetDefaultKeymap start");
+            var ok = _device.SetKeymap(keymap);
             if (!ok)
             {
-                // todo: error popup
+                _logger.LogError("SetDefaultKeymap failed");
             }
-            else
-            {
-                OnKeymapUpdated?.Invoke();
-            }
+            _logger.LogInformation("SetDefaultKeymap done");
         }
 
         public void SwitchKeymap(Keymap km)
         {
+            _logger.LogInformation("SwitchKeymap start");
             var ok = _device.SwitchKeymap(km);
             if (!ok)
             {
                 // todo: error popup
+                _logger.LogError("SwitchKeymap failed");
             }
-            else
-            {
-                Keymap = km;
-                OnKeymapUpdated?.Invoke();
-            }
+            _logger.LogInformation("SwitchKeymap done");
         }
 
         private void DeviceThread(object state)
@@ -76,12 +72,6 @@ namespace Mycropad.App.Services
                     }
                     else
                     {
-                        if (Keymap == null)
-                        {
-                            Keymap = _device.ReadKeymap();
-                            OnKeymapUpdated?.Invoke();
-                        }
-
                         _device.Heartbeat();
                     }
                 }
@@ -100,6 +90,5 @@ namespace Mycropad.App.Services
             _deviceThread.Join();
             GC.SuppressFinalize(this);
         }
-
     }
 }

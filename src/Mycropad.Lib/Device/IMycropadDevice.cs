@@ -1,5 +1,6 @@
 
 using System;
+using Mycropad.Lib.Types;
 
 namespace Mycropad.Lib.Device
 {

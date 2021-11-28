@@ -1,4 +1,4 @@
-namespace Mycropad.Lib
+namespace Mycropad.Lib.Enums
 {
     public enum Keys
     {

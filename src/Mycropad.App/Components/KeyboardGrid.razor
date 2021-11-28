@@ -1,4 +1,4 @@
-﻿@inject DeviceManager DeviceManager
+﻿@inject ProfileManager Profiles
 
 @if(_keycodesMap.Count > 0)
 {
@@ -21,13 +21,13 @@
     private Dictionary<Keys, IEnumerable<KeyCode>> _keycodesMap;
     [CascadingParameter] public IModalService Modal { get; set; }
 
-    [Parameter] public Keymap Keymap { get; set; }
+    [Parameter] public KeymapProfile Profile { get; set; }
 
     protected override async Task OnInitializedAsync()
     {
         _keycodesMap = new();
         await RefreshKeyMap();
-        DeviceManager.OnKeymapUpdated += async () => await RefreshKeyMap();
+        Profiles.OnProfilesUpdated += async () => await RefreshKeyMap();
     }
 
     protected override async Task OnParametersSetAsync()
@@ -37,25 +37,25 @@
 
     public void Dispose()
     {
-        DeviceManager.OnKeymapUpdated -= async () => await RefreshKeyMap();
+        Profiles.OnProfilesUpdated -= async () => await RefreshKeyMap();
     }
 
     private async Task RefreshKeyMap()
     {
         _keycodesMap.Clear();
-        if(Keymap != null)
+        if(Profile.Keymap != null)
         {
-            _keycodesMap.Add(Keys.Key1, Keymap.KeyCodes[0]);
-            _keycodesMap.Add(Keys.Key3, Keymap.KeyCodes[2]);
-            _keycodesMap.Add(Keys.Key5, Keymap.KeyCodes[4]);
-            _keycodesMap.Add(Keys.Key2, Keymap.KeyCodes[1]);
-            _keycodesMap.Add(Keys.Key4, Keymap.KeyCodes[3]);
-            _keycodesMap.Add(Keys.Key6, Keymap.KeyCodes[5]);
-            _keycodesMap.Add(Keys.Key7, Keymap.KeyCodes[6]);
-            _keycodesMap.Add(Keys.Key8, Keymap.KeyCodes[7]);
-            _keycodesMap.Add(Keys.RotCW, Keymap.KeyCodes[8]);
-            _keycodesMap.Add(Keys.RotCCW, Keymap.KeyCodes[9]);
-            _keycodesMap.Add(Keys.RotClick, Keymap.KeyCodes[10]);
+            _keycodesMap.Add(Keys.Key1, Profile.Keymap.KeyCodes[0]);
+            _keycodesMap.Add(Keys.Key3, Profile.Keymap.KeyCodes[2]);
+            _keycodesMap.Add(Keys.Key5, Profile.Keymap.KeyCodes[4]);
+            _keycodesMap.Add(Keys.Key2, Profile.Keymap.KeyCodes[1]);
+            _keycodesMap.Add(Keys.Key4, Profile.Keymap.KeyCodes[3]);
+            _keycodesMap.Add(Keys.Key6, Profile.Keymap.KeyCodes[5]);
+            _keycodesMap.Add(Keys.Key7, Profile.Keymap.KeyCodes[6]);
+            _keycodesMap.Add(Keys.Key8, Profile.Keymap.KeyCodes[7]);
+            _keycodesMap.Add(Keys.RotCW, Profile.Keymap.KeyCodes[8]);
+            _keycodesMap.Add(Keys.RotCCW, Profile.Keymap.KeyCodes[9]);
+            _keycodesMap.Add(Keys.RotClick, Profile.Keymap.KeyCodes[10]);
         }
         await base.InvokeAsync(StateHasChanged);
     }
@@ -84,11 +84,9 @@
     private async Task SaveNewKey(Keys key, KeyCode keycode)
     {
         await Task.Delay(0);
-        var keymap = DeviceManager.Keymap.For(key);
-
+        var keymap = Profile.Keymap.For(key);
         keymap.Clear();
         keymap.Add(keycode);
-
-        DeviceManager.UpdateKeymap();
+        Profiles.UpdateProfile(Profile);
     }
 }

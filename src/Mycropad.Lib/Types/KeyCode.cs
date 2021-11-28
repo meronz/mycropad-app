@@ -1,18 +1,14 @@
-using System;
-using System.Security.Cryptography;
+using Mycropad.Lib.Enums;
 
-namespace Mycropad.Lib
+namespace Mycropad.Lib.Types
 {
     public record KeyCode
     {
         public byte Modifiers { get; set; }
         public byte Key { get; set; }
 
-        public KeyCode(byte key, byte modifiers = 0)
-        {
-            Key = key;
-            Modifiers = modifiers;
-        }
+        // Default constructor needed for JSON serialization
+        public KeyCode() { }
 
         public KeyCode(HidKeys key, HidModifiers modifiers = 0)
         {
@@ -20,13 +16,11 @@ namespace Mycropad.Lib
             Modifiers = (byte)modifiers;
         }
 
-        public static KeyCode FromUInt16(ushort bytes)
+        public static KeyCode FromUInt16(ushort bytes) => new()
         {
-            return new(
-                (byte)(bytes & 0xFF),
-                (byte)(bytes >> 8 & 0xFF)
-            );
-        }
+            Key = (byte)(bytes & 0xFF),
+            Modifiers = (byte)(bytes >> 8 & 0xFF)
+        };
 
         public ushort ToUInt16()
         {
