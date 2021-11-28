@@ -1,0 +1,45 @@
+@implements IDisposable
+
+<button
+    @onclick="Click"
+    class="@_class">
+    @(_clicked ? "Confirm?" : Text)
+</button>
+
+@code {
+
+    string _baseClass => "transition duration-250 ease-in-out font-bold py-2 px-4 rounded-full";
+    string _class => _clicked 
+        ? $"{_baseClass} bg-red-500 hover:bg-red-700 text-white"
+        : $"{_baseClass} bg-blue-500 hover:bg-blue-700 text-white";
+
+    bool _clicked = false;
+    System.Timers.Timer _resetTimer;
+    [Parameter] public string Text { get; set; }
+    [Parameter] public Func<Task> Clicked { get; set; }
+    
+    protected override void OnInitialized()
+    {
+        _resetTimer = new System.Timers.Timer(5000);
+        _resetTimer.AutoReset = false;
+        _resetTimer.Elapsed += (source, args) => { _clicked = false; InvokeAsync(StateHasChanged); };
+    }
+
+    public void Dispose()
+    {
+        _resetTimer.Dispose();
+        GC.SuppressFinalize(this);
+    }
+
+    private async Task Click()
+    {
+        if(!_clicked)
+        {
+            _clicked = true;
+            _resetTimer.Enabled = true;
+            return;
+        }
+
+        await Clicked?.Invoke();
+    }
+}

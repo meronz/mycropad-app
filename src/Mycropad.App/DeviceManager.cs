@@ -24,6 +24,19 @@ namespace Mycropad.App
             _deviceThread.Start();
         }
 
+        public void ResetKeymap()
+        {
+            var ok = _device.DefaultKeymap();
+            if (!ok)
+            {
+                // todo: error popup
+            }
+            else
+            {
+                Keymap = _device.ReadKeymap();
+                OnKeymapUpdated?.Invoke();
+            }
+        }
         public void UpdateKeymap()
         {
             var ok = _device.NewKeymap(Keymap);

@@ -24,11 +24,28 @@ html, body {
 }
 
 button:focus {
-    outline: 1px dotted;
-    outline: 5px auto -webkit-focus-ring-color;
+    outline: none;
+    outline: none -webkit-focus-ring-color;
 }
 
+.modal-window {
+    width: 50%;
+}
 
-.keyboard-modal {
-    width: 80%;
+#titlebar #drag-region {
+    width: 100%;
+    height: 100%;
+    -webkit-app-region: drag;
+}
+
+#titlebar {
+    user-select: none;
+}
+
+#window-controls {
+    -webkit-app-region: no-drag;
+}
+
+#window-controls .button {
+    user-select: none;
 }

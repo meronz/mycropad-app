@@ -70,7 +70,8 @@ namespace Mycropad.App
                 Show = false,
                 AutoHideMenuBar = true,
                 Resizable = false,
-                Maximizable = false
+                Maximizable = false,
+                Frame = false
             });
 
             await browserWindow.WebContents.Session.ClearCacheAsync();

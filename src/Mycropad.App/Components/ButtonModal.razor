@@ -46,7 +46,7 @@
 
     async Task Cancel()
     {
-        await ModalInstance.CloseAsync(ModalResult.Cancel());
+        await ModalInstance.CancelAsync();
     }
 
     private void KeyPress(KeyboardEventArgs e)
