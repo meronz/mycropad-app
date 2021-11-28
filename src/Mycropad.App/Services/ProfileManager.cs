@@ -49,8 +49,8 @@ namespace Mycropad.App.Services
                     _defaultKeymap.For(Keys.Key6).Add(new(HidKeys.KEY_F6));
                     _defaultKeymap.For(Keys.Key7).Add(new(HidKeys.KEY_F7));
                     _defaultKeymap.For(Keys.Key8).Add(new(HidKeys.KEY_F8));
-                    _defaultKeymap.For(Keys.RotCW).Add(new(HidKeys.KEY_Z, HidModifiers.MOD_LCTRL));
-                    _defaultKeymap.For(Keys.RotCCW).Add(new(HidKeys.KEY_Y, HidModifiers.MOD_LCTRL));
+                    _defaultKeymap.For(Keys.RotCW).Add(new(HidKeys.KEY_Y, HidModifiers.MOD_LCTRL));
+                    _defaultKeymap.For(Keys.RotCCW).Add(new(HidKeys.KEY_Z, HidModifiers.MOD_LCTRL));
                     _defaultKeymap.For(Keys.RotClick).Add(new(HidKeys.KEY_F11));
                 }
                 return _defaultKeymap;
