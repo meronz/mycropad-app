@@ -15,6 +15,10 @@
     <ProjectReference Include="..\Mycropad.Lib\Mycropad.Lib.csproj" />
   </ItemGroup>
 
+  <Target Name="PostBuild" AfterTargets="PostBuildEvent">
+    <Exec Command="npm run buildcss" />
+  </Target>
+
   <ItemGroup>
     <None Remove="Assets\trayicon.png" />
   </ItemGroup>

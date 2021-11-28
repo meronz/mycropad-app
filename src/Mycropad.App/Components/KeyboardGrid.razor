@@ -69,8 +69,7 @@
         var options = new ModalOptions()
         {
             HideCloseButton = true,
-            Class = "blazored-modal modal-window",
-            Animation = ModalAnimation.FadeIn(0.150),
+            Class = "modal-window"
         };
 
         var modal = Modal.Show<ButtonModal>($"{key} settings", parameters, options);

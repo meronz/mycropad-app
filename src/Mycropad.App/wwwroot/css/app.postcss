@@ -1,7 +1,11 @@
-@import url('open-iconic/font/css/open-iconic-bootstrap.min.css');
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
 
 html, body {
     font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif;
+    @apply bg-gray-100 dark:bg-gray-800;
+    @apply text-gray-800 dark:text-gray-200;
 }
 
 #blazor-error-ui {
@@ -30,6 +34,13 @@ button:focus {
 
 .modal-window {
     width: 50%;
+    display: flex;
+    z-index: 102;
+    flex-direction: column;
+    box-shadow: 0 2px 2px rgba(0,0,0,.25);
+    @apply bg-gray-100 dark:bg-gray-800;
+    @apply text-gray-800 dark:text-gray-200;
+    @apply rounded-md p-5
 }
 
 #titlebar #drag-region {

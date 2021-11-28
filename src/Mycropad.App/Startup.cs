@@ -14,6 +14,8 @@ namespace Mycropad.App
 {
     public class Startup
     {
+        private bool _trayShown;
+
         public Startup(IConfiguration configuration)
         {
             Configuration = configuration;
@@ -103,8 +105,15 @@ namespace Mycropad.App
             };
 
             var iconPath = System.IO.Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "Assets", "trayicon.png");
+
+            if (_trayShown)
+            {
+                Electron.Tray.Destroy();
+            }
+
             Electron.Tray.Show(iconPath, menu);
             Electron.Tray.SetToolTip("Mycropad");
+            _trayShown = true;
         }
     }
 }
