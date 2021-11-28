@@ -1,3 +1,4 @@
+using System;
 using System.Security.Cryptography;
 
 namespace Mycropad.Lib
@@ -11,6 +12,12 @@ namespace Mycropad.Lib
         {
             Key = key;
             Modifiers = modifiers;
+        }
+
+        public KeyCode(HidKeys key, HidModifiers modifiers = 0)
+        {
+            Key = (byte)key;
+            Modifiers = (byte)modifiers;
         }
 
         public static KeyCode FromUInt16(ushort bytes)

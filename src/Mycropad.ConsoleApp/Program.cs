@@ -39,25 +39,25 @@ namespace Mycropad.ConsoleApp
 
 
             var keymap = new Keymap();
-            keymap.KeyCodes[0].Add(new(Consts.KEY_S));
-            keymap.KeyCodes[0].Add(new(Consts.KEY_A));
-            keymap.KeyCodes[0].Add(new(Consts.KEY_L));
-            keymap.KeyCodes[0].Add(new(Consts.KEY_V));
-            keymap.KeyCodes[0].Add(new(Consts.KEY_A));
-            keymap.KeyCodes[0].Add(new(Consts.KEY_T));
-            keymap.KeyCodes[0].Add(new(Consts.KEY_O));
-            keymap.KeyCodes[0].Add(new(Consts.KEY_R));
-            keymap.KeyCodes[0].Add(new(Consts.KEY_E));
-            keymap.KeyCodes[1].Add(new(Consts.KEY_1));
-            keymap.KeyCodes[2].Add(new(Consts.KEY_2));
-            keymap.KeyCodes[3].Add(new(Consts.KEY_3));
-            keymap.KeyCodes[4].Add(new(Consts.KEY_4));
-            keymap.KeyCodes[5].Add(new(Consts.KEY_5));
-            keymap.KeyCodes[6].Add(new(Consts.KEY_6));
-            keymap.KeyCodes[7].Add(new(Consts.KEY_7));
-            keymap.KeyCodes[8].Add(new(Consts.KEY_8));
-            keymap.KeyCodes[9].Add(new(Consts.KEY_9));
-            keymap.KeyCodes[10].Add(new(Consts.KEY_A));
+            keymap.KeyCodes[0].Add(new(HidKeys.KEY_S));
+            keymap.KeyCodes[0].Add(new(HidKeys.KEY_A));
+            keymap.KeyCodes[0].Add(new(HidKeys.KEY_L));
+            keymap.KeyCodes[0].Add(new(HidKeys.KEY_V));
+            keymap.KeyCodes[0].Add(new(HidKeys.KEY_A));
+            keymap.KeyCodes[0].Add(new(HidKeys.KEY_T));
+            keymap.KeyCodes[0].Add(new(HidKeys.KEY_O));
+            keymap.KeyCodes[0].Add(new(HidKeys.KEY_R));
+            keymap.KeyCodes[0].Add(new(HidKeys.KEY_E));
+            keymap.KeyCodes[1].Add(new(HidKeys.KEY_1));
+            keymap.KeyCodes[2].Add(new(HidKeys.KEY_2));
+            keymap.KeyCodes[3].Add(new(HidKeys.KEY_3));
+            keymap.KeyCodes[4].Add(new(HidKeys.KEY_4));
+            keymap.KeyCodes[5].Add(new(HidKeys.KEY_5));
+            keymap.KeyCodes[6].Add(new(HidKeys.KEY_6));
+            keymap.KeyCodes[7].Add(new(HidKeys.KEY_7));
+            keymap.KeyCodes[8].Add(new(HidKeys.KEY_8));
+            keymap.KeyCodes[9].Add(new(HidKeys.KEY_9));
+            keymap.KeyCodes[10].Add(new(HidKeys.KEY_A));
 
             MycropadDevice_Serial.Instance.Start();
 

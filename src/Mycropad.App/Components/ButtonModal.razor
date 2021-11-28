@@ -10,7 +10,7 @@
             id="macro" 
             class="bg-gray-50 border border-gray-300 text-gray-900 sm:text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5" 
             placeholder="Write the combination you want"
-            @bind-value="@_inputValue"
+            @bind-value="@KeyMacro"
             @onkeydown="@KeyPress"
             required>
             @* @onkeydown:preventDefault *@
@@ -34,13 +34,14 @@
 
 @code {
     [Parameter] public Keys Key { get; set; }
+    [Parameter] public string KeyMacro { get; set; }
     [CascadingParameter] BlazoredModalInstance ModalInstance { get; set; }
 
     private string _validationMessage = "";
 
     async Task Save()
     {
-        await ModalInstance.CloseAsync(ModalResult.Ok(MacroParser.Parse(_inputValue)));
+        await ModalInstance.CloseAsync(ModalResult.Ok(KeyMacro.ParseKeyCode()));
     }
 
     async Task Cancel()
@@ -48,15 +49,13 @@
         await ModalInstance.CloseAsync(ModalResult.Cancel());
     }
 
-    private string _inputValue = "";
-
     private void KeyPress(KeyboardEventArgs e)
     {
-        if(string.IsNullOrEmpty(_inputValue))
+        if(string.IsNullOrEmpty(KeyMacro))
             return;
         try
         {
-            MacroParser.Parse(_inputValue);
+            KeyMacro.ParseKeyCode();
             _validationMessage = "";
         }
         catch
@@ -93,7 +92,7 @@
 
         newValue += e.Key;
 
-        _inputValue = newValue;
+        KeyMacro = newValue;
         StateHasChanged();
     }
 }

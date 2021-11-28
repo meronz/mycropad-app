@@ -1,44 +1,69 @@
 ﻿@inject DeviceManager DeviceManager
 
-@if(DeviceManager.Keymap != null)
+@if(_keycodesMap.Count > 0)
 {
 <div class="grid grid-rows-3 grid-flow-col">
-    <KeyboardButton Key="Keys.Key1" KeyCodes="DeviceManager.Keymap.KeyCodes[0]" Clicked="UiClicked"/>
-    <KeyboardButton Key="Keys.Key3" KeyCodes="DeviceManager.Keymap.KeyCodes[2]" Clicked="UiClicked"/>
-    <KeyboardButton Key="Keys.Key5" KeyCodes="DeviceManager.Keymap.KeyCodes[4]" Clicked="UiClicked"/>
-    <KeyboardButton Key="Keys.Key2" KeyCodes="DeviceManager.Keymap.KeyCodes[1]" Clicked="UiClicked"/>
-    <KeyboardButton Key="Keys.Key4" KeyCodes="DeviceManager.Keymap.KeyCodes[3]" Clicked="UiClicked"/>
-    <KeyboardButton Key="Keys.Key6" KeyCodes="DeviceManager.Keymap.KeyCodes[5]" Clicked="UiClicked"/>
+    <KeyboardButton Key="Keys.Key1" KeyCodes="_keycodesMap[Keys.Key1]" Clicked="UiClicked"/>
+    <KeyboardButton Key="Keys.Key3" KeyCodes="_keycodesMap[Keys.Key3]" Clicked="UiClicked"/>
+    <KeyboardButton Key="Keys.Key5" KeyCodes="_keycodesMap[Keys.Key5]" Clicked="UiClicked"/>
+    <KeyboardButton Key="Keys.Key2" KeyCodes="_keycodesMap[Keys.Key2]" Clicked="UiClicked"/>
+    <KeyboardButton Key="Keys.Key4" KeyCodes="_keycodesMap[Keys.Key4]" Clicked="UiClicked"/>
+    <KeyboardButton Key="Keys.Key6" KeyCodes="_keycodesMap[Keys.Key6]" Clicked="UiClicked"/>
     <div class="flex justify-center items-center row-span-2 col-span-2">
         <KeyboardEncoder Clicked="UiClicked"/>
     </div>
-    <KeyboardButton Key="Keys.Key7" KeyCodes="DeviceManager.Keymap.KeyCodes[6]" Clicked="UiClicked"/>
-    <KeyboardButton Key="Keys.Key8" KeyCodes="DeviceManager.Keymap.KeyCodes[8]" Clicked="UiClicked"/>
+    <KeyboardButton Key="Keys.Key7" KeyCodes="_keycodesMap[Keys.Key7]"  Clicked="UiClicked"/>
+    <KeyboardButton Key="Keys.Key8" KeyCodes="_keycodesMap[Keys.Key8]"  Clicked="UiClicked"/>
 </div>
 }
 
 @code {
+    private Dictionary<Keys, IEnumerable<KeyCode>> _keycodesMap;
     [CascadingParameter] public IModalService Modal { get; set; }
 
-    protected override void OnInitialized()
+    protected override async Task OnInitializedAsync()
     {
-        DeviceManager.OnKeymapUpdated += () => base.InvokeAsync(StateHasChanged);
+        _keycodesMap = new();
+        await RefreshKeyMap();
+        DeviceManager.OnKeymapUpdated += async () => await RefreshKeyMap();
     }
 
     public void Dispose()
     {
-        DeviceManager.OnKeymapUpdated -= () => base.InvokeAsync(StateHasChanged);
+        DeviceManager.OnKeymapUpdated -= async () => await RefreshKeyMap();
+    }
+
+    private async Task RefreshKeyMap()
+    {
+        _keycodesMap.Clear();
+        if(DeviceManager.Keymap != null)
+        {
+            _keycodesMap.Add(Keys.Key1, DeviceManager.Keymap.KeyCodes[0]);
+            _keycodesMap.Add(Keys.Key3, DeviceManager.Keymap.KeyCodes[2]);
+            _keycodesMap.Add(Keys.Key5, DeviceManager.Keymap.KeyCodes[4]);
+            _keycodesMap.Add(Keys.Key2, DeviceManager.Keymap.KeyCodes[1]);
+            _keycodesMap.Add(Keys.Key4, DeviceManager.Keymap.KeyCodes[3]);
+            _keycodesMap.Add(Keys.Key6, DeviceManager.Keymap.KeyCodes[5]);
+            _keycodesMap.Add(Keys.Key7, DeviceManager.Keymap.KeyCodes[6]);
+            _keycodesMap.Add(Keys.Key8, DeviceManager.Keymap.KeyCodes[7]);
+            _keycodesMap.Add(Keys.RotCW, DeviceManager.Keymap.KeyCodes[8]);
+            _keycodesMap.Add(Keys.RotCCW, DeviceManager.Keymap.KeyCodes[9]);
+            _keycodesMap.Add(Keys.RotClick, DeviceManager.Keymap.KeyCodes[10]);
+        }
+        await base.InvokeAsync(StateHasChanged);
     }
 
     private async Task UiClicked(Keys key)
     {
         var parameters = new ModalParameters();
         parameters.Add(nameof(ButtonModal.Key), key);
+        parameters.Add(nameof(ButtonModal.KeyMacro), _keycodesMap[key]?.First().ToMacroString());
 
         var options = new ModalOptions()
         {
             HideCloseButton = true,
-            Class = "blazored-modal keyboard-modal"
+            Class = "blazored-modal keyboard-modal",
+            Animation = ModalAnimation.FadeIn(0.150),
         };
 
         var modal = Modal.Show<ButtonModal>($"{key} settings", parameters, options);
