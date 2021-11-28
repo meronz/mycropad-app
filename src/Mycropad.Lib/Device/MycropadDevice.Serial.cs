@@ -67,16 +67,16 @@ namespace Mycropad.Lib.Device
             }
         }
 
-        public bool NewKeymap(Keymap keymap)
+        public bool SetKeymap(Keymap keymap)
         {
             lock (_deviceMutex)
             {
-                var data = Command(CommandTypes.NewKeymap, keymap.ToBytes());
+                var data = Command(CommandTypes.SetKeymap, keymap.ToBytes());
                 Write(data);
 
                 var (readData, readLength) = Read();
                 var (cmd, ok, _) = Response(readData, readLength);
-                if (cmd != CommandTypes.NewKeymap) throw new Exception($"Bad CommandType {cmd}");
+                if (cmd != CommandTypes.SetKeymap) throw new Exception($"Bad CommandType {cmd}");
                 if (!ok) throw new Exception($"{cmd} failed!");
 
                 return ok;
@@ -110,6 +110,22 @@ namespace Mycropad.Lib.Device
 
                 var (cmd, ok, _) = Response(readData, readLength);
                 if (cmd != CommandTypes.DefaultKeymap) throw new Exception($"Bad CommandType {cmd}");
+                if (!ok) throw new Exception($"{cmd} failed!");
+
+                return ok;
+            }
+        }
+
+        public bool SwitchKeymap(Keymap keymap)
+        {
+            lock (_deviceMutex)
+            {
+                var data = Command(CommandTypes.SwitchKeymap, keymap.ToBytes());
+                Write(data);
+
+                var (readData, readLength) = Read();
+                var (cmd, ok, _) = Response(readData, readLength);
+                if (cmd != CommandTypes.SwitchKeymap) throw new Exception($"Bad CommandType {cmd}");
                 if (!ok) throw new Exception($"{cmd} failed!");
 
                 return ok;

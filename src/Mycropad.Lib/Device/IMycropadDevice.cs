@@ -12,8 +12,9 @@ namespace Mycropad.Lib.Device
         void Dispose();
         bool Heartbeat();
         bool DefaultKeymap();
-        bool NewKeymap(Keymap keymap);
+        bool SetKeymap(Keymap keymap);
         Keymap ReadKeymap();
         void Start();
+        bool SwitchKeymap(Keymap keymap);
     }
 }

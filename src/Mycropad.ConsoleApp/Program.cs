@@ -39,15 +39,7 @@ namespace Mycropad.ConsoleApp
 
 
             var keymap = new Keymap();
-            keymap.KeyCodes[0].Add(new(HidKeys.KEY_S));
-            keymap.KeyCodes[0].Add(new(HidKeys.KEY_A));
-            keymap.KeyCodes[0].Add(new(HidKeys.KEY_L));
-            keymap.KeyCodes[0].Add(new(HidKeys.KEY_V));
-            keymap.KeyCodes[0].Add(new(HidKeys.KEY_A));
-            keymap.KeyCodes[0].Add(new(HidKeys.KEY_T));
-            keymap.KeyCodes[0].Add(new(HidKeys.KEY_O));
-            keymap.KeyCodes[0].Add(new(HidKeys.KEY_R));
-            keymap.KeyCodes[0].Add(new(HidKeys.KEY_E));
+            keymap.KeyCodes[0].Add(new(HidKeys.KEY_0));
             keymap.KeyCodes[1].Add(new(HidKeys.KEY_1));
             keymap.KeyCodes[2].Add(new(HidKeys.KEY_2));
             keymap.KeyCodes[3].Add(new(HidKeys.KEY_3));
@@ -67,7 +59,7 @@ namespace Mycropad.ConsoleApp
                 await Task.Delay(100);
             }
 
-            MycropadDevice_Serial.Instance.NewKeymap(keymap);
+            MycropadDevice_Serial.Instance.SetKeymap(keymap);
 
         }
     }

@@ -7,6 +7,7 @@ using Microsoft.AspNetCore.Hosting;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
+using Mycropad.App.Services;
 using Mycropad.Lib.Device;
 
 namespace Mycropad.App
@@ -28,6 +29,7 @@ namespace Mycropad.App
 
             services.AddSingleton<IMycropadDevice>(MycropadDevice_Serial.Instance);
             services.AddSingleton<DeviceManager>();
+            services.AddSingleton<ProfileManager>();
         }
 
         public void Configure(IApplicationBuilder app, IWebHostEnvironment env)

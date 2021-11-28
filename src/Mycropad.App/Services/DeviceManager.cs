@@ -4,7 +4,7 @@ using Microsoft.Extensions.Logging;
 using Mycropad.Lib;
 using Mycropad.Lib.Device;
 
-namespace Mycropad.App
+namespace Mycropad.App.Services
 {
     public class DeviceManager : IDisposable
     {
@@ -39,13 +39,27 @@ namespace Mycropad.App
         }
         public void UpdateKeymap()
         {
-            var ok = _device.NewKeymap(Keymap);
+            var ok = _device.SetKeymap(Keymap);
             if (!ok)
             {
                 // todo: error popup
             }
             else
             {
+                OnKeymapUpdated?.Invoke();
+            }
+        }
+
+        public void SwitchKeymap(Keymap km)
+        {
+            var ok = _device.SwitchKeymap(km);
+            if (!ok)
+            {
+                // todo: error popup
+            }
+            else
+            {
+                Keymap = km;
                 OnKeymapUpdated?.Invoke();
             }
         }
@@ -62,7 +76,6 @@ namespace Mycropad.App
                     }
                     else
                     {
-
                         if (Keymap == null)
                         {
                             Keymap = _device.ReadKeymap();

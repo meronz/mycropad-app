@@ -21,11 +21,18 @@
     private Dictionary<Keys, IEnumerable<KeyCode>> _keycodesMap;
     [CascadingParameter] public IModalService Modal { get; set; }
 
+    [Parameter] public Keymap Keymap { get; set; }
+
     protected override async Task OnInitializedAsync()
     {
         _keycodesMap = new();
         await RefreshKeyMap();
         DeviceManager.OnKeymapUpdated += async () => await RefreshKeyMap();
+    }
+
+    protected override async Task OnParametersSetAsync()
+    {
+        await RefreshKeyMap();
     }
 
     public void Dispose()
@@ -36,19 +43,19 @@
     private async Task RefreshKeyMap()
     {
         _keycodesMap.Clear();
-        if(DeviceManager.Keymap != null)
+        if(Keymap != null)
         {
-            _keycodesMap.Add(Keys.Key1, DeviceManager.Keymap.KeyCodes[0]);
-            _keycodesMap.Add(Keys.Key3, DeviceManager.Keymap.KeyCodes[2]);
-            _keycodesMap.Add(Keys.Key5, DeviceManager.Keymap.KeyCodes[4]);
-            _keycodesMap.Add(Keys.Key2, DeviceManager.Keymap.KeyCodes[1]);
-            _keycodesMap.Add(Keys.Key4, DeviceManager.Keymap.KeyCodes[3]);
-            _keycodesMap.Add(Keys.Key6, DeviceManager.Keymap.KeyCodes[5]);
-            _keycodesMap.Add(Keys.Key7, DeviceManager.Keymap.KeyCodes[6]);
-            _keycodesMap.Add(Keys.Key8, DeviceManager.Keymap.KeyCodes[7]);
-            _keycodesMap.Add(Keys.RotCW, DeviceManager.Keymap.KeyCodes[8]);
-            _keycodesMap.Add(Keys.RotCCW, DeviceManager.Keymap.KeyCodes[9]);
-            _keycodesMap.Add(Keys.RotClick, DeviceManager.Keymap.KeyCodes[10]);
+            _keycodesMap.Add(Keys.Key1, Keymap.KeyCodes[0]);
+            _keycodesMap.Add(Keys.Key3, Keymap.KeyCodes[2]);
+            _keycodesMap.Add(Keys.Key5, Keymap.KeyCodes[4]);
+            _keycodesMap.Add(Keys.Key2, Keymap.KeyCodes[1]);
+            _keycodesMap.Add(Keys.Key4, Keymap.KeyCodes[3]);
+            _keycodesMap.Add(Keys.Key6, Keymap.KeyCodes[5]);
+            _keycodesMap.Add(Keys.Key7, Keymap.KeyCodes[6]);
+            _keycodesMap.Add(Keys.Key8, Keymap.KeyCodes[7]);
+            _keycodesMap.Add(Keys.RotCW, Keymap.KeyCodes[8]);
+            _keycodesMap.Add(Keys.RotCCW, Keymap.KeyCodes[9]);
+            _keycodesMap.Add(Keys.RotClick, Keymap.KeyCodes[10]);
         }
         await base.InvokeAsync(StateHasChanged);
     }
