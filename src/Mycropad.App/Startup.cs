@@ -1,3 +1,4 @@
+using System;
 using Blazored.Modal;
 using ElectronNET.API;
 using ElectronNET.API.Entities;
@@ -76,8 +77,32 @@ namespace Mycropad.App
 
             await browserWindow.WebContents.Session.ClearCacheAsync();
 
-            browserWindow.OnReadyToShow += () => browserWindow.Show();
             browserWindow.SetTitle("Mycropad");
+            browserWindow.OnReadyToShow += () =>
+            {
+                browserWindow.Show();
+                TrayIconSetup(browserWindow);
+            };
+        }
+
+        public void TrayIconSetup(BrowserWindow window)
+        {
+            var menu = new MenuItem[] {
+                new MenuItem
+                {
+                    Label = "Show",
+                    Click = () => window.Maximize()
+                },
+                new MenuItem
+                {
+                    Label = "Exit",
+                    Click = () => window.Close()
+                }
+            };
+
+            var iconPath = System.IO.Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "Assets", "trayicon.png");
+            Electron.Tray.Show(iconPath, menu);
+            Electron.Tray.SetToolTip("Mycropad");
         }
     }
 }
