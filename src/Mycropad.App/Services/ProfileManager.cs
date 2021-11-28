@@ -4,6 +4,7 @@ using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Text.Json;
+using Microsoft.AspNetCore.Diagnostics;
 using Microsoft.Extensions.Logging;
 using Mycropad.App.Entity;
 using Mycropad.Lib.Enums;
@@ -31,6 +32,30 @@ namespace Mycropad.App.Services
 
         public Guid CurrentProfileId { get; private set; }
         public Action OnProfilesUpdated { get; set; }
+
+        private static Keymap _defaultKeymap;
+        public static Keymap DefaultKeymap
+        {
+            get
+            {
+                if (_defaultKeymap == null)
+                {
+                    _defaultKeymap = new Keymap();
+                    _defaultKeymap.For(Keys.Key1).Add(new(HidKeys.KEY_F1));
+                    _defaultKeymap.For(Keys.Key2).Add(new(HidKeys.KEY_F2));
+                    _defaultKeymap.For(Keys.Key3).Add(new(HidKeys.KEY_F3));
+                    _defaultKeymap.For(Keys.Key4).Add(new(HidKeys.KEY_F4));
+                    _defaultKeymap.For(Keys.Key5).Add(new(HidKeys.KEY_F5));
+                    _defaultKeymap.For(Keys.Key6).Add(new(HidKeys.KEY_F6));
+                    _defaultKeymap.For(Keys.Key7).Add(new(HidKeys.KEY_F7));
+                    _defaultKeymap.For(Keys.Key8).Add(new(HidKeys.KEY_F8));
+                    _defaultKeymap.For(Keys.RotCW).Add(new(HidKeys.KEY_Z, HidModifiers.MOD_LCTRL));
+                    _defaultKeymap.For(Keys.RotCCW).Add(new(HidKeys.KEY_Y, HidModifiers.MOD_LCTRL));
+                    _defaultKeymap.For(Keys.RotClick).Add(new(HidKeys.KEY_F11));
+                }
+                return _defaultKeymap;
+            }
+        }
 
         public void Load()
         {
@@ -79,26 +104,13 @@ namespace Mycropad.App.Services
 
         private void LoadDefault()
         {
-            var keymap = new Keymap();
-            keymap.KeyCodes[0].Add(new(HidKeys.KEY_F1));
-            keymap.KeyCodes[1].Add(new(HidKeys.KEY_F2));
-            keymap.KeyCodes[2].Add(new(HidKeys.KEY_F3));
-            keymap.KeyCodes[3].Add(new(HidKeys.KEY_F4));
-            keymap.KeyCodes[4].Add(new(HidKeys.KEY_F5));
-            keymap.KeyCodes[5].Add(new(HidKeys.KEY_F6));
-            keymap.KeyCodes[6].Add(new(HidKeys.KEY_F7));
-            keymap.KeyCodes[7].Add(new(HidKeys.KEY_F8));
-            keymap.KeyCodes[8].Add(new(HidKeys.KEY_F9));
-            keymap.KeyCodes[9].Add(new(HidKeys.KEY_F10));
-            keymap.KeyCodes[10].Add(new(HidKeys.KEY_F11));
-
             _profiles = new();
             _profiles.Add(new()
             {
                 Id = Guid.NewGuid(),
                 Name = "Default",
                 IsDefault = true,
-                Keymap = keymap,
+                Keymap = DefaultKeymap,
             });
         }
 

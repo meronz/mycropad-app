@@ -37,12 +37,14 @@
     </div>
 </div>
 <div class="mt-4">
-    <KeyboardGrid Profile="@_selectedProfile"></KeyboardGrid>
+    <KeyboardGrid Profile="@SelectedProfile"></KeyboardGrid>
 </div>
 
 @code {
+    [CascadingParameter] public IModalService Modal { get; set; }
+
     private Guid _selectedProfileId;
-    private KeymapProfile _selectedProfile => Profiles.GetProfile(Profiles.CurrentProfileId);
+    private KeymapProfile SelectedProfile => Profiles.GetProfile(Profiles.CurrentProfileId);
 
     protected override void OnInitialized()
     {
@@ -57,13 +59,51 @@
     }
 
     private async Task ProfileAdd()
-    {
-        await Task.Delay(0);
+    { 
+        var parameters = new ModalParameters();
+        parameters.Add(nameof(EditProfileModal.ProfileName), "");
+        var options = new ModalOptions()
+        {
+            HideCloseButton = true,
+            Class = "blazored-modal modal-window",
+            Animation = ModalAnimation.FadeIn(0.150),
+        };
+
+        var modal = Modal.Show<EditProfileModal>("New profile", parameters, options);
+        var result = await modal.Result;
+        if(!result.Cancelled)
+        {
+            var profileName = (string) result.Data;
+            var profile = new KeymapProfile()
+            {
+                Id = Guid.NewGuid(),
+                Name = profileName,
+                Keymap = ProfileManager.DefaultKeymap
+            };
+            Profiles.AddProfile(profile);
+            Profiles.SwitchProfile(profile.Id);
+        }
     }
 
     private async Task ProfileEdit()
     {
-        await Task.Delay(0);
+        var parameters = new ModalParameters();
+        parameters.Add(nameof(EditProfileModal.ProfileName), SelectedProfile.Name);
+        var options = new ModalOptions()
+        {
+            HideCloseButton = true,
+            Class = "blazored-modal modal-window",
+            Animation = ModalAnimation.FadeIn(0.150),
+        };
+
+        var modal = Modal.Show<EditProfileModal>("Edit profile", parameters, options);
+        var result = await modal.Result;
+        if(!result.Cancelled)
+        {
+            var profileName = (string) result.Data;
+            SelectedProfile.Name = profileName;
+            Profiles.UpdateProfile(SelectedProfile);
+        }
     }
 
     private async Task ProfileSelect(ChangeEventArgs e)
@@ -80,7 +120,7 @@
 
     private async Task SwitchProfile()
     {
-        Logger.LogInformation($"Selected {_selectedProfile.Name}");
+        Logger.LogInformation($"Selected {SelectedProfile.Name}");
         Profiles.SwitchProfile(_selectedProfileId);
         await InvokeAsync(StateHasChanged);
     }
