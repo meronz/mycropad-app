@@ -1,16 +1,17 @@
 using System;
-using System.IO;
 using System.IO.Ports;
-using System.Runtime.InteropServices;
+using System.Runtime.Versioning;
 using Mycropad.Lib.Device.Messages;
 using Mycropad.Lib.Types;
 
 namespace Mycropad.Lib.Device
 {
+    [SupportedOSPlatform("linux")]
+    [SupportedOSPlatform("windows")]
     public class MycropadDevice_Serial : MycropadDeviceBase, IMycropadDevice, IDisposable
     {
-        private const int USB_VID = 0xCAFE;
-        private const int USB_PID = 0x4005;
+        private const uint USB_VID = 0xCAFE;
+        private const uint USB_PID = 0x4005;
 
         private MycropadDevice_Serial() { }
         private static MycropadDevice_Serial _instance;
@@ -41,7 +42,7 @@ namespace Mycropad.Lib.Device
 
         private void OpenDevice()
         {
-            _device.PortName = FindSerialPort();
+            _device.PortName = PlatformUtils.FindSerialPort(USB_VID, USB_PID);
             _device.WriteTimeout = 500;
             _device.ReadTimeout = 500;
 
@@ -199,26 +200,6 @@ namespace Mycropad.Lib.Device
                 _device.Close();
                 OnDeviceDisconnected?.Invoke();
             }
-        }
-
-        private string FindSerialPort()
-        {
-            if (RuntimeInformation.IsOSPlatform(OSPlatform.Linux))
-            {
-                foreach (var devPath in Directory.EnumerateDirectories("/sys/class/tty/", "ttyACM*"))
-                {
-                    var modAlias = File.ReadAllText(Path.Combine($"{devPath}/device/modalias"));
-                    var vid = uint.Parse(modAlias[5..9], System.Globalization.NumberStyles.HexNumber);
-                    var pid = uint.Parse(modAlias[10..14], System.Globalization.NumberStyles.HexNumber);
-                    if (vid == USB_VID && pid == USB_PID)
-                    {
-                        return $"/dev/{devPath[15..]}";
-                    }
-                }
-                throw new Exception("Device not found");
-            }
-
-            throw new NotSupportedException($"{RuntimeInformation.OSDescription} not supported");
         }
 
         #region IDisposable

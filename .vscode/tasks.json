@@ -5,35 +5,24 @@
             "label": "build",
             "command": "dotnet",
             "type": "shell",
-            "args": [
-                "build",
-                "${workspaceFolder}/Mycropad.App.sln",
-            ],
-            "problemMatcher": "$msCompile"
-        },
-        {
-            "label": "publish",
-            "command": "dotnet",
-            "type": "shell",
-            "args": [
-                "publish",
-                "${workspaceFolder}/src/Mycropad.App/Mycropad.App.csproj",
-                "/property:GenerateFullPaths=true",
-                "/consoleloggerparameters:NoSummary"
-            ],
-            "problemMatcher": "$msCompile"
-        },
-        {
-            "label": "watch",
-            "command": "dotnet",
-            "type": "shell",
-            "args": [
-                "watch",
-                "run",
-                "${workspaceFolder}/src/Mycropad.App/Mycropad.App.csproj",
-                "/property:GenerateFullPaths=true",
-                "/consoleloggerparameters:NoSummary"
-            ],
+            "windows": {
+                "command": "", // workaround on windows if you have bash as the default shell
+                "options": {
+                    "shell": {
+                        "executable": "dotnet",
+                        "args": [
+                            "build",
+                            "${workspaceFolder}\\Mycropad.App.sln",
+                        ],
+                    }
+                },
+            },
+            "linux": {
+                "args": [
+                    "build",
+                    "${workspaceFolder}/Mycropad.App.sln",
+                ],
+            },
             "problemMatcher": "$msCompile"
         }
     ]
