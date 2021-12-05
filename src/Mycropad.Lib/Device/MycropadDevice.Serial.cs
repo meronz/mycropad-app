@@ -6,8 +6,6 @@ using Mycropad.Lib.Types;
 
 namespace Mycropad.Lib.Device
 {
-    [SupportedOSPlatform("linux")]
-    [SupportedOSPlatform("windows")]
     public class MycropadDevice_Serial : MycropadDeviceBase, IMycropadDevice, IDisposable
     {
         private const uint USB_VID = 0xCAFE;
