@@ -1,7 +1,8 @@
 ﻿<div 
+    style="@_buttonStyle"
     class="transition duration-250 ease-in-out bg-white dark:bg-gray-600 hover:bg-blue-300 text-gray-400 hover:text-white shadow-lg rounded-3xl flex justify-center items-center w-32 h-32 m-2 p-2"
     @onclick='() => Clicked?.Invoke(Key)'>
-    <span class="text-xs text-center">
+    <span class="text-md text-center">
     @if(KeyCodes.Count() == 1)
     {
         @KeyCodes.First().ToMacroString()
@@ -20,5 +21,16 @@
 
     [Parameter] public IEnumerable<KeyCode> KeyCodes { get; set; }
 
+    [Parameter] public LedColor LedColor { get; set; }
+
     [Parameter] public Func<Keys, Task> Clicked { get; set; }
+
+    private string _buttonStyle => LedColor == null 
+        ? ""
+        : $"background-color: rgb({LedColor.R}, {LedColor.G}, {LedColor.B});";
+
+    protected override async Task OnParametersSetAsync()
+    {
+        await InvokeAsync(StateHasChanged);
+    }
 }

@@ -1,5 +1,7 @@
 
 using System;
+using System.Collections.Generic;
+using Mycropad.Lib.Enums;
 using Mycropad.Lib.Types;
 
 namespace Mycropad.Lib.Device
@@ -17,5 +19,7 @@ namespace Mycropad.Lib.Device
         Keymap ReadKeymap();
         void Start();
         bool SwitchKeymap(Keymap keymap);
+        bool LedsSwitchPattern(LedsPattern pattern);
+        bool LedsSetFixedMap(IEnumerable<LedColor> map);
     }
 }

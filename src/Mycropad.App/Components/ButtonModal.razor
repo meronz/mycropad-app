@@ -1,22 +1,35 @@
 <div class="flex flex-col h-full">
-    <form class="h-80">
-        <label
-            for="macro"
-            class="text-sm font-medium block mb-2">
-            Macro
-        </label>
-        <input 
-            type="text" 
-            id="macro" 
-            class="bg-gray-100 dark:bg-gray-600 border border-gray-300 sm:text-sm rounded-lg block w-full p-2" 
-            placeholder="Write the combination you want"
-            @bind-value="@KeyMacro"
-            @onkeydown="@KeyPress"
-            required>
-            @* @onkeydown:preventDefault *@
-        <span class="flex items-center font-medium tracking-wide text-red-500 text-xs mt-1 ml-1">
-            @_validationMessage
-        </span>
+    <form class="h-80 p-1">
+        <div class="my-2">
+            <label
+                for="macro"
+                class="text-sm font-medium block mb-2">
+                Macro
+            </label>
+            <input 
+                type="text" 
+                id="macro" 
+                class="bg-gray-100 dark:bg-gray-600 border border-gray-300 sm:text-sm rounded-lg block w-full p-2" 
+                placeholder="Write the combination you want"
+                @bind-value="@KeyMacro"
+                @onkeydown="@KeyPress"
+                required>
+                @* @onkeydown:preventDefault *@
+            <span class="flex items-center font-medium tracking-wide text-red-500 text-xs mt-1 ml-1">
+                @_validationMessage
+            </span>
+        </div>
+        @if(LedColor != null)
+        {
+            <div class="my-2">
+            <label
+                for="ledcolor"
+                class="text-sm font-medium block mb-2">
+                Color
+            </label>
+            <input type="color" id="ledcolor" name="ledcolor" value="@_colorString" @onchange="ColorChanged">
+            </div>
+        }
     </form>
     <div class="p-2">
         <button 
@@ -35,13 +48,19 @@
 @code {
     [Parameter] public Keys Key { get; set; }
     [Parameter] public string KeyMacro { get; set; }
+    [Parameter] public LedColor LedColor { get; set; }
     [CascadingParameter] BlazoredModalInstance ModalInstance { get; set; }
 
     private string _validationMessage = "";
+    private string _colorString => $"#{LedColor.R:X2}{LedColor.G:X2}{LedColor.B:X2}";
 
     async Task Save()
     {
-        await ModalInstance.CloseAsync(ModalResult.Ok(KeyMacro.ParseKeyCode()));
+        await ModalInstance.CloseAsync(ModalResult.Ok(
+            new { 
+                KeyMacro = KeyMacro.ParseKeyCode(),
+                LedColor = LedColor
+            }));
     }
 
     async Task Cancel()
@@ -62,6 +81,18 @@
         {
             _validationMessage = "Invalid macro!";
         }
+    }
+
+    private async Task ColorChanged(ChangeEventArgs e)
+    {
+        var rgbstring = e.Value.ToString();
+
+        LedColor = new LedColor(
+            byte.Parse(rgbstring[1..3], System.Globalization.NumberStyles.HexNumber),
+            byte.Parse(rgbstring[3..5], System.Globalization.NumberStyles.HexNumber),
+            byte.Parse(rgbstring[5..7], System.Globalization.NumberStyles.HexNumber));
+
+        await InvokeAsync(StateHasChanged);
     }
 
 

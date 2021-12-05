@@ -7,5 +7,8 @@ namespace Mycropad.Lib.Device.Messages
         ReadKeymap = 2,
         DefaultKeymap = 3,
         SwitchKeymap = 4,
+
+        LedsSwitchPattern = 50,
+        LedsSetFixedMap = 51,
     }
 }

@@ -3,22 +3,23 @@
 @if(_keycodesMap.Count > 0)
 {
 <div class="grid grid-rows-3 grid-flow-col">
-    <KeyboardButton Key="Keys.Key1" KeyCodes="_keycodesMap[Keys.Key1]" Clicked="UiClicked"/>
-    <KeyboardButton Key="Keys.Key3" KeyCodes="_keycodesMap[Keys.Key3]" Clicked="UiClicked"/>
-    <KeyboardButton Key="Keys.Key5" KeyCodes="_keycodesMap[Keys.Key5]" Clicked="UiClicked"/>
-    <KeyboardButton Key="Keys.Key2" KeyCodes="_keycodesMap[Keys.Key2]" Clicked="UiClicked"/>
-    <KeyboardButton Key="Keys.Key4" KeyCodes="_keycodesMap[Keys.Key4]" Clicked="UiClicked"/>
-    <KeyboardButton Key="Keys.Key6" KeyCodes="_keycodesMap[Keys.Key6]" Clicked="UiClicked"/>
+    <KeyboardButton Key="Keys.Key1" KeyCodes="_keycodesMap[Keys.Key1]" LedColor="_ledsMap.GetValueOrDefault(Keys.Key1)" Clicked="UiClicked"/>
+    <KeyboardButton Key="Keys.Key3" KeyCodes="_keycodesMap[Keys.Key3]" LedColor="_ledsMap.GetValueOrDefault(Keys.Key3)" Clicked="UiClicked"/>
+    <KeyboardButton Key="Keys.Key5" KeyCodes="_keycodesMap[Keys.Key5]" LedColor="_ledsMap.GetValueOrDefault(Keys.Key5)" Clicked="UiClicked"/>
+    <KeyboardButton Key="Keys.Key2" KeyCodes="_keycodesMap[Keys.Key2]" LedColor="_ledsMap.GetValueOrDefault(Keys.Key2)" Clicked="UiClicked"/>
+    <KeyboardButton Key="Keys.Key4" KeyCodes="_keycodesMap[Keys.Key4]" LedColor="_ledsMap.GetValueOrDefault(Keys.Key4)" Clicked="UiClicked"/>
+    <KeyboardButton Key="Keys.Key6" KeyCodes="_keycodesMap[Keys.Key6]" LedColor="_ledsMap.GetValueOrDefault(Keys.Key6)" Clicked="UiClicked"/>
     <div class="flex justify-center items-center row-span-2 col-span-2">
         <KeyboardEncoder Clicked="UiClicked"/>
     </div>
-    <KeyboardButton Key="Keys.Key7" KeyCodes="_keycodesMap[Keys.Key7]"  Clicked="UiClicked"/>
-    <KeyboardButton Key="Keys.Key8" KeyCodes="_keycodesMap[Keys.Key8]"  Clicked="UiClicked"/>
+    <KeyboardButton Key="Keys.Key7" KeyCodes="_keycodesMap[Keys.Key7]" LedColor="_ledsMap.GetValueOrDefault(Keys.Key7)" Clicked="UiClicked"/>
+    <KeyboardButton Key="Keys.Key8" KeyCodes="_keycodesMap[Keys.Key8]" LedColor="_ledsMap.GetValueOrDefault(Keys.Key8)" Clicked="UiClicked"/>
 </div>
 }
 
 @code {
     private Dictionary<Keys, IEnumerable<KeyCode>> _keycodesMap;
+    private Dictionary<Keys, LedColor> _ledsMap;
     [CascadingParameter] public IModalService Modal { get; set; }
 
     [Parameter] public KeymapProfile Profile { get; set; }
@@ -26,6 +27,7 @@
     protected override async Task OnInitializedAsync()
     {
         _keycodesMap = new();
+        _ledsMap = new();
         await RefreshKeyMap();
         Profiles.OnProfilesUpdated += async () => await RefreshKeyMap();
     }
@@ -57,6 +59,19 @@
             _keycodesMap.Add(Keys.RotCCW, Profile.Keymap.KeyCodes[9]);
             _keycodesMap.Add(Keys.RotClick, Profile.Keymap.KeyCodes[10]);
         }
+
+        _ledsMap.Clear();
+        if(Profile.LedsPattern == LedsPattern.Fixed)
+        {
+            _ledsMap.Add(Keys.Key1, Profile.LedsMap[0]);
+            _ledsMap.Add(Keys.Key3, Profile.LedsMap[2]);
+            _ledsMap.Add(Keys.Key5, Profile.LedsMap[4]);
+            _ledsMap.Add(Keys.Key2, Profile.LedsMap[1]);
+            _ledsMap.Add(Keys.Key4, Profile.LedsMap[3]);
+            _ledsMap.Add(Keys.Key6, Profile.LedsMap[5]);
+            _ledsMap.Add(Keys.Key7, Profile.LedsMap[6]);
+            _ledsMap.Add(Keys.Key8, Profile.LedsMap[7]);
+        }
         await base.InvokeAsync(StateHasChanged);
     }
 
@@ -65,6 +80,7 @@
         var parameters = new ModalParameters();
         parameters.Add(nameof(ButtonModal.Key), key);
         parameters.Add(nameof(ButtonModal.KeyMacro), _keycodesMap[key]?.First().ToMacroString());
+        parameters.Add(nameof(ButtonModal.LedColor), _ledsMap.GetValueOrDefault(key));
 
         var options = new ModalOptions()
         {
@@ -76,16 +92,24 @@
         var result = await modal.Result;
         if(!result.Cancelled)
         {
-            await SaveNewKey(key, (KeyCode) result.Data);
+            await SaveNewKey(key,
+                (result.Data as dynamic).KeyMacro,
+                (result.Data as dynamic).LedColor);
         }
     }
 
-    private async Task SaveNewKey(Keys key, KeyCode keycode)
+    private async Task SaveNewKey(Keys key, KeyCode keycode, LedColor ledColor)
     {
         await Task.Delay(0);
         var keymap = Profile.Keymap.For(key);
         keymap.Clear();
         keymap.Add(keycode);
+
+        if(key < Keys.RotCW)
+        {
+            Profile.LedsMap[((int)key) - 1] = ledColor;
+        }
+
         Profiles.UpdateProfile(Profile);
     }
 }

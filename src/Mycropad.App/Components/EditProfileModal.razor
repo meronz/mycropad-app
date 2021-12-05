@@ -1,17 +1,38 @@
 <div class="flex flex-col h-full">
-    <form class="h-80">
-        <label
-            for="name"
-            class="text-sm font-medium block mb-2">
-            Profile name
-        </label>
-        <input 
-            type="text" 
-            id="name" 
-            class="bg-gray-100 dark:bg-gray-600 border border-gray-300 sm:text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5" 
-            placeholder="Profile"
-            @bind-value="@ProfileName"
-            required>
+    <form class="h-80 p-1">
+        <div class="my-4">
+            <label
+                for="name"
+                class="text-sm font-medium block mb-2">
+                Profile name
+            </label>
+            <input 
+                type="text" 
+                id="name" 
+                class="bg-gray-100 dark:bg-gray-600 border border-gray-300 sm:text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5" 
+                placeholder="Profile"
+                @bind-value="@ProfileName"
+                required>
+        </div>
+        <div class="my-4">
+            <label
+                for="name"
+                class="text-sm font-medium block mb-2">
+                Leds Pattern
+            </label>
+            <select
+                class="text-gray-600 dark:text-gray-400 bg-gray-100 dark:bg-gray-600 border border-gray-500 rounded-full hover:border-gray-400 h-10 pl-5 pr-10 focus:outline-none appearance-none"
+                value="@LedsPattern"
+                @onchange="LedsPatternChanged"
+                >
+                @foreach (var p in Enum.GetValues<LedsPattern>())
+                {
+                    <option value="@p" selected="@(p == LedsPattern)">
+                        @(Enum.GetName<LedsPattern>(p))
+                    </option>
+                }
+            </select>
+        </div>
     </form>
     <div class="p-2">
         <button 
@@ -29,15 +50,23 @@
 
 @code {
     [Parameter] public string ProfileName { get; set; }
+    [Parameter] public LedsPattern LedsPattern { get; set; }
     [CascadingParameter] BlazoredModalInstance ModalInstance { get; set; }
 
     async Task Save()
     {
-        await ModalInstance.CloseAsync(ModalResult.Ok(ProfileName));
+        await ModalInstance.CloseAsync(ModalResult.Ok(
+            new { ProfileName, LedsPattern } ));
     }
 
     async Task Cancel()
     {
         await ModalInstance.CancelAsync();
+    }
+
+    async Task LedsPatternChanged(ChangeEventArgs e)
+    {
+        LedsPattern = Enum.Parse<LedsPattern>(e.Value.ToString());
+        await InvokeAsync(StateHasChanged);
     }
 }

@@ -1,7 +1,10 @@
 using System;
+using System.Collections.Generic;
 using System.IO.Ports;
+using System.Linq;
 using System.Runtime.Versioning;
 using Mycropad.Lib.Device.Messages;
+using Mycropad.Lib.Enums;
 using Mycropad.Lib.Types;
 
 namespace Mycropad.Lib.Device
@@ -127,6 +130,44 @@ namespace Mycropad.Lib.Device
                 var (readData, readLength) = Read();
                 var (cmd, ok, _) = Response(readData, readLength);
                 if (cmd != CommandTypes.SwitchKeymap) throw new Exception($"Bad CommandType {cmd}");
+                if (!ok) throw new Exception($"{cmd} failed!");
+
+                return ok;
+            }
+        }
+
+        public bool LedsSwitchPattern(LedsPattern pattern)
+        {
+            lock (_deviceMutex)
+            {
+                var data = Command(CommandTypes.LedsSwitchPattern, new[] { (byte)pattern });
+                Write(data);
+
+                var (readData, readLength) = Read();
+                var (cmd, ok, _) = Response(readData, readLength);
+                if (cmd != CommandTypes.LedsSwitchPattern) throw new Exception($"Bad CommandType {cmd}");
+                if (!ok) throw new Exception($"{cmd} failed!");
+
+                return ok;
+            }
+        }
+
+        public bool LedsSetFixedMap(IEnumerable<LedColor> map)
+        {
+            if (map.Count() != 8)
+            {
+                throw new Exception("Map size != 8");
+            }
+
+            lock (_deviceMutex)
+            {
+                var mapBytes = map.SelectMany(x => BitConverter.GetBytes(x.ToUInt32())).ToArray();
+                var data = Command(CommandTypes.LedsSetFixedMap, mapBytes);
+                Write(data);
+
+                var (readData, readLength) = Read();
+                var (cmd, ok, _) = Response(readData, readLength);
+                if (cmd != CommandTypes.LedsSetFixedMap) throw new Exception($"Bad CommandType {cmd}");
                 if (!ok) throw new Exception($"{cmd} failed!");
 
                 return ok;

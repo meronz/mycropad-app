@@ -62,6 +62,7 @@
     { 
         var parameters = new ModalParameters();
         parameters.Add(nameof(EditProfileModal.ProfileName), "");
+        parameters.Add(nameof(EditProfileModal.LedsPattern), LedsPattern.Fixed);
         var options = new ModalOptions()
         {
             HideCloseButton = true,
@@ -73,12 +74,12 @@
         var result = await modal.Result;
         if(!result.Cancelled)
         {
-            var profileName = (string) result.Data;
             var profile = new KeymapProfile()
             {
                 Id = Guid.NewGuid(),
-                Name = profileName,
-                Keymap = ProfileManager.DefaultKeymap
+                Name = (result.Data as dynamic).ProfileName,
+                Keymap = ProfileManager.DefaultKeymap,
+                LedsPattern = (result.Data as dynamic).LedsPattern,
             };
             Profiles.AddProfile(profile);
             Profiles.SwitchProfile(profile.Id);
@@ -89,6 +90,7 @@
     {
         var parameters = new ModalParameters();
         parameters.Add(nameof(EditProfileModal.ProfileName), SelectedProfile.Name);
+        parameters.Add(nameof(EditProfileModal.LedsPattern), SelectedProfile.LedsPattern);
         var options = new ModalOptions()
         {
             HideCloseButton = true,
@@ -100,8 +102,8 @@
         var result = await modal.Result;
         if(!result.Cancelled)
         {
-            var profileName = (string) result.Data;
-            SelectedProfile.Name = profileName;
+            SelectedProfile.Name = (result.Data as dynamic).ProfileName;
+            SelectedProfile.LedsPattern = (result.Data as dynamic).LedsPattern;
             Profiles.UpdateProfile(SelectedProfile);
         }
     }

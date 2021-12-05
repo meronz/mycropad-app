@@ -85,12 +85,23 @@ namespace Mycropad.App.Services
             OnProfilesUpdated?.Invoke();
         }
 
-        public void SwitchProfile(Guid profileId)
+        public void SwitchProfile(Guid profileId, bool force = false)
         {
-            if (CurrentProfileId != profileId)
+            if (CurrentProfileId != profileId || force)
             {
                 var profile = GetProfile(profileId);
                 _deviceManager.SwitchKeymap(profile.Keymap);
+                if (profile.LedsPattern == LedsPattern.Fixed)
+                {
+                    if (profile.LedsMap == null || !profile.LedsMap.Any())
+                    {
+                        profile.LedsMap = DefaultLedsMap();
+                    }
+                    _deviceManager.LedsSetFixedMap(profile.LedsMap);
+                }
+
+                _deviceManager.LedsSwitchPattern(profile.LedsPattern);
+
                 CurrentProfileId = profileId;
 
                 if (profile.IsDefault)
@@ -111,8 +122,15 @@ namespace Mycropad.App.Services
                 Name = "Default",
                 IsDefault = true,
                 Keymap = DefaultKeymap,
+                LedsPattern = LedsPattern.Rainbow,
+                LedsMap = DefaultLedsMap()
             });
         }
+
+        private static LedColor[] DefaultLedsMap() => Enumerable.Range(0, 8)
+                .Select(x => new LedColor(0x82, 0x00, 0xAC))
+                .ToArray();
+
 
         private void LoadFromFile(string path)
         {
@@ -160,7 +178,7 @@ namespace Mycropad.App.Services
 
             if (profile.Id == CurrentProfileId)
             {
-                _deviceManager.SwitchKeymap(profile.Keymap);
+                SwitchProfile(profile.Id, true);
             }
         }
 

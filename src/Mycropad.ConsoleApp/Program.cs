@@ -1,7 +1,10 @@
 ﻿using System;
+using System.Collections.Generic;
+using System.Runtime.Versioning;
 using System.Threading.Tasks;
 using Mycropad.Lib;
 using Mycropad.Lib.Device;
+using Mycropad.Lib.Types;
 
 namespace Mycropad.ConsoleApp
 {
@@ -20,46 +23,36 @@ namespace Mycropad.ConsoleApp
         // MACRO SHIFT ALT 0
         // DELAY 1000";
 
+        [SupportedOSPlatform("linux")]
         public static async Task Main()
         {
+            var rand = new Random();
             await Task.Delay(0);
-            // var keymap = new List<Mapping>();
-            // var sp = new ScriptParser();
-            // foreach (var line in _script.Split(Environment.NewLine))
-            // {
-            //     keymap.Add(
-            //         sp.ParseScript(
-            //             line.Trim().Replace(Environment.NewLine, "")
-            //         )
-            //     );
-            // }
+            MycropadDevice_Serial.Instance.Start();
 
-            // Console.WriteLine(keymap.ToJSONString());
-            // return;
+            while (MycropadDevice_Serial.Instance.Connected == false)
+            {
+                Console.Write(".");
+                await Task.Delay(100);
+            }
 
+            MycropadDevice_Serial.Instance.LedsSwitchPattern(0);
 
-            // var keymap = new Keymap();
-            // keymap.KeyCodes[0].Add(new(HidKeys.KEY_0));
-            // keymap.KeyCodes[1].Add(new(HidKeys.KEY_1));
-            // keymap.KeyCodes[2].Add(new(HidKeys.KEY_2));
-            // keymap.KeyCodes[3].Add(new(HidKeys.KEY_3));
-            // keymap.KeyCodes[4].Add(new(HidKeys.KEY_4));
-            // keymap.KeyCodes[5].Add(new(HidKeys.KEY_5));
-            // keymap.KeyCodes[6].Add(new(HidKeys.KEY_6));
-            // keymap.KeyCodes[7].Add(new(HidKeys.KEY_7));
-            // keymap.KeyCodes[8].Add(new(HidKeys.KEY_8));
-            // keymap.KeyCodes[9].Add(new(HidKeys.KEY_9));
-            // keymap.KeyCodes[10].Add(new(HidKeys.KEY_A));
+            var map = new LedColor[8];
+            while (true)
+            {
+                for (int i = 0; i < 8; i++)
+                {
+                    map[i] = new LedColor(
+                        (byte)rand.Next(0, 0xFF),
+                        (byte)rand.Next(0, 0xFF),
+                        (byte)rand.Next(0, 0xFF)
+                    );
+                }
 
-            // MycropadDevice_Serial.Instance.Start();
-
-            // while (MycropadDevice_Serial.Instance.Connected == false)
-            // {
-            //     Console.Write(".");
-            //     await Task.Delay(100);
-            // }
-
-            // MycropadDevice_Serial.Instance.SetKeymap(keymap);
+                MycropadDevice_Serial.Instance.LedsSetFixedMap(map);
+                await Task.Delay(1000);
+            }
 
         }
     }
