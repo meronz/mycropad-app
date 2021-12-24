@@ -6,6 +6,7 @@ using System.Linq;
 using System.Text.Json;
 using Microsoft.Extensions.Logging;
 using Mycropad.App.Entity;
+using Mycropad.Lib;
 using Mycropad.Lib.Enums;
 using Mycropad.Lib.Types;
 
@@ -74,7 +75,13 @@ namespace Mycropad.App.Services
             try
             {
                 _logger.LogInformation("Load profiles");
-                var path = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, FileName);
+                var dirPath = Path.Combine(PlatformUtils.GetHomeDirectory(), "mycropad");
+                if (!Directory.Exists(dirPath))
+                {
+                    Directory.CreateDirectory(dirPath);
+                }
+
+                var path = Path.Combine(dirPath, FileName);
                 LoadFromFile(path);
             }
             catch (Exception ex)

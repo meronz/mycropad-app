@@ -71,5 +71,21 @@ namespace Mycropad.Lib
             }
             throw new Exception("Device not found");
         }
+
+        public static string GetHomeDirectory()
+        {
+            if (RuntimeInformation.IsOSPlatform(OSPlatform.Linux) ||
+                RuntimeInformation.IsOSPlatform(OSPlatform.OSX))
+            {
+                return Environment.GetEnvironmentVariable("HOME");
+            }
+
+            if (RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
+            {
+                return Environment.ExpandEnvironmentVariables("%HOMEDRIVE%%HOMEPATH%");
+            }
+
+            throw new NotSupportedException($"{RuntimeInformation.OSDescription} not supported");
+        }
     }
 }
