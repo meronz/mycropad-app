@@ -14,6 +14,10 @@ namespace Mycropad.App.Services
         private readonly IMycropadDevice _device;
         private readonly Thread _deviceThread;
         private bool _closing;
+        private bool _disconnectionEventRaised;
+
+        public Action OnDeviceConnected { get; set; }
+        public Action OnDeviceDisconnected { get; set; }
 
         public DeviceManager(ILogger<DeviceManager> logger, IMycropadDevice device)
         {
@@ -95,18 +99,24 @@ namespace Mycropad.App.Services
                     if (!_device.Connected)
                     {
                         _device.Start();
+                        OnDeviceConnected?.Invoke();
+                        _disconnectionEventRaised = false;
                     }
                     else
                     {
                         _device.Heartbeat();
+                        Thread.Sleep(2000);
                     }
                 }
-                catch (Exception ex)
+                catch (Exception)
                 {
-                    _logger.LogWarning(ex, "ConnectionCallback");
+                    if (!_disconnectionEventRaised)
+                    {
+                        OnDeviceDisconnected?.Invoke();
+                        _disconnectionEventRaised = true;
+                    }
+                    Thread.Sleep(100);
                 }
-
-                Thread.Sleep(2000);
             }
         }
 
@@ -115,11 +125,6 @@ namespace Mycropad.App.Services
             _closing = true;
             _deviceThread.Join();
             GC.SuppressFinalize(this);
-        }
-
-        internal void LedsSetFixedMap(object ledsMap)
-        {
-            throw new NotImplementedException();
         }
     }
 }

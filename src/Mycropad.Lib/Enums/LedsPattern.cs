@@ -2,7 +2,8 @@ namespace Mycropad.Lib.Enums
 {
     public enum LedsPattern : byte
     {
-        Fixed = 0,
-        Rainbow = 1
+        Off = 0,
+        Fixed = 1,
+        Rainbow = 2
     }
 }

@@ -4,7 +4,6 @@ using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Text.Json;
-using Microsoft.AspNetCore.Diagnostics;
 using Microsoft.Extensions.Logging;
 using Mycropad.App.Entity;
 using Mycropad.Lib.Enums;
@@ -12,7 +11,7 @@ using Mycropad.Lib.Types;
 
 namespace Mycropad.App.Services
 {
-    public class ProfileManager : IEnumerable<KeymapProfile>
+    public class ProfileManager : IEnumerable<KeymapProfile>, IDisposable
     {
         private readonly string FileName = "profiles.json";
         private readonly ILogger<ProfileManager> _logger;
@@ -27,7 +26,20 @@ namespace Mycropad.App.Services
         {
             _logger = logger;
             _deviceManager = deviceManager;
+            _deviceManager.OnDeviceConnected += DeviceConnected;
             Load();
+        }
+
+        private void DeviceConnected()
+        {
+            try
+            {
+                SwitchProfile(CurrentProfileId, true);
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "ProfileManager.DeviceConnected");
+            }
         }
 
         public Guid CurrentProfileId { get; private set; }
@@ -191,5 +203,11 @@ namespace Mycropad.App.Services
             _profiles
                 .OrderBy(x => !x.IsDefault)
                 .GetEnumerator();
+
+        public void Dispose()
+        {
+            _deviceManager.OnDeviceConnected += DeviceConnected;
+            GC.SuppressFinalize(this);
+        }
     }
 }
