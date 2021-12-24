@@ -36,6 +36,8 @@ namespace Mycropad.Lib.Macro
             PAGE_DOWN = HidKeys.KEY_PAGEDOWN,
             END = HidKeys.KEY_END,
             DEL = HidKeys.KEY_DELETE,
+
+            // F-keys
             F1 = HidKeys.KEY_F1,
             F2 = HidKeys.KEY_F2,
             F3 = HidKeys.KEY_F3,
@@ -60,6 +62,8 @@ namespace Mycropad.Lib.Macro
             F22 = HidKeys.KEY_F22,
             F23 = HidKeys.KEY_F23,
             F24 = HidKeys.KEY_F24,
+
+            // Letter Keys
             A = HidKeys.KEY_A,
             B = HidKeys.KEY_B,
             C = HidKeys.KEY_C,
@@ -86,6 +90,40 @@ namespace Mycropad.Lib.Macro
             X = HidKeys.KEY_X,
             Y = HidKeys.KEY_Y,
             Z = HidKeys.KEY_Z,
+
+            // Numbers
+            _1 = HidKeys.KEY_1,
+            _2 = HidKeys.KEY_2,
+            _3 = HidKeys.KEY_3,
+            _4 = HidKeys.KEY_4,
+            _5 = HidKeys.KEY_5,
+            _6 = HidKeys.KEY_6,
+            _7 = HidKeys.KEY_7,
+            _8 = HidKeys.KEY_8,
+            _9 = HidKeys.KEY_9,
+            _0 = HidKeys.KEY_0,
+
+            // Media Keys
+            MEDIA_PLAYPAUSE = HidKeys.KEY_MEDIA_PLAYPAUSE,
+            MEDIA_STOPCD = HidKeys.KEY_MEDIA_STOPCD,
+            MEDIA_PREVIOUSSONG = HidKeys.KEY_MEDIA_PREVIOUSSONG,
+            MEDIA_NEXTSONG = HidKeys.KEY_MEDIA_NEXTSONG,
+            MEDIA_EJECTCD = HidKeys.KEY_MEDIA_EJECTCD,
+            MEDIA_VOLUMEUP = HidKeys.KEY_MEDIA_VOLUMEUP,
+            MEDIA_VOLUMEDOWN = HidKeys.KEY_MEDIA_VOLUMEDOWN,
+            MEDIA_MUTE = HidKeys.KEY_MEDIA_MUTE,
+            MEDIA_WWW = HidKeys.KEY_MEDIA_WWW,
+            MEDIA_BACK = HidKeys.KEY_MEDIA_BACK,
+            MEDIA_FORWARD = HidKeys.KEY_MEDIA_FORWARD,
+            MEDIA_STOP = HidKeys.KEY_MEDIA_STOP,
+            MEDIA_FIND = HidKeys.KEY_MEDIA_FIND,
+            MEDIA_SCROLLUP = HidKeys.KEY_MEDIA_SCROLLUP,
+            MEDIA_SCROLLDOWN = HidKeys.KEY_MEDIA_SCROLLDOWN,
+            MEDIA_EDIT = HidKeys.KEY_MEDIA_EDIT,
+            MEDIA_SLEEP = HidKeys.KEY_MEDIA_SLEEP,
+            MEDIA_COFFEE = HidKeys.KEY_MEDIA_COFFEE,
+            MEDIA_REFRESH = HidKeys.KEY_MEDIA_REFRESH,
+            MEDIA_CALC = HidKeys.KEY_MEDIA_CALC,
         };
 
         public static KeyCode ParseKeyCode(this string macro)
