@@ -6,15 +6,20 @@
                 class="text-sm font-medium block mb-2">
                 Macro
             </label>
-            <input 
-                type="text" 
-                id="macro" 
-                class="bg-gray-100 dark:bg-gray-600 border border-gray-300 sm:text-sm rounded-lg block w-full p-2" 
-                placeholder="Write the combination you want"
-                @bind-value="@KeyMacro"
-                @onkeydown="@KeyPress"
-                required>
-                @* @onkeydown:preventDefault *@
+             <BlazoredTypeahead 
+                SearchMethod="@GetAvailableKeys"
+                @bind-Values="SelectedKeysString"
+                Debounce="10"
+                required
+                id="macro"
+                placeholder="Start typing keys...">
+                <SelectedTemplate Context="value">
+                    @value
+                </SelectedTemplate>
+                <ResultTemplate Context="value">
+                    @value
+                </ResultTemplate>
+            </BlazoredTypeahead>
             <span class="flex items-center font-medium tracking-wide text-red-500 text-xs mt-1 ml-1">
                 @_validationMessage
             </span>
@@ -47,20 +52,41 @@
 
 @code {
     [Parameter] public Keys Key { get; set; }
-    [Parameter] public string KeyMacro { get; set; }
+    [Parameter] public KeyCode KeyMacro { get; set; }
     [Parameter] public LedColor LedColor { get; set; }
     [CascadingParameter] BlazoredModalInstance ModalInstance { get; set; }
+
+    private IList<string> SelectedKeysString { get; set; } = new List<string>();
 
     private string _validationMessage = "";
     private string _colorString => $"#{LedColor.R:X2}{LedColor.G:X2}{LedColor.B:X2}";
 
+    protected override async Task OnParametersSetAsync()
+    {
+        SelectedKeysString.Clear();
+        (SelectedKeysString as List<string>).AddRange(KeyMacro.ToMacroStrings());
+        await InvokeAsync(StateHasChanged);
+    }
+    
     async Task Save()
     {
-        await ModalInstance.CloseAsync(ModalResult.Ok(
-            new { 
-                KeyMacro = KeyMacro.ParseKeyCode(),
-                LedColor = LedColor
-            }));
+        try
+        {
+            var keyMacro = string.Join('+', SelectedKeysString).ParseKeyCode();
+            _validationMessage = "";
+
+            await ModalInstance.CloseAsync(ModalResult.Ok(
+                new { 
+                    KeyMacro = keyMacro,
+                    LedColor = LedColor
+                }));
+        }
+        catch
+        {
+            _validationMessage = "Invalid macro!";
+        }
+
+        await InvokeAsync(StateHasChanged);
     }
 
     async Task Cancel()
@@ -68,19 +94,16 @@
         await ModalInstance.CancelAsync();
     }
 
-    private void KeyPress(KeyboardEventArgs e)
+    private async Task<IEnumerable<string>> GetAvailableKeys(string searchText)
     {
-        if(string.IsNullOrEmpty(KeyMacro))
-            return;
-        try
-        {
-            KeyMacro.ParseKeyCode();
-            _validationMessage = "";
-        }
-        catch
-        {
-            _validationMessage = "Invalid macro!";
-        }
+        var result = Enum.GetNames<MacroExtensions.ModifierTokens>()
+            .Concat(Enum.GetNames<MacroExtensions.KeyTokens>())
+            .Select(x => x.ToUpperInvariant())
+            .Where(x => !SelectedKeysString.Contains(x.ToUpperInvariant()))
+            .Where(x => x.Contains(searchText.ToUpperInvariant()))
+            .ToArray();
+
+        return await Task.FromResult(result);
     }
 
     private async Task ColorChanged(ChangeEventArgs e)
@@ -95,35 +118,4 @@
         await InvokeAsync(StateHasChanged);
     }
 
-
-    private void ParseKeyboardEventArgs(KeyboardEventArgs e)
-    {
-        var newValue = "";
-        Console.WriteLine($"{e} {e.Code} {e.AltKey} {e.CtrlKey} {e.MetaKey} {e.ShiftKey}");
-
-        if(e.CtrlKey)
-        {
-            newValue = "CTRL + ";
-        }
-
-        if(e.AltKey)
-        {
-            newValue += "ALT + ";
-        }
-
-        if(e.ShiftKey)
-        {
-            newValue += "SHIFT + ";
-        }
-
-        if(e.MetaKey)
-        {
-            newValue += "META + ";
-        }
-
-        newValue += e.Key;
-
-        KeyMacro = newValue;
-        StateHasChanged();
-    }
 }

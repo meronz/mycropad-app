@@ -79,7 +79,7 @@
     {
         var parameters = new ModalParameters();
         parameters.Add(nameof(ButtonModal.Key), key);
-        parameters.Add(nameof(ButtonModal.KeyMacro), _keycodesMap[key]?.First().ToMacroString());
+        parameters.Add(nameof(ButtonModal.KeyMacro), _keycodesMap[key]?.First()); 
         parameters.Add(nameof(ButtonModal.LedColor), _ledsMap.GetValueOrDefault(key));
 
         var options = new ModalOptions()

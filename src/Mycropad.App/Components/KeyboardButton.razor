@@ -5,7 +5,7 @@
     <span class="text-md text-center">
     @if(KeyCodes.Count() == 1)
     {
-        @KeyCodes.First().ToMacroString()
+        @string.Join('+', KeyCodes.First().ToMacroStrings())
     }
     else
     {

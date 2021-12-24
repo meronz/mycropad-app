@@ -1,4 +1,5 @@
 using System;
+using System.Collections.Generic;
 using System.Linq;
 using Mycropad.Lib.Enums;
 using Mycropad.Lib.Types;
@@ -114,20 +115,20 @@ namespace Mycropad.Lib.Macro
             return keyCode;
         }
 
-        public static string ToMacroString(this KeyCode keyCode)
+        public static IEnumerable<string> ToMacroStrings(this KeyCode keyCode)
         {
-            var stringResult = "";
+            var result = new List<string>();
             foreach (var mod in Enum.GetValues<ModifierTokens>())
             {
                 if ((keyCode.Modifiers & (byte)mod) == (byte)mod)
                 {
-                    stringResult += $"{mod} + ";
+                    result.Add(mod.ToString());
                 }
             }
 
-            stringResult += ((KeyTokens)keyCode.Key).ToString();
+            result.Add(((KeyTokens)keyCode.Key).ToString());
 
-            return stringResult;
+            return result;
         }
     }
 }
