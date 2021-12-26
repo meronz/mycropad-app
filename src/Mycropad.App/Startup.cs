@@ -77,7 +77,8 @@ namespace Mycropad.App
                 AutoHideMenuBar = true,
                 Resizable = false,
                 Maximizable = false,
-                Frame = false
+                Fullscreenable = false,
+                Frame = false,
             });
 
             await browserWindow.WebContents.Session.ClearCacheAsync();
@@ -96,7 +97,7 @@ namespace Mycropad.App
                 new MenuItem
                 {
                     Label = "Show",
-                    Click = () => window.Maximize()
+                    Click = () => window.Show()
                 },
                 new MenuItem
                 {
