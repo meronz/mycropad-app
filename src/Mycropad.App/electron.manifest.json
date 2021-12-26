@@ -5,7 +5,7 @@
   },
   "name": "Mycropad",
   "author": "",
-  "singleInstance": false,
+  "singleInstance": true,
   "environment": "Production",
   "build": {
     "appId": "com.Mycropad.App.app",
