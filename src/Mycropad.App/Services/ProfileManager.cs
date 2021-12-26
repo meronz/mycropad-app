@@ -161,7 +161,13 @@ namespace Mycropad.App.Services
         public void Save()
         {
             _logger.LogInformation("Save profiles");
-            var path = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, FileName);
+            var dirPath = Path.Combine(PlatformUtils.GetHomeDirectory(), "mycropad");
+            if (!Directory.Exists(dirPath))
+            {
+                Directory.CreateDirectory(dirPath);
+            }
+
+            var path = Path.Combine(dirPath, FileName);
             var json = JsonSerializer.Serialize(_profiles, _jsonOptions);
             File.WriteAllText(path, json);
         }
