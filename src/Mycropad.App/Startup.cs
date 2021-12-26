@@ -63,8 +63,8 @@ namespace Mycropad.App
 
 
             // Start DeviceManager
-            app.ApplicationServices.GetRequiredService<DeviceManager>();
-            app.ApplicationServices.GetService<ProfileManager>();
+            app.ApplicationServices.GetRequiredService<ProfileManager>();
+            app.ApplicationServices.GetRequiredService<DeviceManager>().Start();
         }
 
         public async void ElectronBootstrap()

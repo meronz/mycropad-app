@@ -24,7 +24,6 @@ namespace Mycropad.App.Services
             _logger = logger;
             _device = device;
             _deviceThread = new Thread(DeviceThread);
-            _deviceThread.Start();
         }
 
         public void ResetKeymap()
@@ -88,6 +87,12 @@ namespace Mycropad.App.Services
                 _logger.LogError("LedsSetFixedMap failed");
             }
             _logger.LogInformation("LedsSetFixedMap done");
+        }
+
+        public void Start()
+        {
+            _closing = false;
+            _deviceThread.Start();
         }
 
         private void DeviceThread(object state)
