@@ -46,7 +46,7 @@ jobs:
       - name: Create the app package
         shell: bash
         working-directory: src/Mycropad.App
-        run: electronize build /target $env:target
+        run: electronize build /target $target
         env:
           target: ${{ matrix.target }}
 
