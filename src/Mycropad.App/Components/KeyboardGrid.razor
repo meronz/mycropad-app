@@ -79,7 +79,7 @@
     {
         var parameters = new ModalParameters();
         parameters.Add(nameof(ButtonModal.Key), key);
-        parameters.Add(nameof(ButtonModal.KeyMacro), _keycodesMap[key]?.First()); 
+        parameters.Add(nameof(ButtonModal.KeyCodes), _keycodesMap[key].ToList()); // Make copy
         parameters.Add(nameof(ButtonModal.LedColor), _ledsMap.GetValueOrDefault(key));
 
         var options = new ModalOptions()
@@ -93,17 +93,17 @@
         if(!result.Cancelled)
         {
             await SaveNewKey(key,
-                (result.Data as dynamic).KeyMacro,
+                (result.Data as dynamic).KeyCodes,
                 (result.Data as dynamic).LedColor);
         }
     }
 
-    private async Task SaveNewKey(Keys key, KeyCode keycode, LedColor ledColor)
+    private async Task SaveNewKey(Keys key, KeyCode[] keycodes, LedColor ledColor)
     {
         await Task.Delay(0);
         var keymap = Profile.Keymap.For(key);
         keymap.Clear();
-        keymap.Add(keycode);
+        keymap.AddRange(keycodes);
 
         if(key < Keys.RotCW)
         {
