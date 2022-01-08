@@ -3,6 +3,9 @@ name: App Build
 on:
   push:
     branches: [main]
+    paths:
+      - src/**
+      - .github/workflows/app-build.yaml
 
 env:
   DOTNET_CLI_TELEMETRY_OPTOUT: true
