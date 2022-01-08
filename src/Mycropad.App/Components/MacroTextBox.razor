@@ -1,0 +1,70 @@
+<div class="w-full">
+    <BlazoredTypeahead
+        id=Id
+        SearchMethod="@GetAvailableKeys"
+        @bind-Values="SelectedKeysString"
+        Debounce="10"
+        placeholder="Start typing keys...">
+        <SelectedTemplate Context="value">
+            @value
+        </SelectedTemplate>
+        <ResultTemplate Context="value">
+            @value
+        </ResultTemplate>
+    </BlazoredTypeahead>
+    <span class="flex items-center font-medium tracking-wide text-red-500 text-xs mt-1 ml-1">
+        @_validationMessage
+    </span>
+</div>
+
+@code {
+    [Parameter] public string Id { get; set; }
+    [Parameter] public KeyCode? KeyCode { get; set; }
+    [Parameter] public Action<KeyCode> KeyCodeChanged { get; set; }
+
+    private string _validationMessage = "";
+    private IList<string> _selectedKeysString = new List<string>();
+    private IList<string> SelectedKeysString
+    { 
+        get => _selectedKeysString; 
+        set
+        {
+            try
+            {
+                var keycode = string.Join('+', value).ParseKeyCode();
+                KeyCodeChanged?.Invoke(keycode);
+                _validationMessage = "";
+                _selectedKeysString = value;
+            }
+            catch
+            {
+                _validationMessage = "Invalid macro!";
+                KeyCodeChanged?.Invoke(null);
+            }
+
+            _ = InvokeAsync(StateHasChanged);
+        }
+    }
+
+    protected override async Task OnParametersSetAsync()
+    {
+        SelectedKeysString.Clear();
+        if(KeyCode != null)
+        {
+            (SelectedKeysString as List<string>).AddRange(KeyCode.ToMacroStrings());
+        }
+        await InvokeAsync(StateHasChanged);
+    }
+
+    private async Task<IEnumerable<string>> GetAvailableKeys(string searchText)
+    {
+        var result = Enum.GetNames<MacroExtensions.ModifierTokens>()
+            .Concat(Enum.GetNames<MacroExtensions.KeyTokens>())
+            .Select(x => x.ToUpperInvariant())
+            .Where(x => !SelectedKeysString.Contains(x.ToUpperInvariant()))
+            .Where(x => x.Contains(searchText.ToUpperInvariant()))
+            .ToArray();
+
+        return await Task.FromResult(result);
+    }
+}

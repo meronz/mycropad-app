@@ -6,23 +6,44 @@
                 class="text-sm font-medium block mb-2">
                 Macro
             </label>
-             <BlazoredTypeahead 
-                SearchMethod="@GetAvailableKeys"
-                @bind-Values="SelectedKeysString"
-                Debounce="10"
-                required
-                id="macro"
-                placeholder="Start typing keys...">
-                <SelectedTemplate Context="value">
-                    @value
-                </SelectedTemplate>
-                <ResultTemplate Context="value">
-                    @value
-                </ResultTemplate>
-            </BlazoredTypeahead>
-            <span class="flex items-center font-medium tracking-wide text-red-500 text-xs mt-1 ml-1">
-                @_validationMessage
-            </span>
+            
+            @for (int j = 0; j < KeyCodes?.Count; j++)
+            {
+                int i = j;
+                <div class="flex flex-row w-full">
+                    <MacroTextBox
+                        Id="i"
+                        KeyCode="KeyCodes[i]"
+                        KeyCodeChanged="async (kc) => await KeyCodeChanged(i, kc)"
+                    />
+                    <button
+                        id=@($"remove-btn-{i}")
+                        class="h-10 w-10 ml-2 p-2"
+                        @onclick="() => KeyCodes.RemoveAt(i)"
+                        type="button"
+                    >
+                        <svg viewBox="0 0 24 24">
+                            <path fill="currentColor" d="M19,4H15.5L14.5,3H9.5L8.5,4H5V6H19M6,19A2,2 0 0,0 8,21H16A2,2 0 0,0 18,19V7H6V19Z" />
+                        </svg>
+                    </button>
+                </div>
+            }
+            <div class="flex flex-row w-full items-end">
+            @{
+                var btnClass = "h-10 w-10 ml-2 p-2 " + (_isAddEnabled ? "" : "text-gray-600 dark:text-gray-400");
+                <button
+                    id="add"
+                    class="@btnClass"
+                    @onclick="() => KeyCodes.Add(null)"
+                    disabled="@(!_isAddEnabled)"
+                    type="button"
+                >
+                    <svg viewBox="0 0 24 24">
+                        <path fill="currentColor" d="M19,13H13V19H11V13H5V11H11V5H13V11H19V13Z" />
+                    </svg>
+                </button>
+            }
+            </div>
         </div>
         @if(LedColor != null)
         {
@@ -37,12 +58,15 @@
         }
     </form>
     <div class="p-2">
-        <button 
+        <button
+            id="save-btn"
             @onclick="Save"
-            class="bg-blue-400 hover:bg-blue-600 text-white font-bold py-2 px-4 rounded-full">
+            disabled="@(!_saveEnabled)"
+            class="@_saveClass">
             Save
         </button>
-        <button 
+        <button
+            id="cancel-btn"
             @onclick="Cancel"
             class="bg-transparent hover:bg-gray-200 text-gray-400 hover:text-gray-600 font-semibold py-2 px-4 rounded-full">
             Cancel
@@ -52,58 +76,43 @@
 
 @code {
     [Parameter] public Keys Key { get; set; }
-    [Parameter] public KeyCode KeyMacro { get; set; }
+    [Parameter] public List<KeyCode> KeyCodes { get; set; }
     [Parameter] public LedColor LedColor { get; set; }
     [CascadingParameter] BlazoredModalInstance ModalInstance { get; set; }
 
-    private IList<string> SelectedKeysString { get; set; } = new List<string>();
-
-    private string _validationMessage = "";
     private string _colorString => $"#{LedColor.R:X2}{LedColor.G:X2}{LedColor.B:X2}";
+    private bool _isAddEnabled => KeyCodes.Count == 0 || KeyCodes.Last() != null;
+    private bool _saveEnabled => KeyCodes.All(_ => _ != null);
+    private string _saveClass => "text-white font-bold py-2 px-4 rounded-full " + 
+        (_saveEnabled ? "bg-blue-400 hover:bg-blue-600" : "bg-grey-400");
 
     protected override async Task OnParametersSetAsync()
     {
-        SelectedKeysString.Clear();
-        (SelectedKeysString as List<string>).AddRange(KeyMacro.ToMacroStrings());
         await InvokeAsync(StateHasChanged);
     }
-    
+
     async Task Save()
     {
-        try
-        {
-            var keyMacro = string.Join('+', SelectedKeysString).ParseKeyCode();
-            _validationMessage = "";
-
-            await ModalInstance.CloseAsync(ModalResult.Ok(
-                new { 
-                    KeyMacro = keyMacro,
-                    LedColor = LedColor
-                }));
-        }
-        catch
-        {
-            _validationMessage = "Invalid macro!";
-        }
+        await ModalInstance.CloseAsync(ModalResult.Ok(
+            new { 
+                KeyCodes = KeyCodes.Select(x => x.SanitizeModifiers()).ToArray(),
+                LedColor = LedColor
+            }));
 
         await InvokeAsync(StateHasChanged);
     }
+
+
 
     async Task Cancel()
     {
         await ModalInstance.CancelAsync();
     }
-
-    private async Task<IEnumerable<string>> GetAvailableKeys(string searchText)
+    
+    private async Task KeyCodeChanged(int index, KeyCode keyCode)
     {
-        var result = Enum.GetNames<MacroExtensions.ModifierTokens>()
-            .Concat(Enum.GetNames<MacroExtensions.KeyTokens>())
-            .Select(x => x.ToUpperInvariant())
-            .Where(x => !SelectedKeysString.Contains(x.ToUpperInvariant()))
-            .Where(x => x.Contains(searchText.ToUpperInvariant()))
-            .ToArray();
-
-        return await Task.FromResult(result);
+        KeyCodes[index] = keyCode;
+        await InvokeAsync(StateHasChanged);
     }
 
     private async Task ColorChanged(ChangeEventArgs e)
@@ -117,5 +126,4 @@
 
         await InvokeAsync(StateHasChanged);
     }
-
 }

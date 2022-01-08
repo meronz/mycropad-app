@@ -103,6 +103,16 @@ namespace Mycropad.Lib.Macro
             _9 = HidKeys.KEY_9,
             _0 = HidKeys.KEY_0,
 
+            // Modifier keys
+            KEY_ALT = HidKeys.KEY_LEFTALT,
+            KEY_ALT_R = HidKeys.KEY_RIGHTALT,
+            KEY_SHIFT = HidKeys.KEY_LEFTSHIFT,
+            KEY_SHIFT_R = HidKeys.KEY_RIGHTSHIFT,
+            KEY_META = HidKeys.KEY_LEFTMETA,
+            KEY_META_R = HidKeys.KEY_RIGHTMETA,
+            KEY_CTRL = HidKeys.KEY_LEFTCTRL,
+            KEY_CTRL_R = HidKeys.KEY_RIGHTCTRL,
+
             // Media Keys
             MEDIA_PLAYPAUSE = HidKeys.KEY_MEDIA_PLAYPAUSE,
             MEDIA_STOPCD = HidKeys.KEY_MEDIA_STOPCD,
@@ -164,9 +174,36 @@ namespace Mycropad.Lib.Macro
                 }
             }
 
-            result.Add(((KeyTokens)keyCode.Key).ToString());
+            if (keyCode.Key != 0)
+            {
+                result.Add(((KeyTokens)keyCode.Key).ToString());
+            }
 
             return result;
+        }
+
+        public static KeyCode SanitizeModifiers(this KeyCode keyCode)
+        {
+            if (keyCode.Modifiers != 0 && keyCode.Key == 0)
+            {
+                // Turn the modifier key into a keypress
+                KeyTokens? key = (ModifierTokens)keyCode.Modifiers switch
+                {
+                    ModifierTokens.ALT => KeyTokens.KEY_ALT,
+                    ModifierTokens.ALT_R => KeyTokens.KEY_ALT_R,
+                    ModifierTokens.SHIFT => KeyTokens.KEY_SHIFT,
+                    ModifierTokens.SHIFT_R => KeyTokens.KEY_SHIFT_R,
+                    ModifierTokens.META => KeyTokens.KEY_META,
+                    ModifierTokens.META_R => KeyTokens.KEY_META_R,
+                    ModifierTokens.CTRL => KeyTokens.KEY_CTRL,
+                    ModifierTokens.CTRL_R => KeyTokens.KEY_CTRL_R,
+                    _ => null
+                };
+
+                keyCode.Key = (byte)(key ?? 0);
+                keyCode.Modifiers = 0;
+            }
+            return keyCode;
         }
     }
 }
