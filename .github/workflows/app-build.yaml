@@ -43,11 +43,19 @@ jobs:
       - name: Install npm dependencies
         run: cd src/Mycropad.App && npm install
 
-      - name: Create the app package
+      - name: Linux build
+        if: startsWith(matrix.os, 'ubuntu')
         working-directory: src/Mycropad.App
-        run: electronize build /target $target
+        run: electronize build /target $ELECTRON_TARGET
         env:
-          target: ${{ matrix.target }}
+          ELECTRON_TARGET: ${{ matrix.target }}
+
+      - name: Windows build
+        if: startsWith(matrix.os, 'windows')
+        working-directory: src/Mycropad.App
+        run: electronize build /target $Env:ELECTRON_TARGET
+        env:
+          ELECTRON_TARGET: ${{ matrix.target }}
 
       - name: Archive Linux artifacts
         uses: actions/upload-artifact@v2
