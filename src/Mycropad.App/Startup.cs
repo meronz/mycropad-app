@@ -10,6 +10,8 @@ using Microsoft.Extensions.Hosting;
 using Mycropad.App.Services;
 using Mycropad.Lib.Device;
 
+#pragma warning disable CA1416
+
 namespace Mycropad.App
 {
     public class Startup
@@ -119,3 +121,5 @@ namespace Mycropad.App
         }
     }
 }
+
+#pragma warning restore CA1416

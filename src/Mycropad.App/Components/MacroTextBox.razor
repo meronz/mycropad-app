@@ -19,7 +19,7 @@
 
 @code {
     [Parameter] public string Id { get; set; }
-    [Parameter] public KeyCode? KeyCode { get; set; }
+    [Parameter] public KeyCode KeyCode { get; set; }
     [Parameter] public Action<KeyCode> KeyCodeChanged { get; set; }
 
     private string _validationMessage = "";
