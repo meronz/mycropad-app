@@ -74,8 +74,17 @@ namespace Mycropad.Lib
 
         public static string GetHomeDirectory()
         {
-            if (RuntimeInformation.IsOSPlatform(OSPlatform.Linux) ||
-                RuntimeInformation.IsOSPlatform(OSPlatform.OSX))
+            if (RuntimeInformation.IsOSPlatform(OSPlatform.Linux))
+            {
+                var snapDataDir = Environment.GetEnvironmentVariable("SNAP_USER_COMMON");
+                if (!string.IsNullOrEmpty(snapDataDir))
+                {
+                    return snapDataDir;
+                }
+                return Environment.GetEnvironmentVariable("HOME");
+            }
+
+            if (RuntimeInformation.IsOSPlatform(OSPlatform.OSX))
             {
                 return Environment.GetEnvironmentVariable("HOME");
             }
