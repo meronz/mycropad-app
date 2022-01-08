@@ -1,0 +1,63 @@
+name: App Build
+
+on:
+  push:
+    branches: [main]
+
+env:
+  DOTNET_CLI_TELEMETRY_OPTOUT: true
+  DOTNET_SKIP_FIRST_TIME_EXPERIENCE: true
+  DOTNET_GENERATE_ASPNET_CERTIFICATE: false
+
+jobs:
+  build:
+    runs-on: ${{ matrix.os }}
+
+    strategy:
+      fail-fast: false
+      matrix:
+        configuration: [Release]
+        include:
+          - os: ubuntu-20.04
+            target: linux
+          # - os: windows-latest
+          #   target: win
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v2
+        with:
+          fetch-depth: 0
+
+      - name: Install .NET Core
+        uses: actions/setup-dotnet@v1
+        with:
+          dotnet-version: 5.0.x
+
+      - name: Install ElectronNET.CLI
+        run: |
+          dotnet tool install ElectronNET.CLI -g
+
+      - uses: actions/setup-node@v2
+        with:
+          node-version: '14'
+
+      - name: Install npm dependencies
+        run: cd src/Mycropad.App && npm install
+
+      - name: Create the app package
+        run: |
+          cd src/Mycropad.App
+          /root/.dotnet/tools/electronize build /target $env:target
+        env:
+          target: ${{ matrix.target }}
+
+      - name: Archive Linux artifacts
+        uses: actions/upload-artifact@v2
+        if: startsWith(matrix.os, 'ubuntu')
+        with:
+          name: build
+          path: |
+            src/Mycropad.App/bin/Desktop/linux-unpacked/
+            src/Mycropad.App/bin/Desktop/Mycropad-1.0.0.AppImage
+            src/Mycropad.App/bin/Desktop/mycropad_1.0.0_amd64.snap
