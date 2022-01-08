@@ -44,7 +44,6 @@ jobs:
         run: cd src/Mycropad.App && npm install
 
       - name: Create the app package
-        shell: bash
         working-directory: src/Mycropad.App
         run: electronize build /target $target
         env:
