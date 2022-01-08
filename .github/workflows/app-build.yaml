@@ -48,7 +48,7 @@ jobs:
       - name: Create the app package
         run: |
           cd src/Mycropad.App
-          /root/.dotnet/tools/electronize build /target $env:target
+          $DOTNET_ROOT/tools/electronize build /target $env:target
         env:
           target: ${{ matrix.target }}
 
