@@ -34,8 +34,7 @@ jobs:
           dotnet-version: 5.0.x
 
       - name: Install ElectronNET.CLI
-        run: |
-          dotnet tool install ElectronNET.CLI -g
+        run: dotnet tool install ElectronNET.CLI -g
 
       - uses: actions/setup-node@v2
         with:
@@ -45,9 +44,9 @@ jobs:
         run: cd src/Mycropad.App && npm install
 
       - name: Create the app package
-        run: |
-          cd src/Mycropad.App
-          $DOTNET_ROOT/tools/electronize build /target $env:target
+        shell: bash
+        working-directory: src/Mycropad.App
+        run: $DOTNET_ROOT/tools/electronize build /target $env:target
         env:
           target: ${{ matrix.target }}
 
