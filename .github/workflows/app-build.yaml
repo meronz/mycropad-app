@@ -16,12 +16,11 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        configuration: [Release]
         include:
           - os: ubuntu-20.04
             target: linux
-          # - os: windows-latest
-          #   target: win
+          - os: windows-latest
+            target: win
 
     steps:
       - name: Checkout
@@ -56,8 +55,22 @@ jobs:
         uses: actions/upload-artifact@v2
         if: startsWith(matrix.os, 'ubuntu')
         with:
-          name: build
+          name: snap
+          path: |
+            src/Mycropad.App/bin/Desktop/*.snap
+
+      - name: Archive Linux artifacts
+        uses: actions/upload-artifact@v2
+        if: startsWith(matrix.os, 'ubuntu')
+        with:
+          name: build-linux
           path: |
             src/Mycropad.App/bin/Desktop/linux-unpacked/
-            src/Mycropad.App/bin/Desktop/Mycropad-1.0.0.AppImage
-            src/Mycropad.App/bin/Desktop/mycropad_1.0.0_amd64.snap
+
+      - name: Archive Windows artifacts
+        uses: actions/upload-artifact@v2
+        if: startsWith(matrix.os, 'windows')
+        with:
+          name: build-win
+          path: |
+            src/Mycropad.App/bin/Desktop/win-unpacked/
