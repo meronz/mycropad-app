@@ -57,7 +57,7 @@ jobs:
         env:
           ELECTRON_TARGET: ${{ matrix.target }}
 
-      - name: Archive Linux artifacts
+      - name: Archive Snap
         uses: actions/upload-artifact@v2
         if: startsWith(matrix.os, 'ubuntu')
         with:
@@ -65,18 +65,10 @@ jobs:
           path: |
             src/Mycropad.App/bin/Desktop/*.snap
 
-      - name: Archive Linux artifacts
-        uses: actions/upload-artifact@v2
-        if: startsWith(matrix.os, 'ubuntu')
-        with:
-          name: build-linux
-          path: |
-            src/Mycropad.App/bin/Desktop/linux-unpacked/
-
-      - name: Archive Windows artifacts
+      - name: Archive Windows setup
         uses: actions/upload-artifact@v2
         if: startsWith(matrix.os, 'windows')
         with:
-          name: build-win
+          name: Windows setup
           path: |
-            src/Mycropad.App/bin/Desktop/win-unpacked/
+            src/Mycropad.App/bin/Desktop/*Setup*.exe
