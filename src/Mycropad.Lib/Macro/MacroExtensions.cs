@@ -36,6 +36,7 @@ namespace Mycropad.Lib.Macro
             PAGE_DOWN = HidKeys.KEY_PAGEDOWN,
             END = HidKeys.KEY_END,
             DEL = HidKeys.KEY_DELETE,
+            PRINTSCR = HidKeys.KEY_SYSRQ,
 
             // F-keys
             F1 = HidKeys.KEY_F1,
