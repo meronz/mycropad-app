@@ -44,7 +44,7 @@
     [CascadingParameter] public IModalService Modal { get; set; }
 
     private Guid _selectedProfileId;
-    private KeymapProfile SelectedProfile => Profiles.GetProfile(Profiles.CurrentProfileId);
+    private KeyProfile SelectedProfile => Profiles.GetProfile(Profiles.CurrentProfileId);
 
     protected override void OnInitialized()
     {
@@ -74,11 +74,11 @@
         var result = await modal.Result;
         if(!result.Cancelled)
         {
-            var profile = new KeymapProfile()
+            var profile = new KeyProfile()
             {
                 Id = Guid.NewGuid(),
                 Name = (result.Data as dynamic).ProfileName,
-                DeviceKeymap = ProfileManager.DefaultDeviceKeymap,
+                Keymap = ProfileManager.DefaultKeymap,
                 LedsPattern = (result.Data as dynamic).LedsPattern,
             };
             Profiles.AddProfile(profile);

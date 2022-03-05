@@ -2,7 +2,6 @@ namespace Mycropad.Lib.Enums
 {
     public enum Keys
     {
-        None = 0,
         Key1,
         Key2,
         Key3,

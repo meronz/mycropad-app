@@ -1,24 +1,17 @@
 ﻿<div 
     style="@_buttonStyle"
     class="transition duration-250 ease-in-out bg-white dark:bg-gray-600 hover:bg-blue-300 text-gray-400 hover:text-white shadow-lg rounded-3xl flex justify-center items-center w-32 h-32 m-2 p-2"
-    @onclick='() => Clicked?.Invoke(Key)'>
-    <span class="text-md text-center">@KeyName</span>
+    @onclick="Clicked">
+    <span class="text-md text-center">@KeyRecord.Name</span>
 </div>
 
 @code {
-    [Parameter] public Keys Key { get; set; }
+    [Parameter] public KeyRecord KeyRecord { get; set; }
+    [Parameter] public Func<Task> Clicked { get; set; }
 
-    [Parameter] public IEnumerable<KeyCode> KeyCodes { get; set; }
-
-    [Parameter] public LedColor LedColor { get; set; }
-
-    [Parameter] public string KeyName { get; set; }
-
-    [Parameter] public Func<Keys, Task> Clicked { get; set; }
-
-    private string _buttonStyle => LedColor == null 
+    private string _buttonStyle => KeyRecord.Color == null 
         ? ""
-        : $"background-color: rgb({LedColor.R}, {LedColor.G}, {LedColor.B});";
+        : $"background-color: rgb({KeyRecord.Color.R}, {KeyRecord.Color.G}, {KeyRecord.Color.B});";
 
     protected override async Task OnParametersSetAsync()
     {

@@ -8,16 +8,15 @@ using Microsoft.Extensions.Logging;
 using Mycropad.App.Entity;
 using Mycropad.Lib;
 using Mycropad.Lib.Enums;
-using Mycropad.Lib.Types;
 
 namespace Mycropad.App.Services
 {
-    public class ProfileManager : IEnumerable<KeymapProfile>, IDisposable
+    public class ProfileManager : IEnumerable<KeyProfile>, IDisposable
     {
         private readonly string FileName = "profiles.json";
         private readonly ILogger<ProfileManager> _logger;
         private readonly DeviceManager _deviceManager;
-        private List<KeymapProfile> _profiles;
+        private List<KeyProfile> _profiles;
         private readonly JsonSerializerOptions _jsonOptions = new()
         {
             WriteIndented = true
@@ -46,25 +45,27 @@ namespace Mycropad.App.Services
         public Guid CurrentProfileId { get; private set; }
         public Action OnProfilesUpdated { get; set; }
 
-        private static DeviceKeymap _defaultDeviceKeymap;
-        public static DeviceKeymap DefaultDeviceKeymap
+        private static Dictionary<Keys, KeyRecord> _defaultDeviceKeymap;
+        public static Dictionary<Keys, KeyRecord> DefaultKeymap
         {
             get
             {
                 if (_defaultDeviceKeymap == null)
                 {
-                    _defaultDeviceKeymap = new DeviceKeymap();
-                    _defaultDeviceKeymap.For(Keys.Key1).Add(new(HidKeys.KEY_F1));
-                    _defaultDeviceKeymap.For(Keys.Key2).Add(new(HidKeys.KEY_F2));
-                    _defaultDeviceKeymap.For(Keys.Key3).Add(new(HidKeys.KEY_F3));
-                    _defaultDeviceKeymap.For(Keys.Key4).Add(new(HidKeys.KEY_F4));
-                    _defaultDeviceKeymap.For(Keys.Key5).Add(new(HidKeys.KEY_F5));
-                    _defaultDeviceKeymap.For(Keys.Key6).Add(new(HidKeys.KEY_F6));
-                    _defaultDeviceKeymap.For(Keys.Key7).Add(new(HidKeys.KEY_F7));
-                    _defaultDeviceKeymap.For(Keys.Key8).Add(new(HidKeys.KEY_F8));
-                    _defaultDeviceKeymap.For(Keys.RotCW).Add(new(HidKeys.KEY_Y, HidModifiers.MOD_LCTRL));
-                    _defaultDeviceKeymap.For(Keys.RotCCW).Add(new(HidKeys.KEY_Z, HidModifiers.MOD_LCTRL));
-                    _defaultDeviceKeymap.For(Keys.RotClick).Add(new(HidKeys.KEY_F11));
+                    _defaultDeviceKeymap = new Dictionary<Keys, KeyRecord>()
+                    {
+                        {Keys.Key1, new(HidKeys.KEY_F1)},
+                        {Keys.Key2, new(HidKeys.KEY_F2)},
+                        {Keys.Key3, new(HidKeys.KEY_F3)},
+                        {Keys.Key4, new(HidKeys.KEY_F4)},
+                        {Keys.Key5, new(HidKeys.KEY_F5)},
+                        {Keys.Key6, new(HidKeys.KEY_F6)},
+                        {Keys.Key7, new(HidKeys.KEY_F7)},
+                        {Keys.Key8, new(HidKeys.KEY_F8)},
+                        {Keys.RotCW, new(HidKeys.KEY_Y, HidModifiers.MOD_LCTRL)},
+                        {Keys.RotCCW, new(HidKeys.KEY_Z, HidModifiers.MOD_LCTRL)},
+                        {Keys.RotClick, new(HidKeys.KEY_F11)},
+                    };
                 }
                 return _defaultDeviceKeymap;
             }
@@ -109,14 +110,10 @@ namespace Mycropad.App.Services
             if (CurrentProfileId != profileId || force)
             {
                 var profile = GetProfile(profileId);
-                _deviceManager.SwitchKeymap(profile.DeviceKeymap);
+                _deviceManager.SwitchKeymap(profile.GetDeviceKeyMap());
                 if (profile.LedsPattern == LedsPattern.Fixed)
                 {
-                    if (profile.LedsMap == null || !profile.LedsMap.Any())
-                    {
-                        profile.LedsMap = DefaultLedsMap();
-                    }
-                    _deviceManager.LedsSetFixedMap(profile.LedsMap);
+                    _deviceManager.LedsSetFixedMap(profile.GetDeviceLedMap());
                 }
 
                 _deviceManager.LedsSwitchPattern(profile.LedsPattern);
@@ -125,7 +122,7 @@ namespace Mycropad.App.Services
 
                 if (profile.IsDefault)
                 {
-                    _deviceManager.SetDefaultKeymap(profile.DeviceKeymap);
+                    _deviceManager.SetDefaultKeymap(profile.GetDeviceKeyMap());
                 }
 
                 OnProfilesUpdated?.Invoke();
@@ -134,35 +131,23 @@ namespace Mycropad.App.Services
 
         private void LoadDefault()
         {
-            _profiles = new();
-            _profiles.Add(new()
+            _profiles = new()
             {
-                Id = Guid.NewGuid(),
-                Name = "Default",
-                IsDefault = true,
-                DeviceKeymap = DefaultDeviceKeymap,
-                LedsPattern = LedsPattern.Rainbow,
-                LedsMap = DefaultLedsMap(),
-                KeyNames = DefaultKeyNames(),
-            });
+                new()
+                {
+                    Id = Guid.NewGuid(),
+                    Name = "Default",
+                    IsDefault = true,
+                    Keymap = DefaultKeymap,
+                    LedsPattern = LedsPattern.Rainbow,
+                }
+            };
         }
-
-        private static LedColor[] DefaultLedsMap() => Enumerable.Range(0, 8)
-                .Select(x => new LedColor(0x82, 0x00, 0xAC))
-                .ToArray();
-
-        private static string[] DefaultKeyNames() => Enumerable.Range(1, 12)
-            .Select(x => $"Key {x}")
-            .ToArray();
-
+        
         private void LoadFromFile(string path)
         {
             var json = File.ReadAllText(path);
-            _profiles = JsonSerializer.Deserialize<List<KeymapProfile>>(json, _jsonOptions);
-            foreach (var p in _profiles)
-            {
-                p.KeyNames ??= DefaultKeyNames();
-            }
+            _profiles = JsonSerializer.Deserialize<List<KeyProfile>>(json, _jsonOptions);
             if (!_profiles.Any()) { throw new Exception("Empty profiles"); }
         }
 
@@ -180,17 +165,17 @@ namespace Mycropad.App.Services
             File.WriteAllText(path, json);
         }
 
-        public KeymapProfile GetDefault()
+        public KeyProfile GetDefault()
         {
             return _profiles.First(x => x.IsDefault);
         }
 
-        public KeymapProfile GetProfile(Guid profileId)
+        public KeyProfile GetProfile(Guid profileId)
         {
             return _profiles.First(x => x.Id == profileId);
         }
 
-        public void AddProfile(KeymapProfile profile)
+        public void AddProfile(KeyProfile profile)
         {
             _profiles.Add(profile);
             Save();
@@ -203,7 +188,7 @@ namespace Mycropad.App.Services
             Save();
         }
 
-        public void UpdateProfile(KeymapProfile profile)
+        public void UpdateProfile(KeyProfile profile)
         {
             DeleteProfile(profile.Id);
             _profiles.Add(profile);
@@ -215,7 +200,7 @@ namespace Mycropad.App.Services
             }
         }
 
-        public IEnumerator<KeymapProfile> GetEnumerator() =>
+        public IEnumerator<KeyProfile> GetEnumerator() =>
             _profiles
                 .OrderBy(x => !x.IsDefault)
                 .GetEnumerator();

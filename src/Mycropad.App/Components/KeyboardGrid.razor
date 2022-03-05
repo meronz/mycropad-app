@@ -1,106 +1,52 @@
-﻿@inject ProfileManager Profiles
+﻿@inject ProfileManager ProfileManager
 
-@if(_keycodesMap.Count > 0)
+@if(Profile.Keymap.Count > 0)
 {
 <div class="grid grid-rows-3 grid-flow-col">
-    <KeyboardButton KeyName="@_namesMap[Keys.Key1]" Key="Keys.Key1" KeyCodes="_keycodesMap[Keys.Key1]" LedColor="_ledsMap.GetValueOrDefault(Keys.Key1)" Clicked="UiClicked"/>
-    <KeyboardButton KeyName="@_namesMap[Keys.Key3]" Key="Keys.Key3" KeyCodes="_keycodesMap[Keys.Key3]" LedColor="_ledsMap.GetValueOrDefault(Keys.Key3)" Clicked="UiClicked"/>
-    <KeyboardButton KeyName="@_namesMap[Keys.Key5]" Key="Keys.Key5" KeyCodes="_keycodesMap[Keys.Key5]" LedColor="_ledsMap.GetValueOrDefault(Keys.Key5)" Clicked="UiClicked"/>
-    <KeyboardButton KeyName="@_namesMap[Keys.Key2]" Key="Keys.Key2" KeyCodes="_keycodesMap[Keys.Key2]" LedColor="_ledsMap.GetValueOrDefault(Keys.Key2)" Clicked="UiClicked"/>
-    <KeyboardButton KeyName="@_namesMap[Keys.Key4]" Key="Keys.Key4" KeyCodes="_keycodesMap[Keys.Key4]" LedColor="_ledsMap.GetValueOrDefault(Keys.Key4)" Clicked="UiClicked"/>
-    <KeyboardButton KeyName="@_namesMap[Keys.Key6]" Key="Keys.Key6" KeyCodes="_keycodesMap[Keys.Key6]" LedColor="_ledsMap.GetValueOrDefault(Keys.Key6)" Clicked="UiClicked"/>
+    <KeyboardButton KeyRecord="Profile.Keymap[Keys.Key1]" Clicked="() => UiClicked(Keys.Key1)"/>
+    <KeyboardButton KeyRecord="Profile.Keymap[Keys.Key3]" Clicked="() => UiClicked(Keys.Key3)"/>
+    <KeyboardButton KeyRecord="Profile.Keymap[Keys.Key5]" Clicked="() => UiClicked(Keys.Key5)"/>
+    <KeyboardButton KeyRecord="Profile.Keymap[Keys.Key2]" Clicked="() => UiClicked(Keys.Key2)"/>
+    <KeyboardButton KeyRecord="Profile.Keymap[Keys.Key4]" Clicked="() => UiClicked(Keys.Key4)"/>
+    <KeyboardButton KeyRecord="Profile.Keymap[Keys.Key6]" Clicked="() => UiClicked(Keys.Key6)"/>
     <div class="flex justify-center items-center row-span-2 col-span-2">
         <KeyboardEncoder Clicked="UiClicked"/>
     </div>
-    <KeyboardButton KeyName="@_namesMap[Keys.Key7]" Key="Keys.Key7" KeyCodes="_keycodesMap[Keys.Key7]" LedColor="_ledsMap.GetValueOrDefault(Keys.Key7)" Clicked="UiClicked"/>
-    <KeyboardButton KeyName="@_namesMap[Keys.Key8]" Key="Keys.Key8" KeyCodes="_keycodesMap[Keys.Key8]" LedColor="_ledsMap.GetValueOrDefault(Keys.Key8)" Clicked="UiClicked"/>
+    <KeyboardButton KeyRecord="Profile.Keymap[Keys.Key7]" Clicked="() => UiClicked(Keys.Key7)"/>
+    <KeyboardButton KeyRecord="Profile.Keymap[Keys.Key8]" Clicked="() => UiClicked(Keys.Key8)"/>
 </div>
 }
 
 @code {
-    private Dictionary<Keys, IEnumerable<KeyCode>> _keycodesMap;
-    private Dictionary<Keys, LedColor> _ledsMap;
-    private Dictionary<Keys, string> _namesMap;
-
     [CascadingParameter] public IModalService Modal { get; set; }
 
-    [Parameter] public KeymapProfile Profile { get; set; }
+    [Parameter] public KeyProfile Profile { get; set; }
 
-    protected override async Task OnInitializedAsync()
+    protected override void OnInitialized()
     {
-        _keycodesMap = new();
-        _ledsMap = new();
-        _namesMap = new();
-        await RefreshKeyMap();
-        Profiles.OnProfilesUpdated += async () => await RefreshKeyMap();
+        ProfileManager.OnProfilesUpdated += RefreshKeyMap;
     }
 
     protected override async Task OnParametersSetAsync()
     {
-        await RefreshKeyMap();
+        await InvokeAsync(StateHasChanged);
     }
 
     public void Dispose()
     {
-        Profiles.OnProfilesUpdated -= async () => await RefreshKeyMap();
+        ProfileManager.OnProfilesUpdated -= RefreshKeyMap;
     }
 
-    private async Task RefreshKeyMap()
+    private void RefreshKeyMap()
     {
-        _keycodesMap.Clear();
-        if(Profile.DeviceKeymap != null)
-        {
-            _keycodesMap.Add(Keys.Key1, Profile.DeviceKeymap.KeyCodes[0]);
-            _keycodesMap.Add(Keys.Key3, Profile.DeviceKeymap.KeyCodes[2]);
-            _keycodesMap.Add(Keys.Key5, Profile.DeviceKeymap.KeyCodes[4]);
-            _keycodesMap.Add(Keys.Key2, Profile.DeviceKeymap.KeyCodes[1]);
-            _keycodesMap.Add(Keys.Key4, Profile.DeviceKeymap.KeyCodes[3]);
-            _keycodesMap.Add(Keys.Key6, Profile.DeviceKeymap.KeyCodes[5]);
-            _keycodesMap.Add(Keys.Key7, Profile.DeviceKeymap.KeyCodes[6]);
-            _keycodesMap.Add(Keys.Key8, Profile.DeviceKeymap.KeyCodes[7]);
-            _keycodesMap.Add(Keys.RotCW, Profile.DeviceKeymap.KeyCodes[8]);
-            _keycodesMap.Add(Keys.RotCCW, Profile.DeviceKeymap.KeyCodes[9]);
-            _keycodesMap.Add(Keys.RotClick, Profile.DeviceKeymap.KeyCodes[10]);
-        }
-
-        _ledsMap.Clear();
-        if(Profile.LedsPattern == LedsPattern.Fixed)
-        {
-            _ledsMap.Add(Keys.Key1, Profile.LedsMap[0]);
-            _ledsMap.Add(Keys.Key3, Profile.LedsMap[2]);
-            _ledsMap.Add(Keys.Key5, Profile.LedsMap[4]);
-            _ledsMap.Add(Keys.Key2, Profile.LedsMap[1]);
-            _ledsMap.Add(Keys.Key4, Profile.LedsMap[3]);
-            _ledsMap.Add(Keys.Key6, Profile.LedsMap[5]);
-            _ledsMap.Add(Keys.Key7, Profile.LedsMap[6]);
-            _ledsMap.Add(Keys.Key8, Profile.LedsMap[7]);
-        }
-
-        _namesMap.Clear();
-        if (Profile.KeyNames != null)
-        {
-            _namesMap.Add(Keys.Key1, Profile.KeyNames[0]);
-            _namesMap.Add(Keys.Key2, Profile.KeyNames[1]);
-            _namesMap.Add(Keys.Key3, Profile.KeyNames[2]);
-            _namesMap.Add(Keys.Key4, Profile.KeyNames[3]);
-            _namesMap.Add(Keys.Key5, Profile.KeyNames[4]);
-            _namesMap.Add(Keys.Key6, Profile.KeyNames[5]);
-            _namesMap.Add(Keys.Key7, Profile.KeyNames[6]);
-            _namesMap.Add(Keys.Key8, Profile.KeyNames[7]);
-            _namesMap.Add(Keys.RotCW, Profile.KeyNames[8]);
-            _namesMap.Add(Keys.RotCCW, Profile.KeyNames[9]);
-            _namesMap.Add(Keys.RotClick, Profile.KeyNames[10]);
-        }
-        await InvokeAsync(StateHasChanged);
+        _ = InvokeAsync(StateHasChanged);
     }
 
     private async Task UiClicked(Keys key)
     {
         var parameters = new ModalParameters();
         parameters.Add(nameof(ButtonModal.Key), key);
-        parameters.Add(nameof(ButtonModal.KeyCodes), _keycodesMap[key].ToList()); // Make copy
-        parameters.Add(nameof(ButtonModal.LedColor), _ledsMap.GetValueOrDefault(key));
-        parameters.Add(nameof(ButtonModal.KeyName), _namesMap.GetValueOrDefault(key));
+        parameters.Add(nameof(ButtonModal.KeyRecord), Profile.Keymap[key]);
 
         var options = new ModalOptions()
         {
@@ -112,26 +58,8 @@
         var result = await modal.Result;
         if(!result.Cancelled)
         {
-            await SaveNewKey(key,
-                (result.Data as dynamic).KeyCodes,
-                (result.Data as dynamic).LedColor,
-                (result.Data as dynamic).KeyName);
+            Profile.Keymap[key] = (KeyRecord)result.Data;
+            ProfileManager.UpdateProfile(Profile);
         }
-    }
-
-    private Task SaveNewKey(Keys key, KeyCode[] keycodes, LedColor ledColor, string keyName)
-    {
-        var keymap = Profile.DeviceKeymap.For(key);
-        keymap.Clear();
-        keymap.AddRange(keycodes);
-
-        if(key < Keys.RotCW && Profile.LedsMap is not null)
-        {
-            Profile.LedsMap[((int)key) - 1] = ledColor;
-        }
-
-        Profile.KeyNames[((int) key) - 1] = keyName;
-        Profiles.UpdateProfile(Profile);
-        return Task.CompletedTask;
     }
 }
