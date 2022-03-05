@@ -3,6 +3,7 @@ name: App Build
 on:
   push:
     branches: [main]
+    tags: ['v*']
     paths:
       - src/**
       - .github/workflows/app-build.yaml
@@ -64,7 +65,7 @@ jobs:
         uses: actions/upload-artifact@v2
         if: startsWith(matrix.os, 'ubuntu')
         with:
-          name: snap
+          name: Linux snap
           path: |
             src/Mycropad.App/bin/Desktop/*.snap
 
@@ -75,3 +76,34 @@ jobs:
           name: Windows setup
           path: |
             src/Mycropad.App/bin/Desktop/*Setup*.exe
+
+  release:
+    if: startsWith(github.ref, 'refs/tags/')
+    needs:
+      - build
+    permissions:
+      contents: write
+
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v2
+      - uses: actions/download-artifact@v2
+        with:
+          name: Linux snap
+      - uses: actions/download-artifact@v2
+        with:
+          name: Windows setup
+
+      - name: Generate release changelog
+        uses: heinrichreimer/github-changelog-generator-action@v2.3
+        with:
+          token: ${{ secrets.GITHUB_TOKEN }}
+          output: CHANGELOG.txt
+
+      - name: Release
+        uses: softprops/action-gh-release@v1
+        with:
+          body_path: CHANGELOG.txt
+          files: |
+            *Setup*.exe
+            *.snap
