@@ -11,18 +11,6 @@ namespace Mycropad.Lib.Macro
 {
     public static class MacroExtensions
     {
-        public enum ModifierTokens : byte
-        {
-            ALT = HidModifiers.MOD_LALT,
-            ALT_R = HidModifiers.MOD_RALT,
-            SHIFT = HidModifiers.MOD_LSHIFT,
-            SHIFT_R = HidModifiers.MOD_RSHIFT,
-            META = HidModifiers.MOD_LMETA,
-            META_R = HidModifiers.MOD_RMETA,
-            CTRL = HidModifiers.MOD_LCTRL,
-            CTRL_R = HidModifiers.MOD_RCTRL,
-        }
-
         public enum KeyTokens : byte
         {
             ESC = HidKeys.KEY_ESC,
@@ -140,6 +128,18 @@ namespace Mycropad.Lib.Macro
             MEDIA_CALC = HidKeys.KEY_MEDIA_CALC,
         }
 
+        public enum ModifierTokens : byte
+        {
+            ALT = HidModifiers.MOD_LALT,
+            ALT_R = HidModifiers.MOD_RALT,
+            SHIFT = HidModifiers.MOD_LSHIFT,
+            SHIFT_R = HidModifiers.MOD_RSHIFT,
+            META = HidModifiers.MOD_LMETA,
+            META_R = HidModifiers.MOD_RMETA,
+            CTRL = HidModifiers.MOD_LCTRL,
+            CTRL_R = HidModifiers.MOD_RCTRL,
+        }
+
         public static KeyCode ParseKeyCode(this string macro)
         {
             KeyCode keyCode = new(HidKeys.KEY_NONE);
@@ -151,14 +151,14 @@ namespace Mycropad.Lib.Macro
             {
                 if (Enum.TryParse(typeof(ModifierTokens), token, true, out var modToken))
                 {
-                    keyCode.Modifiers |= (byte)(ModifierTokens)modToken;
+                    keyCode.Modifiers |= (byte) (ModifierTokens) modToken;
                     continue;
                 }
 
                 if (!Enum.TryParse(typeof(KeyTokens), token, true, out var keyToken))
                     throw new($"Unrecognized token {token}");
 
-                keyCode.Key = (byte)(KeyTokens)keyToken;
+                keyCode.Key = (byte) (KeyTokens) keyToken;
                 return keyCode;
             }
 
@@ -172,10 +172,7 @@ namespace Mycropad.Lib.Macro
                 .Select(mod => mod.ToString())
                 .ToList();
 
-            if (keyCode.Key != 0)
-            {
-                result.Add(((KeyTokens)keyCode.Key).ToString());
-            }
+            if (keyCode.Key != 0) result.Add(((KeyTokens) keyCode.Key).ToString());
 
             return result;
         }
@@ -183,9 +180,9 @@ namespace Mycropad.Lib.Macro
         public static KeyCode SanitizeModifiers(this KeyCode keyCode)
         {
             if (keyCode.Modifiers == 0 || keyCode.Key != 0) return keyCode;
-            
+
             // Turn the modifier key into a keypress
-            KeyTokens? key = (ModifierTokens)keyCode.Modifiers switch
+            KeyTokens? key = (ModifierTokens) keyCode.Modifiers switch
             {
                 ModifierTokens.ALT => KeyTokens.KEY_ALT,
                 ModifierTokens.ALT_R => KeyTokens.KEY_ALT_R,
@@ -198,7 +195,7 @@ namespace Mycropad.Lib.Macro
                 _ => null,
             };
 
-            keyCode.Key = (byte)(key ?? 0);
+            keyCode.Key = (byte) (key ?? 0);
             keyCode.Modifiers = 0;
             return keyCode;
         }

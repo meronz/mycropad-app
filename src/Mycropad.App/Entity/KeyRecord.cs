@@ -6,13 +6,11 @@ namespace Mycropad.App.Entity
 {
     public record KeyRecord
     {
-        public string Name { get; set; }
-        public List<KeyCode> KeyCodes { get; set; }
-        public LedColor Color { get; set; }
-
         // ReSharper disable once UnusedMember.Global
         // Needed for JsonSerialization
-        public KeyRecord() {}
+        public KeyRecord()
+        {
+        }
 
         public KeyRecord(HidKeys hidKey, HidModifiers hidModifiers = HidModifiers.MOD_NONE)
         {
@@ -20,5 +18,9 @@ namespace Mycropad.App.Entity
             KeyCodes = new() {new(hidKey, hidModifiers)};
             Color = new(0x82, 0x00, 0xAC);
         }
+
+        public string Name { get; set; }
+        public List<KeyCode> KeyCodes { get; set; }
+        public LedColor Color { get; set; }
     }
 }

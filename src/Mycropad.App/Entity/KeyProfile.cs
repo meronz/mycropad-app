@@ -16,7 +16,7 @@ namespace Mycropad.App.Entity
         public LedsPattern LedsPattern { get; set; }
 
         public IEnumerable<LedColor> GetDeviceLedMap()
-        { 
+        {
             return Keymap.Keys
                 .Where(k => k < Keys.RotClick)
                 .Select(k => Keymap[k].Color)
@@ -27,10 +27,7 @@ namespace Mycropad.App.Entity
         {
             var deviceKeymap = new DeviceKeymap();
 
-            foreach (var key in Enum.GetValues<Keys>())
-            {
-                deviceKeymap.KeyCodes[key] = Keymap[key].KeyCodes;
-            }
+            foreach (var key in Enum.GetValues<Keys>()) deviceKeymap.KeyCodes[key] = Keymap[key].KeyCodes;
 
             return deviceKeymap;
         }

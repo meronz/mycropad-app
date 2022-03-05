@@ -10,20 +10,29 @@
 @code {
 
     string BaseClass => "transition duration-250 ease-in-out font-bold py-2 px-4 rounded-full";
-    string Class => _clicked 
+
+    string Class => _clicked
         ? $"{BaseClass} bg-red-400 hover:bg-red-600 text-white"
         : $"{BaseClass} bg-blue-400 hover:bg-blue-600 text-white";
 
     bool _clicked = false;
     Timer _resetTimer;
-    [Parameter] public string Text { get; set; }
-    [Parameter] public Func<Task> Clicked { get; set; }
-    
+
+    [Parameter]
+    public string Text { get; set; }
+
+    [Parameter]
+    public Func<Task> Clicked { get; set; }
+
     protected override void OnInitialized()
     {
         _resetTimer = new(5000);
         _resetTimer.AutoReset = false;
-        _resetTimer.Elapsed += (_, _) => { _clicked = false; InvokeAsync(StateHasChanged); };
+        _resetTimer.Elapsed += (_, _) =>
+        {
+            _clicked = false;
+            InvokeAsync(StateHasChanged);
+        };
     }
 
     public void Dispose()
@@ -34,7 +43,7 @@
 
     private void Click()
     {
-        if(!_clicked)
+        if (!_clicked)
         {
             _clicked = true;
             _resetTimer.Enabled = true;
@@ -43,4 +52,5 @@
 
         Clicked?.Invoke();
     }
+
 }

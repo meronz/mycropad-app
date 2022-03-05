@@ -6,10 +6,10 @@
                 class="text-sm font-medium block mb-2">
                 Profile name
             </label>
-            <input 
-                type="text" 
-                id="name" 
-                class="bg-gray-100 dark:bg-gray-600 border border-gray-300 sm:text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5" 
+            <input
+                type="text"
+                id="name"
+                class="bg-gray-100 dark:bg-gray-600 border border-gray-300 sm:text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5"
                 placeholder="Profile"
                 @bind-value="@ProfileName"
                 required>
@@ -23,8 +23,7 @@
             <select
                 class="text-gray-600 dark:text-gray-400 bg-gray-100 dark:bg-gray-600 border border-gray-500 rounded-full hover:border-gray-400 h-10 pl-5 pr-10 focus:outline-none appearance-none"
                 value="@LedsPattern"
-                @onchange="LedsPatternChanged"
-                >
+                @onchange="LedsPatternChanged">
                 @foreach (var p in Enum.GetValues<LedsPattern>())
                 {
                     <option value="@p" selected="@(p == LedsPattern)">
@@ -35,12 +34,12 @@
         </div>
     </form>
     <div class="p-2">
-        <button 
+        <button
             @onclick="Save"
             class="bg-blue-400 hover:bg-blue-600 text-white font-bold py-2 px-4 rounded-full">
             Save
         </button>
-        <button 
+        <button
             @onclick="Cancel"
             class="bg-transparent hover:bg-gray-200 text-gray-400 hover:text-gray-600 font-semibold py-2 px-4 rounded-full">
             Cancel
@@ -49,13 +48,19 @@
 </div>
 
 @code {
-    [Parameter] public string ProfileName { get; set; }
-    [Parameter] public LedsPattern LedsPattern { get; set; }
-    [CascadingParameter] BlazoredModalInstance ModalInstance { get; set; }
+
+    [Parameter]
+    public string ProfileName { get; set; }
+
+    [Parameter]
+    public LedsPattern LedsPattern { get; set; }
+
+    [CascadingParameter]
+    BlazoredModalInstance ModalInstance { get; set; }
 
     async Task Save()
     {
-        await ModalInstance.CloseAsync(ModalResult.Ok(new { ProfileName, LedsPattern } ));
+        await ModalInstance.CloseAsync(ModalResult.Ok(new {ProfileName, LedsPattern}));
     }
 
     async Task Cancel()
@@ -71,4 +76,5 @@
         LedsPattern = ledsPattern;
         return InvokeAsync(StateHasChanged);
     }
+
 }

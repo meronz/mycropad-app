@@ -13,9 +13,12 @@ namespace Mycropad.Lib.Types
         public byte G { get; }
         public byte B { get; }
 
-        public uint ToUInt32() => (uint)
-            (B << 0 |
-             R << 8 |
-             G << 16);
+        public uint ToUInt32()
+        {
+            return (uint)
+                ((B << 0) |
+                 (R << 8) |
+                 (G << 16));
+        }
     }
 }
