@@ -154,14 +154,9 @@ namespace Mycropad.Lib.Device
 
         public bool LedsSetFixedMap(IEnumerable<LedColor> map)
         {
-            if (map.Count() != 8)
-            {
-                throw new Exception("Map size != 8");
-            }
-
             lock (_deviceMutex)
             {
-                var mapBytes = map.SelectMany(x => BitConverter.GetBytes(x.ToUInt32())).ToArray();
+                var mapBytes = map.Take(8).SelectMany(x => BitConverter.GetBytes(x.ToUInt32())).ToArray();
                 var data = Command(CommandTypes.LedsSetFixedMap, mapBytes);
                 Write(data);
 

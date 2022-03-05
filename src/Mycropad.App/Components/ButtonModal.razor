@@ -6,7 +6,7 @@
             class="text-sm font-medium block mb-2">
             Name
         </label>
-        <input type="text" id="keyname" name="keyname" @bind="KeyName">
+        <input type="text" id="keyname" name="keyname" @bind="KeyRecord.Name">
         </div>
         <div class="my-2">
             <label
@@ -15,19 +15,19 @@
                 Macro
             </label>
             
-            @for (int j = 0; j < KeyCodes?.Count; j++)
+            @for (int j = 0; j < KeyRecord.KeyCodes?.Count; j++)
             {
                 int i = j;
                 <div class="flex flex-row w-full">
                     <MacroTextBox
                         Id="i"
-                        KeyCode="KeyCodes[i]"
+                        KeyCode="KeyRecord.KeyCodes[i]"
                         KeyCodeChanged="async (kc) => await KeyCodeChanged(i, kc)"
                     />
                     <button
                         id=@($"remove-btn-{i}")
                         class="h-10 w-10 ml-2 p-2"
-                        @onclick="() => KeyCodes.RemoveAt(i)"
+                        @onclick="() => KeyRecord.KeyCodes.RemoveAt(i)"
                         type="button"
                     >
                         <svg viewBox="0 0 24 24">
@@ -42,7 +42,7 @@
                 <button
                     id="add"
                     class="@btnClass"
-                    @onclick="() => KeyCodes.Add(null)"
+                    @onclick="() => KeyRecord.KeyCodes.Add(null)"
                     disabled="@(!_isAddEnabled)"
                     type="button"
                 >
@@ -53,7 +53,7 @@
             }
             </div>
         </div>
-        @if(LedColor != null)
+        @if(KeyRecord.Color != null)
         {
             <div class="my-2">
             <label
@@ -84,15 +84,13 @@
 
 @code {
     [Parameter] public Keys Key { get; set; }
-    [Parameter] public List<KeyCode> KeyCodes { get; set; }
-    [Parameter] public LedColor LedColor { get; set; }
-    [Parameter] public string KeyName { get; set; }
-    
+    [Parameter] public KeyRecord KeyRecord { get; set; }
+
     [CascadingParameter] BlazoredModalInstance ModalInstance { get; set; }
     
-    private string _colorString => $"#{LedColor.R:X2}{LedColor.G:X2}{LedColor.B:X2}";
-    private bool _isAddEnabled => KeyCodes.Count == 0 || KeyCodes.Last() != null;
-    private bool _saveEnabled => KeyCodes.All(_ => _ != null);
+    private string _colorString => $"#{KeyRecord.Color.R:X2}{KeyRecord.Color.G:X2}{KeyRecord.Color.B:X2}";
+    private bool _isAddEnabled => KeyRecord.KeyCodes.Count == 0 || KeyRecord.KeyCodes.Last() != null;
+    private bool _saveEnabled => KeyRecord.KeyCodes.All(_ => _ != null);
     private string _saveClass => "text-white font-bold py-2 px-4 rounded-full " + 
         (_saveEnabled ? "bg-blue-400 hover:bg-blue-600" : "bg-grey-400");
 
@@ -103,13 +101,9 @@
 
     async Task Save()
     {
-        await ModalInstance.CloseAsync(ModalResult.Ok(
-            new { 
-                KeyCodes = KeyCodes.Select(x => x.SanitizeModifiers()).ToArray(),
-                LedColor,
-                KeyName
-            }));
-
+        KeyRecord.KeyCodes = KeyRecord.KeyCodes.Select(x => x.SanitizeModifiers()).ToList();
+        
+        await ModalInstance.CloseAsync(ModalResult.Ok(KeyRecord));
         await InvokeAsync(StateHasChanged);
     }
 
@@ -120,7 +114,7 @@
     
     private async Task KeyCodeChanged(int index, KeyCode keyCode)
     {
-        KeyCodes[index] = keyCode;
+        KeyRecord.KeyCodes[index] = keyCode;
         await InvokeAsync(StateHasChanged);
     }
 
@@ -128,7 +122,7 @@
     {
         var rgbstring = e.Value.ToString();
 
-        LedColor = new LedColor(
+        KeyRecord.Color = new LedColor(
             byte.Parse(rgbstring[1..3], System.Globalization.NumberStyles.HexNumber),
             byte.Parse(rgbstring[3..5], System.Globalization.NumberStyles.HexNumber),
             byte.Parse(rgbstring[5..7], System.Globalization.NumberStyles.HexNumber));
