@@ -28,7 +28,7 @@
                 @foreach (var p in Enum.GetValues<LedsPattern>())
                 {
                     <option value="@p" selected="@(p == LedsPattern)">
-                        @(Enum.GetName<LedsPattern>(p))
+                        @(Enum.GetName(p))
                     </option>
                 }
             </select>
@@ -55,8 +55,7 @@
 
     async Task Save()
     {
-        await ModalInstance.CloseAsync(ModalResult.Ok(
-            new { ProfileName, LedsPattern } ));
+        await ModalInstance.CloseAsync(ModalResult.Ok(new { ProfileName, LedsPattern } ));
     }
 
     async Task Cancel()
@@ -64,9 +63,12 @@
         await ModalInstance.CancelAsync();
     }
 
-    async Task LedsPatternChanged(ChangeEventArgs e)
+    Task LedsPatternChanged(ChangeEventArgs e)
     {
-        LedsPattern = Enum.Parse<LedsPattern>(e.Value.ToString());
-        await InvokeAsync(StateHasChanged);
+        if (!Enum.TryParse<LedsPattern>(e.Value?.ToString(), out var ledsPattern))
+            return Task.CompletedTask;
+
+        LedsPattern = ledsPattern;
+        return InvokeAsync(StateHasChanged);
     }
 }

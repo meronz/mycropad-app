@@ -11,29 +11,18 @@ namespace Mycropad.Lib.Device
 {
     [SupportedOSPlatform("linux")]
     [SupportedOSPlatform("windows")]
-    public class MycropadDevice_Serial : MycropadDeviceBase, IMycropadDevice, IDisposable
+    public sealed class MycropadDeviceSerial : MycropadDeviceBase, IMycropadDevice, IDisposable
     {
         private const uint USB_VID = 0xCAFE;
         private const uint USB_PID = 0x4005;
 
-        private MycropadDevice_Serial() { }
-        private static MycropadDevice_Serial _instance;
-        public static MycropadDevice_Serial Instance
-        {
-            get
-            {
-                if (_instance == null)
-                {
-                    _instance = new MycropadDevice_Serial();
-                }
-
-                return _instance;
-            }
-        }
+        private MycropadDeviceSerial() { }
+        private static MycropadDeviceSerial _instance;
+        public static MycropadDeviceSerial Instance => _instance ??= new();
 
         private readonly SerialPort _device = new();
         private readonly object _deviceMutex = new();
-        public bool Connected { get => _device.IsOpen; }
+        public bool Connected => _device.IsOpen;
         public Action OnDeviceConnected { get; set; }
         public Action OnDeviceDisconnected { get; set; }
 
@@ -55,7 +44,7 @@ namespace Mycropad.Lib.Device
         }
 
 
-        public bool Heartbeat()
+        public void Heartbeat()
         {
             lock (_deviceMutex)
             {
@@ -64,14 +53,12 @@ namespace Mycropad.Lib.Device
                 var (readData, readLength) = Read();
 
                 var (cmd, ok, _) = Response(readData, readLength);
-                if (cmd != CommandTypes.Heartbeat) throw new Exception($"Bad CommandType {cmd}");
-                if (!ok) throw new Exception($"{cmd} failed!");
-
-                return ok;
+                if (cmd != CommandTypes.Heartbeat) throw new($"Bad CommandType {cmd}");
+                if (!ok) throw new($"{cmd} failed!");
             }
         }
 
-        public bool SetKeymap(DeviceKeymap deviceKeymap)
+        public void SetKeymap(DeviceKeymap deviceKeymap)
         {
             lock (_deviceMutex)
             {
@@ -80,10 +67,8 @@ namespace Mycropad.Lib.Device
 
                 var (readData, readLength) = Read();
                 var (cmd, ok, _) = Response(readData, readLength);
-                if (cmd != CommandTypes.SetKeymap) throw new Exception($"Bad CommandType {cmd}");
-                if (!ok) throw new Exception($"{cmd} failed!");
-
-                return ok;
+                if (cmd != CommandTypes.SetKeymap) throw new($"Bad CommandType {cmd}");
+                if (!ok) throw new($"{cmd} failed!");
             }
         }
 
@@ -97,14 +82,14 @@ namespace Mycropad.Lib.Device
                 var (readData, readLength) = Read();
                 var (cmd, ok, keymapBytes) = Response(readData, readLength);
 
-                if (cmd != CommandTypes.ReadKeymap) throw new Exception($"Bad CommandType {cmd}");
-                if (!ok) throw new Exception($"{cmd} failed!");
+                if (cmd != CommandTypes.ReadKeymap) throw new($"Bad CommandType {cmd}");
+                if (!ok) throw new($"{cmd} failed!");
 
                 return DeviceKeymap.FromBytes(keymapBytes);
             }
         }
 
-        public bool DefaultKeymap()
+        public void DefaultKeymap()
         {
             lock (_deviceMutex)
             {
@@ -113,14 +98,12 @@ namespace Mycropad.Lib.Device
                 var (readData, readLength) = Read();
 
                 var (cmd, ok, _) = Response(readData, readLength);
-                if (cmd != CommandTypes.DefaultKeymap) throw new Exception($"Bad CommandType {cmd}");
-                if (!ok) throw new Exception($"{cmd} failed!");
-
-                return ok;
+                if (cmd != CommandTypes.DefaultKeymap) throw new($"Bad CommandType {cmd}");
+                if (!ok) throw new($"{cmd} failed!");
             }
         }
 
-        public bool SwitchKeymap(DeviceKeymap deviceKeymap)
+        public void SwitchKeymap(DeviceKeymap deviceKeymap)
         {
             lock (_deviceMutex)
             {
@@ -129,14 +112,12 @@ namespace Mycropad.Lib.Device
 
                 var (readData, readLength) = Read();
                 var (cmd, ok, _) = Response(readData, readLength);
-                if (cmd != CommandTypes.SwitchKeymap) throw new Exception($"Bad CommandType {cmd}");
-                if (!ok) throw new Exception($"{cmd} failed!");
-
-                return ok;
+                if (cmd != CommandTypes.SwitchKeymap) throw new($"Bad CommandType {cmd}");
+                if (!ok) throw new($"{cmd} failed!");
             }
         }
 
-        public bool LedsSwitchPattern(LedsPattern pattern)
+        public void LedsSwitchPattern(LedsPattern pattern)
         {
             lock (_deviceMutex)
             {
@@ -145,14 +126,12 @@ namespace Mycropad.Lib.Device
 
                 var (readData, readLength) = Read();
                 var (cmd, ok, _) = Response(readData, readLength);
-                if (cmd != CommandTypes.LedsSwitchPattern) throw new Exception($"Bad CommandType {cmd}");
-                if (!ok) throw new Exception($"{cmd} failed!");
-
-                return ok;
+                if (cmd != CommandTypes.LedsSwitchPattern) throw new($"Bad CommandType {cmd}");
+                if (!ok) throw new($"{cmd} failed!");
             }
         }
 
-        public bool LedsSetFixedMap(IEnumerable<LedColor> map)
+        public void LedsSetFixedMap(IEnumerable<LedColor> map)
         {
             lock (_deviceMutex)
             {
@@ -162,10 +141,8 @@ namespace Mycropad.Lib.Device
 
                 var (readData, readLength) = Read();
                 var (cmd, ok, _) = Response(readData, readLength);
-                if (cmd != CommandTypes.LedsSetFixedMap) throw new Exception($"Bad CommandType {cmd}");
-                if (!ok) throw new Exception($"{cmd} failed!");
-
-                return ok;
+                if (cmd != CommandTypes.LedsSetFixedMap) throw new($"Bad CommandType {cmd}");
+                if (!ok) throw new($"{cmd} failed!");
             }
         }
 
@@ -174,7 +151,7 @@ namespace Mycropad.Lib.Device
             try
             {
                 var offset = 0;
-                bool stxReceived = false;
+                var stxReceived = false;
                 var responseData = new byte[1024];
                 var toReceive = 0;
 
@@ -206,13 +183,11 @@ namespace Mycropad.Lib.Device
                         }
                     }
 
-                    if (stxReceived)
+                    // here stx has been received.
+                    // etx received
+                    if (responseData[offset - 1] == 0x03 && toReceive == offset)
                     {
-                        // etx received
-                        if (responseData[offset - 1] == 0x03 && toReceive == offset)
-                        {
-                            return (responseData, offset);
-                        }
+                        return (responseData, offset);
                     }
                 } while (true);
             }
@@ -241,27 +216,21 @@ namespace Mycropad.Lib.Device
         #region IDisposable
         private bool _disposed;
 
-        protected virtual void Dispose(bool disposing)
+        private void Dispose(bool disposing)
         {
-            if (!_disposed)
+            if (_disposed) return;
+            if (disposing)
             {
-                if (disposing)
-                {
-                    if (_device != null)
-                    {
-                        _device.Close();
-                    }
-                }
-
-                _disposed = true;
+                _device?.Close();
             }
+
+            _disposed = true;
         }
 
         public void Dispose()
         {
             // Do not change this code. Put cleanup code in 'Dispose(bool disposing)' method
-            Dispose(disposing: true);
-            GC.SuppressFinalize(this);
+            Dispose(true);
         }
         #endregion
     }

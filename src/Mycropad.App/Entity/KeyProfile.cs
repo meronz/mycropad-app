@@ -4,6 +4,7 @@ using System.Linq;
 using Mycropad.Lib.Enums;
 using Mycropad.Lib.Types;
 
+// ReSharper disable PropertyCanBeMadeInitOnly.Global
 namespace Mycropad.App.Entity
 {
     public record KeyProfile

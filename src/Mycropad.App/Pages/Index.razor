@@ -1,6 +1,6 @@
 ﻿@page "/"
-@inject ILogger<Index> Logger
-@inject ProfileManager Profiles
+@inject ILogger<Index> _logger
+@inject ProfileManager _profiles
 @implements IDisposable
 
 <div class="flex flex-col">
@@ -12,7 +12,7 @@
                 value="@_selectedProfileId"
                 @onchange="ProfileSelect"
                 >
-                @foreach (var p in Profiles)
+                @foreach (var p in _profiles)
                 {
                     <option value="@p.Id" selected="@(p.Id == _selectedProfileId)">@p.Name</option>
                 }
@@ -44,17 +44,17 @@
     [CascadingParameter] public IModalService Modal { get; set; }
 
     private Guid _selectedProfileId;
-    private KeyProfile SelectedProfile => Profiles.GetProfile(Profiles.CurrentProfileId);
+    private KeyProfile SelectedProfile => _profiles.GetProfile(_profiles.CurrentProfileId);
 
     protected override void OnInitialized()
     {
-        _selectedProfileId = Profiles.CurrentProfileId;
-        Profiles.OnProfilesUpdated += async () => await ProfileUpdated();
+        _selectedProfileId = _profiles.CurrentProfileId;
+        _profiles.OnProfilesUpdated += ProfileUpdated;
     }
 
     public void Dispose()
     {
-        Profiles.OnProfilesUpdated -= async () => await ProfileUpdated();
+        _profiles.OnProfilesUpdated -= ProfileUpdated;
         GC.SuppressFinalize(this);
     }
 
@@ -63,7 +63,7 @@
         var parameters = new ModalParameters();
         parameters.Add(nameof(EditProfileModal.ProfileName), "");
         parameters.Add(nameof(EditProfileModal.LedsPattern), LedsPattern.Fixed);
-        var options = new ModalOptions()
+        var options = new ModalOptions
         {
             HideCloseButton = true,
             Class = "modal-window",
@@ -74,15 +74,15 @@
         var result = await modal.Result;
         if(!result.Cancelled)
         {
-            var profile = new KeyProfile()
+            var profile = new KeyProfile
             {
                 Id = Guid.NewGuid(),
                 Name = (result.Data as dynamic).ProfileName,
                 Keymap = ProfileManager.DefaultKeymap,
                 LedsPattern = (result.Data as dynamic).LedsPattern,
             };
-            Profiles.AddProfile(profile);
-            Profiles.SwitchProfile(profile.Id);
+            _profiles.AddProfile(profile);
+            _profiles.SwitchProfile(profile.Id);
         }
     }
 
@@ -91,7 +91,7 @@
         var parameters = new ModalParameters();
         parameters.Add(nameof(EditProfileModal.ProfileName), SelectedProfile.Name);
         parameters.Add(nameof(EditProfileModal.LedsPattern), SelectedProfile.LedsPattern);
-        var options = new ModalOptions()
+        var options = new ModalOptions
         {
             HideCloseButton = true,
             Class = "modal-window",
@@ -104,26 +104,29 @@
         {
             SelectedProfile.Name = (result.Data as dynamic).ProfileName;
             SelectedProfile.LedsPattern = (result.Data as dynamic).LedsPattern;
-            Profiles.UpdateProfile(SelectedProfile);
+            _profiles.UpdateProfile(SelectedProfile);
         }
     }
 
-    private async Task ProfileSelect(ChangeEventArgs e)
+    private Task ProfileSelect(ChangeEventArgs e)
     {
-        _selectedProfileId = Guid.Parse(e.Value.ToString());
-        await SwitchProfile();
+        var id = e.Value?.ToString(); 
+        if (id == null) return Task.CompletedTask;
+        _selectedProfileId = Guid.Parse(id);
+        
+        return SwitchProfile();
     }
 
-    private async Task ProfileUpdated()
+    private Task ProfileUpdated()
     {
-        _selectedProfileId = Profiles.CurrentProfileId;
-        await InvokeAsync(StateHasChanged);
+        _selectedProfileId = _profiles.CurrentProfileId;
+        return InvokeAsync(StateHasChanged);
     }
 
-    private async Task SwitchProfile()
+    private Task SwitchProfile()
     {
-        Logger.LogInformation($"Selected {SelectedProfile.Name}");
-        Profiles.SwitchProfile(_selectedProfileId);
-        await InvokeAsync(StateHasChanged);
+        _logger.LogInformation($"Selected {SelectedProfile.Name}");
+        _profiles.SwitchProfile(_selectedProfileId);
+        return InvokeAsync(StateHasChanged);
     }
 }

@@ -1,11 +1,12 @@
 using System;
 using Mycropad.Lib.Device.Messages;
+// ReSharper disable ParameterOnlyUsedForPreconditionCheck.Global
 
 namespace Mycropad.Lib.Device
 {
     public class MycropadDeviceBase
     {
-        public static byte[] Command(CommandTypes command, byte[] cmdData = null)
+        protected static byte[] Command(CommandTypes command, byte[] cmdData = null)
         {
             var data = new byte[3 + (cmdData?.Length ?? 0)];
             data[0] = 0x02;   // STX
@@ -20,16 +21,16 @@ namespace Mycropad.Lib.Device
             return data;
         }
 
-        public static (CommandTypes cmd, bool ok, byte[] data) Response(byte[] responseData, int length)
+        protected static (CommandTypes cmd, bool ok, byte[] data) Response(byte[] responseData, int length)
         {
             if (responseData[0] != 0x02)
             {
-                throw new Exception("Not starting with STX");
+                throw new("Not starting with STX");
             }
 
             if (responseData[length - 1] != 0x03)
             {
-                throw new Exception("Not ending with ETX");
+                throw new("Not ending with ETX");
             }
 
             var cmd = (CommandTypes)responseData[1];

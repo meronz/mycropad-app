@@ -1,4 +1,5 @@
-﻿@inject ProfileManager ProfileManager
+﻿@inject ProfileManager _profileManager
+@implements IDisposable
 
 @if(Profile.Keymap.Count > 0)
 {
@@ -24,7 +25,7 @@
 
     protected override void OnInitialized()
     {
-        ProfileManager.OnProfilesUpdated += RefreshKeyMap;
+        _profileManager.OnProfilesUpdated += RefreshKeyMap;
     }
 
     protected override async Task OnParametersSetAsync()
@@ -34,12 +35,12 @@
 
     public void Dispose()
     {
-        ProfileManager.OnProfilesUpdated -= RefreshKeyMap;
+        _profileManager.OnProfilesUpdated -= RefreshKeyMap;
     }
 
-    private void RefreshKeyMap()
+    private Task RefreshKeyMap()
     {
-        _ = InvokeAsync(StateHasChanged);
+        return InvokeAsync(StateHasChanged);
     }
 
     private async Task UiClicked(Keys key)
@@ -48,10 +49,10 @@
         parameters.Add(nameof(ButtonModal.Key), key);
         parameters.Add(nameof(ButtonModal.KeyRecord), Profile.Keymap[key]);
 
-        var options = new ModalOptions()
+        var options = new ModalOptions
         {
             HideCloseButton = true,
-            Class = "modal-window"
+            Class = "modal-window",
         };
 
         var modal = Modal.Show<ButtonModal>($"{key} settings", parameters, options);
@@ -59,7 +60,7 @@
         if(!result.Cancelled)
         {
             Profile.Keymap[key] = (KeyRecord)result.Data;
-            ProfileManager.UpdateProfile(Profile);
+            _profileManager.UpdateProfile(Profile);
         }
     }
 }

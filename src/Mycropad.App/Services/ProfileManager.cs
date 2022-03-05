@@ -4,6 +4,7 @@ using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Text.Json;
+using System.Threading.Tasks;
 using Microsoft.Extensions.Logging;
 using Mycropad.App.Entity;
 using Mycropad.Lib;
@@ -13,13 +14,13 @@ namespace Mycropad.App.Services
 {
     public class ProfileManager : IEnumerable<KeyProfile>, IDisposable
     {
-        private readonly string FileName = "profiles.json";
+        private const string PROFILES_FILENAME = "profiles.json";
         private readonly ILogger<ProfileManager> _logger;
         private readonly DeviceManager _deviceManager;
         private List<KeyProfile> _profiles;
         private readonly JsonSerializerOptions _jsonOptions = new()
         {
-            WriteIndented = true
+            WriteIndented = true,
         };
 
         public ProfileManager(ILogger<ProfileManager> logger, DeviceManager deviceManager)
@@ -43,33 +44,24 @@ namespace Mycropad.App.Services
         }
 
         public Guid CurrentProfileId { get; private set; }
-        public Action OnProfilesUpdated { get; set; }
+        public Func<Task> OnProfilesUpdated { get; set; }
 
         private static Dictionary<Keys, KeyRecord> _defaultDeviceKeymap;
-        public static Dictionary<Keys, KeyRecord> DefaultKeymap
-        {
-            get
+        public static Dictionary<Keys, KeyRecord> DefaultKeymap =>
+            _defaultDeviceKeymap ??= new()
             {
-                if (_defaultDeviceKeymap == null)
-                {
-                    _defaultDeviceKeymap = new Dictionary<Keys, KeyRecord>()
-                    {
-                        {Keys.Key1, new(HidKeys.KEY_F1)},
-                        {Keys.Key2, new(HidKeys.KEY_F2)},
-                        {Keys.Key3, new(HidKeys.KEY_F3)},
-                        {Keys.Key4, new(HidKeys.KEY_F4)},
-                        {Keys.Key5, new(HidKeys.KEY_F5)},
-                        {Keys.Key6, new(HidKeys.KEY_F6)},
-                        {Keys.Key7, new(HidKeys.KEY_F7)},
-                        {Keys.Key8, new(HidKeys.KEY_F8)},
-                        {Keys.RotCW, new(HidKeys.KEY_Y, HidModifiers.MOD_LCTRL)},
-                        {Keys.RotCCW, new(HidKeys.KEY_Z, HidModifiers.MOD_LCTRL)},
-                        {Keys.RotClick, new(HidKeys.KEY_F11)},
-                    };
-                }
-                return _defaultDeviceKeymap;
-            }
-        }
+                {Keys.Key1, new(HidKeys.KEY_F1)},
+                {Keys.Key2, new(HidKeys.KEY_F2)},
+                {Keys.Key3, new(HidKeys.KEY_F3)},
+                {Keys.Key4, new(HidKeys.KEY_F4)},
+                {Keys.Key5, new(HidKeys.KEY_F5)},
+                {Keys.Key6, new(HidKeys.KEY_F6)},
+                {Keys.Key7, new(HidKeys.KEY_F7)},
+                {Keys.Key8, new(HidKeys.KEY_F8)},
+                {Keys.RotCW, new(HidKeys.KEY_Y, HidModifiers.MOD_LCTRL)},
+                {Keys.RotCCW, new(HidKeys.KEY_Z, HidModifiers.MOD_LCTRL)},
+                {Keys.RotClick, new(HidKeys.KEY_F11)},
+            };
 
         public void Load()
         {
@@ -82,7 +74,7 @@ namespace Mycropad.App.Services
                     Directory.CreateDirectory(dirPath);
                 }
 
-                var path = Path.Combine(dirPath, FileName);
+                var path = Path.Combine(dirPath, PROFILES_FILENAME);
                 LoadFromFile(path);
             }
             catch (Exception ex)
@@ -107,26 +99,25 @@ namespace Mycropad.App.Services
 
         public void SwitchProfile(Guid profileId, bool force = false)
         {
-            if (CurrentProfileId != profileId || force)
+            if (CurrentProfileId == profileId && !force) return;
+
+            var profile = GetProfile(profileId);
+            _deviceManager.SwitchKeymap(profile.GetDeviceKeyMap());
+            if (profile.LedsPattern == LedsPattern.Fixed)
             {
-                var profile = GetProfile(profileId);
-                _deviceManager.SwitchKeymap(profile.GetDeviceKeyMap());
-                if (profile.LedsPattern == LedsPattern.Fixed)
-                {
-                    _deviceManager.LedsSetFixedMap(profile.GetDeviceLedMap());
-                }
-
-                _deviceManager.LedsSwitchPattern(profile.LedsPattern);
-
-                CurrentProfileId = profileId;
-
-                if (profile.IsDefault)
-                {
-                    _deviceManager.SetDefaultKeymap(profile.GetDeviceKeyMap());
-                }
-
-                OnProfilesUpdated?.Invoke();
+                _deviceManager.LedsSetFixedMap(profile.GetDeviceLedMap());
             }
+
+            _deviceManager.LedsSwitchPattern(profile.LedsPattern);
+
+            CurrentProfileId = profileId;
+
+            if (profile.IsDefault)
+            {
+                _deviceManager.SetDefaultKeymap(profile.GetDeviceKeyMap());
+            }
+
+            OnProfilesUpdated?.Invoke();
         }
 
         private void LoadDefault()
@@ -140,7 +131,7 @@ namespace Mycropad.App.Services
                     IsDefault = true,
                     Keymap = DefaultKeymap,
                     LedsPattern = LedsPattern.Rainbow,
-                }
+                },
             };
         }
         
@@ -148,10 +139,10 @@ namespace Mycropad.App.Services
         {
             var json = File.ReadAllText(path);
             _profiles = JsonSerializer.Deserialize<List<KeyProfile>>(json, _jsonOptions);
-            if (!_profiles.Any()) { throw new Exception("Empty profiles"); }
+            if (!(_profiles?.Any() ?? false)) { throw new("Empty profiles"); }
         }
 
-        public void Save()
+        private void Save()
         {
             _logger.LogInformation("Save profiles");
             var dirPath = Path.Combine(PlatformUtils.GetHomeDirectory(), "mycropad");
@@ -160,20 +151,14 @@ namespace Mycropad.App.Services
                 Directory.CreateDirectory(dirPath);
             }
 
-            var path = Path.Combine(dirPath, FileName);
+            var path = Path.Combine(dirPath, PROFILES_FILENAME);
             var json = JsonSerializer.Serialize(_profiles, _jsonOptions);
             File.WriteAllText(path, json);
         }
 
-        public KeyProfile GetDefault()
-        {
-            return _profiles.First(x => x.IsDefault);
-        }
+        private KeyProfile GetDefault() => _profiles.First(x => x.IsDefault);
 
-        public KeyProfile GetProfile(Guid profileId)
-        {
-            return _profiles.First(x => x.Id == profileId);
-        }
+        public KeyProfile GetProfile(Guid profileId) => _profiles.First(x => x.Id == profileId);
 
         public void AddProfile(KeyProfile profile)
         {
@@ -181,7 +166,7 @@ namespace Mycropad.App.Services
             Save();
         }
 
-        public void DeleteProfile(Guid profileId)
+        private void DeleteProfile(Guid profileId)
         {
             var profile = GetProfile(profileId);
             _profiles.Remove(profile);
