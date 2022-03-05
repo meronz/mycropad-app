@@ -71,11 +71,11 @@ namespace Mycropad.Lib.Device
             }
         }
 
-        public bool SetKeymap(Keymap keymap)
+        public bool SetKeymap(DeviceKeymap deviceKeymap)
         {
             lock (_deviceMutex)
             {
-                var data = Command(CommandTypes.SetKeymap, keymap.ToBytes());
+                var data = Command(CommandTypes.SetKeymap, deviceKeymap.ToBytes());
                 Write(data);
 
                 var (readData, readLength) = Read();
@@ -87,7 +87,7 @@ namespace Mycropad.Lib.Device
             }
         }
 
-        public Keymap ReadKeymap()
+        public DeviceKeymap ReadKeymap()
         {
             lock (_deviceMutex)
             {
@@ -100,7 +100,7 @@ namespace Mycropad.Lib.Device
                 if (cmd != CommandTypes.ReadKeymap) throw new Exception($"Bad CommandType {cmd}");
                 if (!ok) throw new Exception($"{cmd} failed!");
 
-                return Keymap.FromBytes(keymapBytes);
+                return DeviceKeymap.FromBytes(keymapBytes);
             }
         }
 
@@ -120,11 +120,11 @@ namespace Mycropad.Lib.Device
             }
         }
 
-        public bool SwitchKeymap(Keymap keymap)
+        public bool SwitchKeymap(DeviceKeymap deviceKeymap)
         {
             lock (_deviceMutex)
             {
-                var data = Command(CommandTypes.SwitchKeymap, keymap.ToBytes());
+                var data = Command(CommandTypes.SwitchKeymap, deviceKeymap.ToBytes());
                 Write(data);
 
                 var (readData, readLength) = Read();

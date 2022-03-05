@@ -78,7 +78,7 @@
             {
                 Id = Guid.NewGuid(),
                 Name = (result.Data as dynamic).ProfileName,
-                Keymap = ProfileManager.DefaultKeymap,
+                DeviceKeymap = ProfileManager.DefaultDeviceKeymap,
                 LedsPattern = (result.Data as dynamic).LedsPattern,
             };
             Profiles.AddProfile(profile);

@@ -42,10 +42,10 @@ namespace Mycropad.App.Services
             _logger.LogInformation("Resetting keymap done");
         }
 
-        public void SetDefaultKeymap(Keymap keymap)
+        public void SetDefaultKeymap(DeviceKeymap deviceKeymap)
         {
             _logger.LogInformation("SetDefaultKeymap start");
-            var ok = _device.SetKeymap(keymap);
+            var ok = _device.SetKeymap(deviceKeymap);
             if (!ok)
             {
                 _logger.LogError("SetDefaultKeymap failed");
@@ -53,7 +53,7 @@ namespace Mycropad.App.Services
             _logger.LogInformation("SetDefaultKeymap done");
         }
 
-        public void SwitchKeymap(Keymap km)
+        public void SwitchKeymap(DeviceKeymap km)
         {
             _logger.LogInformation("SwitchKeymap start");
             var ok = _device.SwitchKeymap(km);

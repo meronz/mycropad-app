@@ -15,10 +15,10 @@ namespace Mycropad.Lib.Device
         void Dispose();
         bool Heartbeat();
         bool DefaultKeymap();
-        bool SetKeymap(Keymap keymap);
-        Keymap ReadKeymap();
+        bool SetKeymap(DeviceKeymap deviceKeymap);
+        DeviceKeymap ReadKeymap();
         void Start();
-        bool SwitchKeymap(Keymap keymap);
+        bool SwitchKeymap(DeviceKeymap deviceKeymap);
         bool LedsSwitchPattern(LedsPattern pattern);
         bool LedsSetFixedMap(IEnumerable<LedColor> map);
     }
