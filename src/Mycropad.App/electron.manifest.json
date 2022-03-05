@@ -10,8 +10,8 @@
   "build": {
     "appId": "com.Mycropad.App.app",
     "productName": "Mycropad",
-    "copyright": "Copyright © 2020",
-    "buildVersion": "1.0.0",
+    "copyright": "Copyright © 2022",
+    "buildVersion": "1.1.0",
     "compression": "maximum",
     "directories": {
       "output": "../../../bin/Desktop"
