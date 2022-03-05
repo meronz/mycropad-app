@@ -7,38 +7,35 @@ namespace Mycropad.Lib.Types
 {
     public class DeviceKeymap
     {
-        private const int MaxKeycodesNum = 10;
-        private const int SizeOfKeycode = 2;
-
-        public Dictionary<Keys, List<KeyCode>> KeyCodes { get; }
+        private const int MAX_KEYCODES_NUM = 10;
+        private const int SIZE_OF_KEYCODE = 2;
 
         public DeviceKeymap()
         {
             KeyCodes = new();
-            foreach (var key in Enum.GetValues<Keys>())
-            {
-                KeyCodes[key] = new(0);
-            }
+            foreach (var key in Enum.GetValues<Keys>()) KeyCodes[key] = new(0);
         }
+
+        public Dictionary<Keys, List<KeyCode>> KeyCodes { get; }
 
         public byte[] ToBytes()
         {
-            var size = KeyCodes.Values.Sum(x => 1 + x.Count) * SizeOfKeycode;
+            var size = KeyCodes.Values.Sum(x => 1 + x.Count) * SIZE_OF_KEYCODE;
             var buf = new byte[size];
             var bufOffset = 0;
 
             foreach (var c in KeyCodes.Values)
             {
                 // write length
-                var len = (ushort)(1 + c.Count);
-                Buffer.BlockCopy(BitConverter.GetBytes(len), 0, buf, bufOffset, SizeOfKeycode);
-                bufOffset += SizeOfKeycode;
+                var len = (ushort) (1 + c.Count);
+                Buffer.BlockCopy(BitConverter.GetBytes(len), 0, buf, bufOffset, SIZE_OF_KEYCODE);
+                bufOffset += SIZE_OF_KEYCODE;
 
                 // write keycodes
                 foreach (var keyCode in c)
                 {
-                    Buffer.BlockCopy(BitConverter.GetBytes(keyCode.ToUInt16()), 0, buf, bufOffset, SizeOfKeycode);
-                    bufOffset += SizeOfKeycode;
+                    Buffer.BlockCopy(BitConverter.GetBytes(keyCode.ToUInt16()), 0, buf, bufOffset, SIZE_OF_KEYCODE);
+                    bufOffset += SIZE_OF_KEYCODE;
                 }
             }
 
@@ -49,12 +46,12 @@ namespace Mycropad.Lib.Types
         {
             var keymap = new DeviceKeymap();
 
-            foreach(var key in Enum.GetValues<Keys>())
+            foreach (var key in Enum.GetValues<Keys>())
             {
                 var i = (int) key;
-                var bufOffset = i * (MaxKeycodesNum + 1) * SizeOfKeycode;
+                var bufOffset = i * (MAX_KEYCODES_NUM + 1) * SIZE_OF_KEYCODE;
                 var len = BitConverter.ToUInt16(keymapBytes, bufOffset) - 1;
-                bufOffset += SizeOfKeycode;
+                bufOffset += SIZE_OF_KEYCODE;
 
                 keymap.KeyCodes[key] = new(len);
                 for (var j = 0; j < len; j++)
@@ -62,7 +59,7 @@ namespace Mycropad.Lib.Types
                     var keyCode = BitConverter.ToUInt16(keymapBytes, bufOffset);
                     keymap.KeyCodes[key].Add(KeyCode.FromUInt16(keyCode));
 
-                    bufOffset += SizeOfKeycode;
+                    bufOffset += SIZE_OF_KEYCODE;
                 }
             }
 

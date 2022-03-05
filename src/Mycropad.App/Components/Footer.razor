@@ -2,7 +2,7 @@
 @implements IDisposable
 
 <footer class="p-2 mb-1">
-    @if(_device.Connected)
+    @if (_device.Connected)
     {
         <div class="rounded-md bg-green-400 text-white max-w-min px-3 py-1">
             Connected
@@ -36,4 +36,5 @@
         _connected = _device.Connected;
         _ = InvokeAsync(StateHasChanged);
     }
+
 }

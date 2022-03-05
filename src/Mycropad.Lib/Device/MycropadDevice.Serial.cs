@@ -15,13 +15,16 @@ namespace Mycropad.Lib.Device
     {
         private const uint USB_VID = 0xCAFE;
         private const uint USB_PID = 0x4005;
-
-        private MycropadDeviceSerial() { }
         private static MycropadDeviceSerial _instance;
-        public static MycropadDeviceSerial Instance => _instance ??= new();
 
         private readonly SerialPort _device = new();
         private readonly object _deviceMutex = new();
+
+        private MycropadDeviceSerial()
+        {
+        }
+
+        public static MycropadDeviceSerial Instance => _instance ??= new();
         public bool Connected => _device.IsOpen;
         public Action OnDeviceConnected { get; set; }
         public Action OnDeviceDisconnected { get; set; }
@@ -30,17 +33,6 @@ namespace Mycropad.Lib.Device
         {
             OpenDevice();
             OnDeviceConnected?.Invoke();
-        }
-
-        private void OpenDevice()
-        {
-            _device.PortName = PlatformUtils.FindSerialPort(USB_VID, USB_PID);
-            _device.WriteTimeout = 500;
-            _device.ReadTimeout = 500;
-
-            _device.Open();
-            _device.DiscardInBuffer();
-            _device.DiscardOutBuffer();
         }
 
 
@@ -121,7 +113,7 @@ namespace Mycropad.Lib.Device
         {
             lock (_deviceMutex)
             {
-                var data = Command(CommandTypes.LedsSwitchPattern, new[] { (byte)pattern });
+                var data = Command(CommandTypes.LedsSwitchPattern, new[] {(byte) pattern});
                 Write(data);
 
                 var (readData, readLength) = Read();
@@ -144,6 +136,17 @@ namespace Mycropad.Lib.Device
                 if (cmd != CommandTypes.LedsSetFixedMap) throw new($"Bad CommandType {cmd}");
                 if (!ok) throw new($"{cmd} failed!");
             }
+        }
+
+        private void OpenDevice()
+        {
+            _device.PortName = PlatformUtils.FindSerialPort(USB_VID, USB_PID);
+            _device.WriteTimeout = 500;
+            _device.ReadTimeout = 500;
+
+            _device.Open();
+            _device.DiscardInBuffer();
+            _device.DiscardOutBuffer();
         }
 
         private (byte[] data, int length) Read()
@@ -173,7 +176,7 @@ namespace Mycropad.Lib.Device
                         if (responseData[0] == 0x02)
                         {
                             stxReceived = true;
-                            toReceive = (int)BitConverter.ToUInt32(responseData, 3);
+                            toReceive = (int) BitConverter.ToUInt32(responseData, 3);
                             toReceive += 8;
                         }
                         else
@@ -185,10 +188,7 @@ namespace Mycropad.Lib.Device
 
                     // here stx has been received.
                     // etx received
-                    if (responseData[offset - 1] == 0x03 && toReceive == offset)
-                    {
-                        return (responseData, offset);
-                    }
+                    if (responseData[offset - 1] == 0x03 && toReceive == offset) return (responseData, offset);
                 } while (true);
             }
             catch (Exception)
@@ -196,6 +196,7 @@ namespace Mycropad.Lib.Device
                 _device.Close();
                 OnDeviceDisconnected?.Invoke();
             }
+
             return (null, -1);
         }
 
@@ -214,15 +215,13 @@ namespace Mycropad.Lib.Device
         }
 
         #region IDisposable
+
         private bool _disposed;
 
         private void Dispose(bool disposing)
         {
             if (_disposed) return;
-            if (disposing)
-            {
-                _device?.Close();
-            }
+            if (disposing) _device?.Close();
 
             _disposed = true;
         }
@@ -232,6 +231,7 @@ namespace Mycropad.Lib.Device
             // Do not change this code. Put cleanup code in 'Dispose(bool disposing)' method
             Dispose(true);
         }
+
         #endregion
     }
 }

@@ -6,32 +6,31 @@
 <div class="flex flex-col">
     <div class="flex flex-row items-center w-full">
         <div class="relative inline-flex">
-            <svg class="w-2 h-2 absolute top-0 right-0 m-4 pointer-events-none" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 412 232"><path d="M206 171.144L42.678 7.822c-9.763-9.763-25.592-9.763-35.355 0-9.763 9.764-9.763 25.592 0 35.355l181 181c4.88 4.882 11.279 7.323 17.677 7.323s12.796-2.441 17.678-7.322l181-181c9.763-9.764 9.763-25.592 0-35.355-9.763-9.763-25.592-9.763-35.355 0L206 171.144z" fill="#648299" fill-rule="nonzero"/></svg>
+            <svg class="w-2 h-2 absolute top-0 right-0 m-4 pointer-events-none" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 412 232">
+                <path d="M206 171.144L42.678 7.822c-9.763-9.763-25.592-9.763-35.355 0-9.763 9.764-9.763 25.592 0 35.355l181 181c4.88 4.882 11.279 7.323 17.677 7.323s12.796-2.441 17.678-7.322l181-181c9.763-9.764 9.763-25.592 0-35.355-9.763-9.763-25.592-9.763-35.355 0L206 171.144z" fill="#648299" fill-rule="nonzero"/>
+            </svg>
             <select
                 class="text-gray-600 dark:text-gray-400 bg-gray-100 dark:bg-gray-600 border border-gray-500 rounded-full hover:border-gray-400 h-10 pl-5 pr-10 focus:outline-none appearance-none"
                 value="@_selectedProfileId"
-                @onchange="ProfileSelect"
-                >
+                @onchange="ProfileSelect">
                 @foreach (var p in _profiles)
                 {
                     <option value="@p.Id" selected="@(p.Id == _selectedProfileId)">@p.Name</option>
                 }
             </select>
         </div>
-        <button 
+        <button
             class="text-gray-600 dark:text-gray-400 bg-gray-100 dark:bg-gray-600 border border-gray-500 rounded-full hover:border-gray-400  h-10 w-10 ml-2 p-2 focus:outline-none appearance-none"
-            @onclick="ProfileAdd"
-        >
+            @onclick="ProfileAdd">
             <svg viewBox="0 0 24 24">
-                <path fill="currentColor" d="M19,13H13V19H11V13H5V11H11V5H13V11H19V13Z" />
+                <path fill="currentColor" d="M19,13H13V19H11V13H5V11H11V5H13V11H19V13Z"/>
             </svg>
         </button>
-        <button 
+        <button
             class="text-gray-600 dark:text-gray-400 bg-gray-100 dark:bg-gray-600 border border-gray-500 rounded-full hover:border-gray-400 h-10 w-10 ml-2 p-2 focus:outline-none appearance-none"
-            @onclick="ProfileEdit"
-        >
+            @onclick="ProfileEdit">
             <svg viewBox="0 0 24 24">
-                <path fill="currentColor" d="M20.71,7.04C21.1,6.65 21.1,6 20.71,5.63L18.37,3.29C18,2.9 17.35,2.9 16.96,3.29L15.12,5.12L18.87,8.87M3,17.25V21H6.75L17.81,9.93L14.06,6.18L3,17.25Z" />
+                <path fill="currentColor" d="M20.71,7.04C21.1,6.65 21.1,6 20.71,5.63L18.37,3.29C18,2.9 17.35,2.9 16.96,3.29L15.12,5.12L18.87,8.87M3,17.25V21H6.75L17.81,9.93L14.06,6.18L3,17.25Z"/>
             </svg>
         </button>
     </div>
@@ -41,7 +40,9 @@
 </div>
 
 @code {
-    [CascadingParameter] public IModalService Modal { get; set; }
+
+    [CascadingParameter]
+    public IModalService Modal { get; set; }
 
     private Guid _selectedProfileId;
     private KeyProfile SelectedProfile => _profiles.GetProfile(_profiles.CurrentProfileId);
@@ -59,7 +60,7 @@
     }
 
     private async Task ProfileAdd()
-    { 
+    {
         var parameters = new ModalParameters();
         parameters.Add(nameof(EditProfileModal.ProfileName), "");
         parameters.Add(nameof(EditProfileModal.LedsPattern), LedsPattern.Fixed);
@@ -72,7 +73,7 @@
 
         var modal = Modal.Show<EditProfileModal>("New profile", parameters, options);
         var result = await modal.Result;
-        if(!result.Cancelled)
+        if (!result.Cancelled)
         {
             var profile = new KeyProfile
             {
@@ -100,7 +101,7 @@
 
         var modal = Modal.Show<EditProfileModal>("Edit profile", parameters, options);
         var result = await modal.Result;
-        if(!result.Cancelled)
+        if (!result.Cancelled)
         {
             SelectedProfile.Name = (result.Data as dynamic).ProfileName;
             SelectedProfile.LedsPattern = (result.Data as dynamic).LedsPattern;
@@ -110,10 +111,10 @@
 
     private Task ProfileSelect(ChangeEventArgs e)
     {
-        var id = e.Value?.ToString(); 
+        var id = e.Value?.ToString();
         if (id == null) return Task.CompletedTask;
         _selectedProfileId = Guid.Parse(id);
-        
+
         return SwitchProfile();
     }
 
@@ -129,4 +130,5 @@
         _profiles.SwitchProfile(_selectedProfileId);
         return InvokeAsync(StateHasChanged);
     }
+
 }

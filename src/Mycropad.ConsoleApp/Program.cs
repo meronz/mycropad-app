@@ -40,18 +40,15 @@ namespace Mycropad.ConsoleApp
             while (Console.KeyAvailable && Console.ReadLine() == "q")
             {
                 for (var i = 0; i < 8; i++)
-                {
                     map[i] = new(
-                        (byte)rand.Next(0, 0xFF),
-                        (byte)rand.Next(0, 0xFF),
-                        (byte)rand.Next(0, 0xFF)
+                        (byte) rand.Next(0, 0xFF),
+                        (byte) rand.Next(0, 0xFF),
+                        (byte) rand.Next(0, 0xFF)
                     );
-                }
 
                 MycropadDeviceSerial.Instance.LedsSetFixedMap(map);
                 await Task.Delay(1000);
             }
-
         }
     }
 }

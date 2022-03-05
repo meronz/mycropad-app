@@ -2,19 +2,19 @@
 <div class="flex flex-col h-full">
     <form class="h-80 p-1">
         <div class="my-2">
-        <label
-            for="key-name"
-            class="text-sm font-medium block mb-2">
-            Name
-        </label>
-        <input type="text" id="key-name" name="key-name" @bind="KeyRecord.Name">
+            <label
+                for="key-name"
+                class="text-sm font-medium block mb-2">
+                Name
+            </label>
+            <input type="text" id="key-name" name="key-name" @bind="KeyRecord.Name">
         </div>
         <div class="my-2">
             <label
                 class="text-sm font-medium block mb-2">
                 Macro
             </label>
-            
+
             @for (var j = 0; j < KeyRecord.KeyCodes?.Count; j++)
             {
                 var i = j;
@@ -22,46 +22,43 @@
                     <MacroTextBox
                         Id="i"
                         KeyCode="KeyRecord.KeyCodes[i]"
-                        KeyCodeChanged="async kc => await KeyCodeChanged(i, kc)"
-                    />
+                        KeyCodeChanged="async kc => await KeyCodeChanged(i, kc)"/>
                     <button
                         id=@($"remove-btn-{i}")
                         class="h-10 w-10 ml-2 p-2"
                         @onclick="() => KeyRecord.KeyCodes.RemoveAt(i)"
-                        type="button"
-                    >
+                        type="button">
                         <svg viewBox="0 0 24 24">
-                            <path fill="currentColor" d="M19,4H15.5L14.5,3H9.5L8.5,4H5V6H19M6,19A2,2 0 0,0 8,21H16A2,2 0 0,0 18,19V7H6V19Z" />
+                            <path fill="currentColor" d="M19,4H15.5L14.5,3H9.5L8.5,4H5V6H19M6,19A2,2 0 0,0 8,21H16A2,2 0 0,0 18,19V7H6V19Z"/>
                         </svg>
                     </button>
                 </div>
             }
             <div class="flex flex-row w-full items-end">
-            @{
-                var btnClass = "h-10 w-10 ml-2 p-2 " + (IsAddEnabled ? "" : "text-gray-600 dark:text-gray-400");
-                <button
-                    id="add"
-                    class="@btnClass"
-                    @onclick="() => KeyRecord.KeyCodes.Add(null)"
-                    disabled="@(!IsAddEnabled)"
-                    type="button"
-                >
-                    <svg viewBox="0 0 24 24">
-                        <path fill="currentColor" d="M19,13H13V19H11V13H5V11H11V5H13V11H19V13Z" />
-                    </svg>
-                </button>
-            }
+                @{
+                    var btnClass = "h-10 w-10 ml-2 p-2 " + (IsAddEnabled ? "" : "text-gray-600 dark:text-gray-400");
+                    <button
+                        id="add"
+                        class="@btnClass"
+                        @onclick="() => KeyRecord.KeyCodes.Add(null)"
+                        disabled="@(!IsAddEnabled)"
+                        type="button">
+                        <svg viewBox="0 0 24 24">
+                            <path fill="currentColor" d="M19,13H13V19H11V13H5V11H11V5H13V11H19V13Z"/>
+                        </svg>
+                    </button>
+                }
             </div>
         </div>
-        @if(KeyRecord.Color != null)
+        @if (KeyRecord.Color != null)
         {
             <div class="my-2">
-            <label
-                for="ledcolor"
-                class="text-sm font-medium block mb-2">
-                Color
-            </label>
-            <input type="color" id="ledcolor" name="ledcolor" value="@ColorString" @onchange="ColorChanged">
+                <label
+                    for="ledcolor"
+                    class="text-sm font-medium block mb-2">
+                    Color
+                </label>
+                <input type="color" id="ledcolor" name="ledcolor" value="@ColorString" @onchange="ColorChanged">
             </div>
         }
     </form>
@@ -83,16 +80,22 @@
 </div>
 
 @code {
-    [Parameter] public Keys Key { get; set; }
-    [Parameter] public KeyRecord KeyRecord { get; set; }
 
-    [CascadingParameter] BlazoredModalInstance ModalInstance { get; set; }
-    
+    [Parameter]
+    public Keys Key { get; set; }
+
+    [Parameter]
+    public KeyRecord KeyRecord { get; set; }
+
+    [CascadingParameter]
+    BlazoredModalInstance ModalInstance { get; set; }
+
     private string ColorString => $"#{KeyRecord.Color.R:X2}{KeyRecord.Color.G:X2}{KeyRecord.Color.B:X2}";
     private bool IsAddEnabled => KeyRecord.KeyCodes.Count == 0 || KeyRecord.KeyCodes.Last() != null;
     private bool SaveEnabled => KeyRecord.KeyCodes.All(_ => _ != null);
-    private string SaveClass => "text-white font-bold py-2 px-4 rounded-full " + 
-        (SaveEnabled ? "bg-blue-400 hover:bg-blue-600" : "bg-grey-400");
+
+    private string SaveClass => "text-white font-bold py-2 px-4 rounded-full " +
+                                (SaveEnabled ? "bg-blue-400 hover:bg-blue-600" : "bg-grey-400");
 
     protected override async Task OnParametersSetAsync()
     {
@@ -102,7 +105,7 @@
     async Task Save()
     {
         KeyRecord.KeyCodes = KeyRecord.KeyCodes.Select(x => x.SanitizeModifiers()).ToList();
-        
+
         await ModalInstance.CloseAsync(ModalResult.Ok(KeyRecord));
         await InvokeAsync(StateHasChanged);
     }
@@ -111,7 +114,7 @@
     {
         await ModalInstance.CancelAsync();
     }
-    
+
     private Task KeyCodeChanged(int index, KeyCode keyCode)
     {
         KeyRecord.KeyCodes[index] = keyCode;
@@ -130,4 +133,5 @@
 
         return InvokeAsync(StateHasChanged);
     }
+
 }

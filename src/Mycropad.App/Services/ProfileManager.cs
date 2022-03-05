@@ -15,13 +15,17 @@ namespace Mycropad.App.Services
     public class ProfileManager : IEnumerable<KeyProfile>, IDisposable
     {
         private const string PROFILES_FILENAME = "profiles.json";
-        private readonly ILogger<ProfileManager> _logger;
+
+        private static Dictionary<Keys, KeyRecord> _defaultDeviceKeymap;
         private readonly DeviceManager _deviceManager;
-        private List<KeyProfile> _profiles;
+
         private readonly JsonSerializerOptions _jsonOptions = new()
         {
             WriteIndented = true,
         };
+
+        private readonly ILogger<ProfileManager> _logger;
+        private List<KeyProfile> _profiles;
 
         public ProfileManager(ILogger<ProfileManager> logger, DeviceManager deviceManager)
         {
@@ -31,22 +35,9 @@ namespace Mycropad.App.Services
             Load();
         }
 
-        private void DeviceConnected()
-        {
-            try
-            {
-                SwitchProfile(CurrentProfileId, true);
-            }
-            catch (Exception ex)
-            {
-                _logger.LogError(ex, "ProfileManager.DeviceConnected");
-            }
-        }
-
         public Guid CurrentProfileId { get; private set; }
         public Func<Task> OnProfilesUpdated { get; set; }
 
-        private static Dictionary<Keys, KeyRecord> _defaultDeviceKeymap;
         public static Dictionary<Keys, KeyRecord> DefaultKeymap =>
             _defaultDeviceKeymap ??= new()
             {
@@ -63,16 +54,45 @@ namespace Mycropad.App.Services
                 {Keys.RotClick, new(HidKeys.KEY_F11)},
             };
 
+        public void Dispose()
+        {
+            _deviceManager.OnDeviceConnected += DeviceConnected;
+            GC.SuppressFinalize(this);
+        }
+
+        public IEnumerator<KeyProfile> GetEnumerator()
+        {
+            return _profiles
+                .OrderBy(x => !x.IsDefault)
+                .GetEnumerator();
+        }
+
+        IEnumerator IEnumerable.GetEnumerator()
+        {
+            return _profiles
+                .OrderBy(x => !x.IsDefault)
+                .GetEnumerator();
+        }
+
+        private void DeviceConnected()
+        {
+            try
+            {
+                SwitchProfile(CurrentProfileId, true);
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "ProfileManager.DeviceConnected");
+            }
+        }
+
         public void Load()
         {
             try
             {
                 _logger.LogInformation("Load profiles");
                 var dirPath = Path.Combine(PlatformUtils.GetHomeDirectory(), "mycropad");
-                if (!Directory.Exists(dirPath))
-                {
-                    Directory.CreateDirectory(dirPath);
-                }
+                if (!Directory.Exists(dirPath)) Directory.CreateDirectory(dirPath);
 
                 var path = Path.Combine(dirPath, PROFILES_FILENAME);
                 LoadFromFile(path);
@@ -103,19 +123,13 @@ namespace Mycropad.App.Services
 
             var profile = GetProfile(profileId);
             _deviceManager.SwitchKeymap(profile.GetDeviceKeyMap());
-            if (profile.LedsPattern == LedsPattern.Fixed)
-            {
-                _deviceManager.LedsSetFixedMap(profile.GetDeviceLedMap());
-            }
+            if (profile.LedsPattern == LedsPattern.Fixed) _deviceManager.LedsSetFixedMap(profile.GetDeviceLedMap());
 
             _deviceManager.LedsSwitchPattern(profile.LedsPattern);
 
             CurrentProfileId = profileId;
 
-            if (profile.IsDefault)
-            {
-                _deviceManager.SetDefaultKeymap(profile.GetDeviceKeyMap());
-            }
+            if (profile.IsDefault) _deviceManager.SetDefaultKeymap(profile.GetDeviceKeyMap());
 
             OnProfilesUpdated?.Invoke();
         }
@@ -134,31 +148,34 @@ namespace Mycropad.App.Services
                 },
             };
         }
-        
+
         private void LoadFromFile(string path)
         {
             var json = File.ReadAllText(path);
             _profiles = JsonSerializer.Deserialize<List<KeyProfile>>(json, _jsonOptions);
-            if (!(_profiles?.Any() ?? false)) { throw new("Empty profiles"); }
+            if (!(_profiles?.Any() ?? false)) throw new("Empty profiles");
         }
 
         private void Save()
         {
             _logger.LogInformation("Save profiles");
             var dirPath = Path.Combine(PlatformUtils.GetHomeDirectory(), "mycropad");
-            if (!Directory.Exists(dirPath))
-            {
-                Directory.CreateDirectory(dirPath);
-            }
+            if (!Directory.Exists(dirPath)) Directory.CreateDirectory(dirPath);
 
             var path = Path.Combine(dirPath, PROFILES_FILENAME);
             var json = JsonSerializer.Serialize(_profiles, _jsonOptions);
             File.WriteAllText(path, json);
         }
 
-        private KeyProfile GetDefault() => _profiles.First(x => x.IsDefault);
+        private KeyProfile GetDefault()
+        {
+            return _profiles.First(x => x.IsDefault);
+        }
 
-        public KeyProfile GetProfile(Guid profileId) => _profiles.First(x => x.Id == profileId);
+        public KeyProfile GetProfile(Guid profileId)
+        {
+            return _profiles.First(x => x.Id == profileId);
+        }
 
         public void AddProfile(KeyProfile profile)
         {
@@ -179,26 +196,7 @@ namespace Mycropad.App.Services
             _profiles.Add(profile);
             Save();
 
-            if (profile.Id == CurrentProfileId)
-            {
-                SwitchProfile(profile.Id, true);
-            }
-        }
-
-        public IEnumerator<KeyProfile> GetEnumerator() =>
-            _profiles
-                .OrderBy(x => !x.IsDefault)
-                .GetEnumerator();
-
-        IEnumerator IEnumerable.GetEnumerator() =>
-            _profiles
-                .OrderBy(x => !x.IsDefault)
-                .GetEnumerator();
-
-        public void Dispose()
-        {
-            _deviceManager.OnDeviceConnected += DeviceConnected;
-            GC.SuppressFinalize(this);
+            if (profile.Id == CurrentProfileId) SwitchProfile(profile.Id, true);
         }
     }
 }

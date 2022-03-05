@@ -10,18 +10,25 @@ namespace Mycropad.App.Services
 {
     public class DeviceManager : IDisposable
     {
-        private readonly ILogger<DeviceManager> _logger;
         private readonly IMycropadDevice _device;
         private readonly Thread _deviceThread;
+        private readonly ILogger<DeviceManager> _logger;
         private bool _closing;
-
-        public Action OnDeviceConnected { get; set; }
 
         public DeviceManager(ILogger<DeviceManager> logger, IMycropadDevice device)
         {
             _logger = logger;
             _device = device;
             _deviceThread = new(DeviceThread);
+        }
+
+        public Action OnDeviceConnected { get; set; }
+
+        public void Dispose()
+        {
+            _closing = true;
+            _deviceThread.Join();
+            GC.SuppressFinalize(this);
         }
 
         public void ResetKeymap()
@@ -103,7 +110,6 @@ namespace Mycropad.App.Services
         private void DeviceThread(object state)
         {
             while (!_closing)
-            {
                 try
                 {
                     if (!_device.Connected)
@@ -121,14 +127,6 @@ namespace Mycropad.App.Services
                 {
                     Thread.Sleep(100);
                 }
-            }
-        }
-
-        public void Dispose()
-        {
-            _closing = true;
-            _deviceThread.Join();
-            GC.SuppressFinalize(this);
         }
     }
 }

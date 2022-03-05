@@ -17,8 +17,12 @@
 </div>
 
 @code {
-    [CascadingParameter] public IModalService Modal { get; set; }
-    [CascadingParameter] BlazoredModalInstance ModalInstance { get; set; }
+
+    [CascadingParameter]
+    public IModalService Modal { get; set; }
+
+    [CascadingParameter]
+    BlazoredModalInstance ModalInstance { get; set; }
 
     async Task ResetKeymapClick()
     {
@@ -31,4 +35,5 @@
         _profileManager.Reset();
         await ModalInstance.CloseAsync();
     }
+
 }

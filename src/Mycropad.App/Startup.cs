@@ -51,10 +51,7 @@ namespace Mycropad.App
                 endpoints.MapFallbackToPage("/_Host");
             });
 
-            if (HybridSupport.IsElectronActive)
-            {
-                ElectronBootstrap();
-            }
+            if (HybridSupport.IsElectronActive) ElectronBootstrap();
 
 
             // Start DeviceManager
@@ -88,7 +85,8 @@ namespace Mycropad.App
 
         public void TrayIconSetup(BrowserWindow window)
         {
-            var menu = new MenuItem[] {
+            var menu = new MenuItem[]
+            {
                 new()
                 {
                     Label = "Show",
@@ -103,10 +101,7 @@ namespace Mycropad.App
 
             var iconPath = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "Assets", "trayicon.png");
 
-            if (_trayShown)
-            {
-                Electron.Tray.Destroy();
-            }
+            if (_trayShown) Electron.Tray.Destroy();
 
             Electron.Tray.Show(iconPath, menu);
             Electron.Tray.SetToolTip("Mycropad");
