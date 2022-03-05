@@ -1,10 +1,13 @@
 using System;
+using System.Collections.Generic;
 using System.IO;
+using System.Linq;
 using Blazored.Modal;
 using ElectronNET.API;
 using ElectronNET.API.Entities;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
+using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Mycropad.App.Services;
@@ -16,7 +19,14 @@ namespace Mycropad.App
 {
     public class Startup
     {
+        private readonly IConfiguration _configuration;
         private bool _trayShown;
+        private ProfileManager _profileManager;
+
+        public Startup(IConfiguration configuration)
+        {
+            _configuration = configuration;
+        }
 
         public void ConfigureServices(IServiceCollection services)
         {
@@ -55,12 +65,15 @@ namespace Mycropad.App
 
 
             // Start DeviceManager
-            app.ApplicationServices.GetRequiredService<ProfileManager>();
             app.ApplicationServices.GetRequiredService<DeviceManager>().Start();
+            _profileManager = app.ApplicationServices.GetRequiredService<ProfileManager>();
         }
 
-        public async void ElectronBootstrap()
+        private async void ElectronBootstrap()
         {
+            var startMinimized = _configuration.GetValue<int>("START_MINIMIZED") != 0;
+            Console.WriteLine($"Minimized: {startMinimized}");
+
             var browserWindow = await Electron.WindowManager.CreateWindowAsync(new BrowserWindowOptions
             {
                 Width = 800,
@@ -78,32 +91,31 @@ namespace Mycropad.App
             browserWindow.SetTitle("Mycropad");
             browserWindow.OnReadyToShow += () =>
             {
-                browserWindow.Show();
+                if (!startMinimized) browserWindow.Show();
                 TrayIconSetup(browserWindow);
             };
         }
 
         public void TrayIconSetup(BrowserWindow window)
         {
-            var menu = new MenuItem[]
+            var menu = new List<MenuItem>();
+            menu.AddRange(_profileManager.Select(profile => new MenuItem
             {
-                new()
-                {
-                    Label = "Show",
-                    Click = window.Show,
-                },
-                new()
-                {
-                    Label = "Exit",
-                    Click = window.Close,
-                },
-            };
+                Label = profile.Name, 
+                Click = () => _profileManager.SwitchProfile(profile.Id),
+            }));
+            
+            menu.Add(new() {Type = MenuType.separator});
+            menu.Add(new() {Label = "Show", Click = window.Show});
+            menu.Add(new() {Label = "Exit", Click = window.Close});
 
             var iconPath = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "Assets", "trayicon.png");
 
+            // Electron.Tray.Destroy is bugged upstream:
+            // https://github.com/electron/electron/issues/17622
             if (_trayShown) Electron.Tray.Destroy();
 
-            Electron.Tray.Show(iconPath, menu);
+            Electron.Tray.Show(iconPath, menu.ToArray());
             Electron.Tray.SetToolTip("Mycropad");
             _trayShown = true;
         }
