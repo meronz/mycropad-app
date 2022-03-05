@@ -1,9 +1,11 @@
-﻿<div
+﻿<span
     style="@ButtonStyle"
-    class="transition duration-250 ease-in-out bg-white dark:bg-gray-600 hover:bg-blue-300 text-gray-400 hover:text-white shadow-lg rounded-3xl flex justify-center items-center w-32 h-32 m-2 p-2"
+    class="transition duration-250 ease-in-out bg-white dark:bg-gray-600 hover:bg-blue-300 text-gray-400 hover:text-white shadow-lg rounded-3xl flex justify-center items-center w-32 h-32 m-2"
     @onclick="Clicked">
-    <span class="text-md text-center">@KeyRecord.Name</span>
-</div>
+    <span class="w-full h-full p-2 text-md text-center flex flex-col justify-center items-center font-semibold mix-blend-multiply hover:mix-blend-soft-light">
+        <span class="select-none">@KeyRecord.Name</span>
+    </span>
+</span>
 
 @code {
 
