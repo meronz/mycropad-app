@@ -98,18 +98,18 @@
         }
     }
 
-    private async Task SaveNewKey(Keys key, KeyCode[] keycodes, LedColor ledColor)
+    private Task SaveNewKey(Keys key, KeyCode[] keycodes, LedColor ledColor)
     {
-        await Task.Delay(0);
         var keymap = Profile.Keymap.For(key);
         keymap.Clear();
         keymap.AddRange(keycodes);
 
-        if(key < Keys.RotCW)
+        if(key < Keys.RotCW && Profile.LedsMap is not null)
         {
             Profile.LedsMap[((int)key) - 1] = ledColor;
         }
 
         Profiles.UpdateProfile(Profile);
+        return Task.CompletedTask;
     }
 }
