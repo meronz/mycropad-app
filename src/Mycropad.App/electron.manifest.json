@@ -4,7 +4,7 @@
     "imageFile": ""
   },
   "name": "Mycropad",
-  "author": "",
+  "author": "Salvatore Merone (meronz)",
   "singleInstance": true,
   "environment": "Production",
   "build": {
