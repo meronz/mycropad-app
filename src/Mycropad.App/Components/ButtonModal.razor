@@ -1,6 +1,14 @@
 <div class="flex flex-col h-full">
     <form class="h-80 p-1">
         <div class="my-2">
+        <label
+            for="keyname"
+            class="text-sm font-medium block mb-2">
+            Name
+        </label>
+        <input type="text" id="keyname" name="keyname" @bind="KeyName">
+        </div>
+        <div class="my-2">
             <label
                 for="macro"
                 class="text-sm font-medium block mb-2">
@@ -78,8 +86,10 @@
     [Parameter] public Keys Key { get; set; }
     [Parameter] public List<KeyCode> KeyCodes { get; set; }
     [Parameter] public LedColor LedColor { get; set; }
+    [Parameter] public string KeyName { get; set; }
+    
     [CascadingParameter] BlazoredModalInstance ModalInstance { get; set; }
-
+    
     private string _colorString => $"#{LedColor.R:X2}{LedColor.G:X2}{LedColor.B:X2}";
     private bool _isAddEnabled => KeyCodes.Count == 0 || KeyCodes.Last() != null;
     private bool _saveEnabled => KeyCodes.All(_ => _ != null);
@@ -96,13 +106,12 @@
         await ModalInstance.CloseAsync(ModalResult.Ok(
             new { 
                 KeyCodes = KeyCodes.Select(x => x.SanitizeModifiers()).ToArray(),
-                LedColor = LedColor
+                LedColor,
+                KeyName
             }));
 
         await InvokeAsync(StateHasChanged);
     }
-
-
 
     async Task Cancel()
     {

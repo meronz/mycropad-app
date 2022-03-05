@@ -2,18 +2,7 @@
     style="@_buttonStyle"
     class="transition duration-250 ease-in-out bg-white dark:bg-gray-600 hover:bg-blue-300 text-gray-400 hover:text-white shadow-lg rounded-3xl flex justify-center items-center w-32 h-32 m-2 p-2"
     @onclick='() => Clicked?.Invoke(Key)'>
-    <span class="text-md text-center">
-    @if(KeyCodes.Count() == 1)
-    {
-        @string.Join('+', KeyCodes.First().ToMacroStrings())
-    }
-    else
-    {
-        <span>
-        Macro
-        </span>
-    }
-    </span>
+    <span class="text-md text-center">@KeyName</span>
 </div>
 
 @code {
@@ -22,6 +11,8 @@
     [Parameter] public IEnumerable<KeyCode> KeyCodes { get; set; }
 
     [Parameter] public LedColor LedColor { get; set; }
+
+    [Parameter] public string KeyName { get; set; }
 
     [Parameter] public Func<Keys, Task> Clicked { get; set; }
 

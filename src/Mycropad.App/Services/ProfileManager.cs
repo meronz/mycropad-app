@@ -142,7 +142,8 @@ namespace Mycropad.App.Services
                 IsDefault = true,
                 Keymap = DefaultKeymap,
                 LedsPattern = LedsPattern.Rainbow,
-                LedsMap = DefaultLedsMap()
+                LedsMap = DefaultLedsMap(),
+                KeyNames = DefaultKeyNames(),
             });
         }
 
@@ -150,11 +151,18 @@ namespace Mycropad.App.Services
                 .Select(x => new LedColor(0x82, 0x00, 0xAC))
                 .ToArray();
 
+        private static string[] DefaultKeyNames() => Enumerable.Range(1, 12)
+            .Select(x => $"Key {x}")
+            .ToArray();
 
         private void LoadFromFile(string path)
         {
             var json = File.ReadAllText(path);
             _profiles = JsonSerializer.Deserialize<List<KeymapProfile>>(json, _jsonOptions);
+            foreach (var p in _profiles)
+            {
+                p.KeyNames ??= DefaultKeyNames();
+            }
             if (!_profiles.Any()) { throw new Exception("Empty profiles"); }
         }
 

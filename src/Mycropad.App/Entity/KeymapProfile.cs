@@ -13,5 +13,6 @@ namespace Mycropad.App.Entity
         public bool IsDefault { get; set; }
         public LedsPattern LedsPattern { get; set; }
         public LedColor[] LedsMap { get; set; }
+        public string[] KeyNames { get; set; }
     }
 }
