@@ -152,8 +152,35 @@ namespace Mycropad.App.Services
         private void LoadFromFile(string path)
         {
             var json = File.ReadAllText(path);
-            _profiles = JsonSerializer.Deserialize<List<KeyProfile>>(json, _jsonOptions);
-            if (!(_profiles?.Any() ?? false)) throw new("Empty profiles");
+            
+            TryDeserializeV1(json, out _profiles);
+            if (_profiles != null) return;
+            
+            TryDeserializeV0(json, out _profiles);
+            if (_profiles != null) return;
+
+            throw new("Load failed");
+        }
+
+        private void TryDeserializeV1(string json, out List<KeyProfile> profiles)
+        {
+            try
+            {
+                profiles = JsonSerializer.Deserialize<List<KeyProfile>>(json, _jsonOptions) ?? new();
+                if (!profiles.Any() || !profiles.Any(x => x.Keymap?.Any() ?? false)) profiles = null;
+            }
+            catch { profiles = null; }
+        }
+        
+        private void TryDeserializeV0(string json, out List<KeyProfile> profiles)
+        {
+            try
+            {
+                var profilesV0 = JsonSerializer.Deserialize<List<KeyProfileV0>>(json, _jsonOptions) ?? new();
+                if (!profilesV0.Any() || !profilesV0.Any(x => x.Keymap?.KeyCodes?.Any() ?? false)) profiles = null;
+                profiles = profilesV0.Select(x => new KeyProfile(x)).ToList();
+            }
+            catch { profiles = null; }
         }
 
         private void Save()

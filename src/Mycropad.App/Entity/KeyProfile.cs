@@ -4,9 +4,27 @@ using System.Linq;
 using Mycropad.Lib.Enums;
 using Mycropad.Lib.Types;
 
+// Json serializer uses these
+// ReSharper disable CollectionNeverUpdated.Global
+// ReSharper disable UnusedAutoPropertyAccessor.Global
 // ReSharper disable PropertyCanBeMadeInitOnly.Global
 namespace Mycropad.App.Entity
 {
+    public record KeyProfileV0
+    {
+        public record KeyProfileV0KeyMap
+        {
+            public List<List<KeyCode>> KeyCodes { get; set; }
+        }
+        
+        public Guid Id { get; set; }
+        public string Name { get; set; }
+        public KeyProfileV0KeyMap Keymap { get; set; }
+        public bool IsDefault { get; set; }
+        public LedsPattern LedsPattern { get; set; }
+        public LedColor[] LedsMap { get; set; }
+    }
+    
     public record KeyProfile
     {
         public Guid Id { get; set; }
@@ -30,6 +48,27 @@ namespace Mycropad.App.Entity
             foreach (var key in Enum.GetValues<Keys>()) deviceKeymap.KeyCodes[key] = Keymap[key].KeyCodes;
 
             return deviceKeymap;
+        }
+
+        public KeyProfile() { }
+
+        public KeyProfile(KeyProfileV0 v0)
+        {
+            Id = v0.Id;
+            Name = v0.Name;
+            IsDefault = v0.IsDefault;
+            LedsPattern = v0.LedsPattern;
+            
+            Keymap = new();
+            foreach (var key in Enum.GetValues<Keys>())
+            {
+                Keymap.Add(key, new()
+                {
+                    KeyCodes = v0.Keymap.KeyCodes?.ElementAtOrDefault((int)key) ?? new(),
+                    Color = v0.LedsMap?.ElementAtOrDefault((int)key) ?? new (125, 125, 125),
+                    Name = key.ToString(),
+                });
+            }
         }
     }
 }
