@@ -16,7 +16,7 @@
         <ProjectReference Include="..\Mycropad.Lib\Mycropad.Lib.csproj" />
     </ItemGroup>
 
-    <Target Name="PostBuild" AfterTargets="PostBuildEvent">
+    <Target Name="PostBuild" AfterTargets="PostBuildEvent" Inputs="wwwroot\css\app.postcss" Outputs="wwwroot\css\app.min.css">
         <Exec Command="npm run buildcss" />
     </Target>
 
