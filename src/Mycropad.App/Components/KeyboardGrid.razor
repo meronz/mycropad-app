@@ -48,19 +48,19 @@
     private async Task RefreshKeyMap()
     {
         _keycodesMap.Clear();
-        if(Profile.Keymap != null)
+        if(Profile.DeviceKeymap != null)
         {
-            _keycodesMap.Add(Keys.Key1, Profile.Keymap.KeyCodes[0]);
-            _keycodesMap.Add(Keys.Key3, Profile.Keymap.KeyCodes[2]);
-            _keycodesMap.Add(Keys.Key5, Profile.Keymap.KeyCodes[4]);
-            _keycodesMap.Add(Keys.Key2, Profile.Keymap.KeyCodes[1]);
-            _keycodesMap.Add(Keys.Key4, Profile.Keymap.KeyCodes[3]);
-            _keycodesMap.Add(Keys.Key6, Profile.Keymap.KeyCodes[5]);
-            _keycodesMap.Add(Keys.Key7, Profile.Keymap.KeyCodes[6]);
-            _keycodesMap.Add(Keys.Key8, Profile.Keymap.KeyCodes[7]);
-            _keycodesMap.Add(Keys.RotCW, Profile.Keymap.KeyCodes[8]);
-            _keycodesMap.Add(Keys.RotCCW, Profile.Keymap.KeyCodes[9]);
-            _keycodesMap.Add(Keys.RotClick, Profile.Keymap.KeyCodes[10]);
+            _keycodesMap.Add(Keys.Key1, Profile.DeviceKeymap.KeyCodes[0]);
+            _keycodesMap.Add(Keys.Key3, Profile.DeviceKeymap.KeyCodes[2]);
+            _keycodesMap.Add(Keys.Key5, Profile.DeviceKeymap.KeyCodes[4]);
+            _keycodesMap.Add(Keys.Key2, Profile.DeviceKeymap.KeyCodes[1]);
+            _keycodesMap.Add(Keys.Key4, Profile.DeviceKeymap.KeyCodes[3]);
+            _keycodesMap.Add(Keys.Key6, Profile.DeviceKeymap.KeyCodes[5]);
+            _keycodesMap.Add(Keys.Key7, Profile.DeviceKeymap.KeyCodes[6]);
+            _keycodesMap.Add(Keys.Key8, Profile.DeviceKeymap.KeyCodes[7]);
+            _keycodesMap.Add(Keys.RotCW, Profile.DeviceKeymap.KeyCodes[8]);
+            _keycodesMap.Add(Keys.RotCCW, Profile.DeviceKeymap.KeyCodes[9]);
+            _keycodesMap.Add(Keys.RotClick, Profile.DeviceKeymap.KeyCodes[10]);
         }
 
         _ledsMap.Clear();
@@ -121,7 +121,7 @@
 
     private Task SaveNewKey(Keys key, KeyCode[] keycodes, LedColor ledColor, string keyName)
     {
-        var keymap = Profile.Keymap.For(key);
+        var keymap = Profile.DeviceKeymap.For(key);
         keymap.Clear();
         keymap.AddRange(keycodes);
 

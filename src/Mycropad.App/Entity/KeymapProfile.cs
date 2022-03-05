@@ -9,7 +9,7 @@ namespace Mycropad.App.Entity
     {
         public Guid Id { get; set; }
         public string Name { get; set; }
-        public Keymap Keymap { get; set; }
+        public DeviceKeymap DeviceKeymap { get; set; }
         public bool IsDefault { get; set; }
         public LedsPattern LedsPattern { get; set; }
         public LedColor[] LedsMap { get; set; }
