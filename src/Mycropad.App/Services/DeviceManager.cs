@@ -14,79 +14,84 @@ namespace Mycropad.App.Services
         private readonly IMycropadDevice _device;
         private readonly Thread _deviceThread;
         private bool _closing;
-        private bool _disconnectionEventRaised;
 
         public Action OnDeviceConnected { get; set; }
-        public Action OnDeviceDisconnected { get; set; }
 
         public DeviceManager(ILogger<DeviceManager> logger, IMycropadDevice device)
         {
             _logger = logger;
             _device = device;
-            _deviceThread = new Thread(DeviceThread);
+            _deviceThread = new(DeviceThread);
         }
 
         public void ResetKeymap()
         {
-            _logger.LogInformation("ResetKeymap start");
-            var ok = _device.DefaultKeymap();
-            if (!ok)
+            try
             {
-                // todo: error popup
-                _logger.LogError("ResetKeymap failed");
+                _logger.LogDebug("ResetKeymap start");
+                _device.DefaultKeymap();
+                _logger.LogDebug("Resetting keymap done");
             }
-            else
+            catch (Exception e)
             {
-                _logger.LogInformation("Reading default keymap");
+                _logger.LogError(e, "ResetKeymap failed");
             }
-            _logger.LogInformation("Resetting keymap done");
         }
 
         public void SetDefaultKeymap(DeviceKeymap deviceKeymap)
         {
-            _logger.LogInformation("SetDefaultKeymap start");
-            var ok = _device.SetKeymap(deviceKeymap);
-            if (!ok)
+            try
             {
-                _logger.LogError("SetDefaultKeymap failed");
+                _logger.LogDebug("SetDefaultKeymap start");
+                _device.SetKeymap(deviceKeymap);
+                _logger.LogDebug("SetDefaultKeymap done");
             }
-            _logger.LogInformation("SetDefaultKeymap done");
+            catch (Exception e)
+            {
+                _logger.LogError(e, "SetDefaultKeymap failed");
+            }
         }
 
         public void SwitchKeymap(DeviceKeymap km)
         {
-            _logger.LogInformation("SwitchKeymap start");
-            var ok = _device.SwitchKeymap(km);
-            if (!ok)
+            try
             {
-                // todo: error popup
-                _logger.LogError("SwitchKeymap failed");
+                _logger.LogDebug("SwitchKeymap start");
+                _device.SwitchKeymap(km);
+                _logger.LogDebug("SwitchKeymap done");
             }
-            _logger.LogInformation("SwitchKeymap done");
+            catch (Exception e)
+            {
+                _logger.LogError(e, "SwitchKeymap failed");
+            }
         }
 
         public void LedsSwitchPattern(LedsPattern pattern)
         {
-            _logger.LogInformation("LedsSwitchPattern start");
-            var ok = _device.LedsSwitchPattern(pattern);
-            if (!ok)
+            try
             {
-                // todo: error popup
-                _logger.LogError("LedsSwitchPattern failed");
+                _logger.LogDebug("LedsSwitchPattern start");
+                _device.LedsSwitchPattern(pattern);
+                _logger.LogDebug("LedsSwitchPattern done");
             }
-            _logger.LogInformation("LedsSwitchPattern done");
+            catch (Exception e)
+            {
+                _logger.LogError(e, "LedsSwitchPattern failed");
+            }
         }
 
         public void LedsSetFixedMap(IEnumerable<LedColor> ledsMap)
         {
-            _logger.LogInformation("LedsSetFixedMap start");
-            var ok = _device.LedsSetFixedMap(ledsMap);
-            if (!ok)
+            try
             {
-                // todo: error popup
-                _logger.LogError("LedsSetFixedMap failed");
+                _logger.LogDebug("LedsSetFixedMap start");
+                _device.LedsSetFixedMap(ledsMap);
+                _logger.LogDebug("LedsSetFixedMap done");
             }
-            _logger.LogInformation("LedsSetFixedMap done");
+            catch (Exception e)
+            {
+                _logger.LogError(e, "LedsSetFixedMap failed");
+            }
         }
 
         public void Start()
@@ -105,7 +110,6 @@ namespace Mycropad.App.Services
                     {
                         _device.Start();
                         OnDeviceConnected?.Invoke();
-                        _disconnectionEventRaised = false;
                     }
                     else
                     {
@@ -115,11 +119,6 @@ namespace Mycropad.App.Services
                 }
                 catch (Exception)
                 {
-                    if (!_disconnectionEventRaised)
-                    {
-                        OnDeviceDisconnected?.Invoke();
-                        _disconnectionEventRaised = true;
-                    }
                     Thread.Sleep(100);
                 }
             }

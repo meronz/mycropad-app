@@ -14,7 +14,7 @@ namespace Mycropad.Lib.Types
 
         public DeviceKeymap()
         {
-            KeyCodes = new Dictionary<Keys, List<KeyCode>>();
+            KeyCodes = new();
             foreach (var key in Enum.GetValues<Keys>())
             {
                 KeyCodes[key] = new(0);
@@ -23,7 +23,7 @@ namespace Mycropad.Lib.Types
 
         public byte[] ToBytes()
         {
-            int size = KeyCodes.Values.Sum(x => 1 + x.Count) * SizeOfKeycode;
+            var size = KeyCodes.Values.Sum(x => 1 + x.Count) * SizeOfKeycode;
             var buf = new byte[size];
             var bufOffset = 0;
 

@@ -1,10 +1,10 @@
 using System;
+using System.IO;
 using Blazored.Modal;
 using ElectronNET.API;
 using ElectronNET.API.Entities;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
-using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Mycropad.App.Services;
@@ -18,20 +18,13 @@ namespace Mycropad.App
     {
         private bool _trayShown;
 
-        public Startup(IConfiguration configuration)
-        {
-            Configuration = configuration;
-        }
-
-        public IConfiguration Configuration { get; }
-
         public void ConfigureServices(IServiceCollection services)
         {
             services.AddRazorPages();
             services.AddServerSideBlazor();
             services.AddBlazoredModal();
 
-            services.AddSingleton<IMycropadDevice>(MycropadDevice_Serial.Instance);
+            services.AddSingleton<IMycropadDevice>(MycropadDeviceSerial.Instance);
             services.AddSingleton<DeviceManager>();
             services.AddSingleton<ProfileManager>();
         }
@@ -96,19 +89,19 @@ namespace Mycropad.App
         public void TrayIconSetup(BrowserWindow window)
         {
             var menu = new MenuItem[] {
-                new MenuItem
+                new()
                 {
                     Label = "Show",
-                    Click = () => window.Show()
+                    Click = window.Show,
                 },
-                new MenuItem
+                new()
                 {
                     Label = "Exit",
-                    Click = () => window.Close()
-                }
+                    Click = window.Close,
+                },
             };
 
-            var iconPath = System.IO.Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "Assets", "trayicon.png");
+            var iconPath = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "Assets", "trayicon.png");
 
             if (_trayShown)
             {

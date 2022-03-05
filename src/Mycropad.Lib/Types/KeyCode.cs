@@ -8,6 +8,7 @@ namespace Mycropad.Lib.Types
         public byte Key { get; set; }
 
         // Default constructor needed for JSON serialization
+        // ReSharper disable once MemberCanBePrivate.Global
         public KeyCode() { }
 
         public KeyCode(HidKeys key, HidModifiers modifiers = 0)
@@ -19,7 +20,7 @@ namespace Mycropad.Lib.Types
         public static KeyCode FromUInt16(ushort bytes) => new()
         {
             Key = (byte)(bytes & 0xFF),
-            Modifiers = (byte)(bytes >> 8 & 0xFF)
+            Modifiers = (byte)(bytes >> 8 & 0xFF),
         };
 
         public ushort ToUInt16()

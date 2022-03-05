@@ -4,6 +4,9 @@ using System.Linq;
 using Mycropad.Lib.Enums;
 using Mycropad.Lib.Types;
 
+// ReSharper disable InconsistentNaming
+// ReSharper disable UnusedMember.Global
+
 namespace Mycropad.Lib.Macro
 {
     public static class MacroExtensions
@@ -135,30 +138,28 @@ namespace Mycropad.Lib.Macro
             MEDIA_COFFEE = HidKeys.KEY_MEDIA_COFFEE,
             MEDIA_REFRESH = HidKeys.KEY_MEDIA_REFRESH,
             MEDIA_CALC = HidKeys.KEY_MEDIA_CALC,
-        };
+        }
 
         public static KeyCode ParseKeyCode(this string macro)
         {
-            KeyCode keyCode = new(HidKeys.KEY_NONE, HidModifiers.MOD_NONE);
+            KeyCode keyCode = new(HidKeys.KEY_NONE);
 
             macro = macro.ToUpperInvariant();
             var tokens = macro.Split('+').Select(t => t.Trim());
 
             foreach (var token in tokens)
             {
-                if (Enum.TryParse(typeof(ModifierTokens), token, true, out object modToken))
+                if (Enum.TryParse(typeof(ModifierTokens), token, true, out var modToken))
                 {
                     keyCode.Modifiers |= (byte)(ModifierTokens)modToken;
                     continue;
                 }
 
-                if (Enum.TryParse(typeof(KeyTokens), token, true, out object keyToken))
-                {
-                    keyCode.Key = (byte)(KeyTokens)keyToken;
-                    return keyCode;
-                }
+                if (!Enum.TryParse(typeof(KeyTokens), token, true, out var keyToken))
+                    throw new($"Unrecognized token {token}");
 
-                throw new Exception($"Unrecognized token {token}");
+                keyCode.Key = (byte)(KeyTokens)keyToken;
+                return keyCode;
             }
 
             return keyCode;
@@ -166,14 +167,10 @@ namespace Mycropad.Lib.Macro
 
         public static IEnumerable<string> ToMacroStrings(this KeyCode keyCode)
         {
-            var result = new List<string>();
-            foreach (var mod in Enum.GetValues<ModifierTokens>())
-            {
-                if ((keyCode.Modifiers & (byte)mod) == (byte)mod)
-                {
-                    result.Add(mod.ToString());
-                }
-            }
+            var result = Enum.GetValues<ModifierTokens>()
+                .Where(mod => (keyCode.Modifiers & (byte) mod) == (byte) mod)
+                .Select(mod => mod.ToString())
+                .ToList();
 
             if (keyCode.Key != 0)
             {
@@ -185,25 +182,24 @@ namespace Mycropad.Lib.Macro
 
         public static KeyCode SanitizeModifiers(this KeyCode keyCode)
         {
-            if (keyCode.Modifiers != 0 && keyCode.Key == 0)
+            if (keyCode.Modifiers == 0 || keyCode.Key != 0) return keyCode;
+            
+            // Turn the modifier key into a keypress
+            KeyTokens? key = (ModifierTokens)keyCode.Modifiers switch
             {
-                // Turn the modifier key into a keypress
-                KeyTokens? key = (ModifierTokens)keyCode.Modifiers switch
-                {
-                    ModifierTokens.ALT => KeyTokens.KEY_ALT,
-                    ModifierTokens.ALT_R => KeyTokens.KEY_ALT_R,
-                    ModifierTokens.SHIFT => KeyTokens.KEY_SHIFT,
-                    ModifierTokens.SHIFT_R => KeyTokens.KEY_SHIFT_R,
-                    ModifierTokens.META => KeyTokens.KEY_META,
-                    ModifierTokens.META_R => KeyTokens.KEY_META_R,
-                    ModifierTokens.CTRL => KeyTokens.KEY_CTRL,
-                    ModifierTokens.CTRL_R => KeyTokens.KEY_CTRL_R,
-                    _ => null
-                };
+                ModifierTokens.ALT => KeyTokens.KEY_ALT,
+                ModifierTokens.ALT_R => KeyTokens.KEY_ALT_R,
+                ModifierTokens.SHIFT => KeyTokens.KEY_SHIFT,
+                ModifierTokens.SHIFT_R => KeyTokens.KEY_SHIFT_R,
+                ModifierTokens.META => KeyTokens.KEY_META,
+                ModifierTokens.META_R => KeyTokens.KEY_META_R,
+                ModifierTokens.CTRL => KeyTokens.KEY_CTRL,
+                ModifierTokens.CTRL_R => KeyTokens.KEY_CTRL_R,
+                _ => null,
+            };
 
-                keyCode.Key = (byte)(key ?? 0);
-                keyCode.Modifiers = 0;
-            }
+            keyCode.Key = (byte)(key ?? 0);
+            keyCode.Modifiers = 0;
             return keyCode;
         }
     }

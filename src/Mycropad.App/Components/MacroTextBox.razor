@@ -1,6 +1,6 @@
 <div class="w-full">
     <BlazoredTypeahead
-        id=Id
+        id="Id"
         SearchMethod="@GetAvailableKeys"
         @bind-Values="SelectedKeysString"
         Debounce="10"
@@ -20,10 +20,10 @@
 @code {
     [Parameter] public string Id { get; set; }
     [Parameter] public KeyCode KeyCode { get; set; }
-    [Parameter] public Action<KeyCode> KeyCodeChanged { get; set; }
+    [Parameter] public Func<KeyCode, Task> KeyCodeChanged { get; set; }
 
     private string _validationMessage = "";
-    private IList<string> _selectedKeysString = new List<string>();
+    private List<string> _selectedKeysString = new();
     private IList<string> SelectedKeysString
     { 
         get => _selectedKeysString; 
@@ -34,7 +34,7 @@
                 var keycode = string.Join('+', value).ParseKeyCode();
                 KeyCodeChanged?.Invoke(keycode);
                 _validationMessage = "";
-                _selectedKeysString = value;
+                _selectedKeysString = new(value);
             }
             catch
             {
@@ -48,10 +48,10 @@
 
     protected override async Task OnParametersSetAsync()
     {
-        SelectedKeysString.Clear();
+        _selectedKeysString.Clear();
         if(KeyCode != null)
         {
-            (SelectedKeysString as List<string>).AddRange(KeyCode.ToMacroStrings());
+            _selectedKeysString.AddRange(KeyCode.ToMacroStrings());
         }
         await InvokeAsync(StateHasChanged);
     }
@@ -61,7 +61,7 @@
         var result = Enum.GetNames<MacroExtensions.ModifierTokens>()
             .Concat(Enum.GetNames<MacroExtensions.KeyTokens>())
             .Select(x => x.ToUpperInvariant())
-            .Where(x => !SelectedKeysString.Contains(x.ToUpperInvariant()))
+            .Where(x => !_selectedKeysString.Contains(x.ToUpperInvariant()))
             .Where(x => x.Contains(searchText.ToUpperInvariant()))
             .ToArray();
 

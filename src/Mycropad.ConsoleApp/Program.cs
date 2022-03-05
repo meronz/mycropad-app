@@ -1,8 +1,6 @@
 ﻿using System;
-using System.Collections.Generic;
 using System.Runtime.Versioning;
 using System.Threading.Tasks;
-using Mycropad.Lib;
 using Mycropad.Lib.Device;
 using Mycropad.Lib.Types;
 
@@ -28,29 +26,29 @@ namespace Mycropad.ConsoleApp
         {
             var rand = new Random();
             await Task.Delay(0);
-            MycropadDevice_Serial.Instance.Start();
+            MycropadDeviceSerial.Instance.Start();
 
-            while (MycropadDevice_Serial.Instance.Connected == false)
+            while (MycropadDeviceSerial.Instance.Connected == false)
             {
                 Console.Write(".");
                 await Task.Delay(100);
             }
 
-            MycropadDevice_Serial.Instance.LedsSwitchPattern(0);
+            MycropadDeviceSerial.Instance.LedsSwitchPattern(0);
 
             var map = new LedColor[8];
-            while (true)
+            while (Console.KeyAvailable && Console.ReadLine() == "q")
             {
-                for (int i = 0; i < 8; i++)
+                for (var i = 0; i < 8; i++)
                 {
-                    map[i] = new LedColor(
+                    map[i] = new(
                         (byte)rand.Next(0, 0xFF),
                         (byte)rand.Next(0, 0xFF),
                         (byte)rand.Next(0, 0xFF)
                     );
                 }
 
-                MycropadDevice_Serial.Instance.LedsSetFixedMap(map);
+                MycropadDeviceSerial.Instance.LedsSetFixedMap(map);
                 await Task.Delay(1000);
             }
 

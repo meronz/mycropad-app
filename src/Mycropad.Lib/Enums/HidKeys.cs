@@ -1,3 +1,6 @@
+// ReSharper disable InconsistentNaming
+// ReSharper disable UnusedMember.Global
+// ReSharper disable IdentifierTypo
 namespace Mycropad.Lib.Enums
 {
     // Taken from:
@@ -58,7 +61,7 @@ namespace Mycropad.Lib.Enums
         KEY_ESC = 0x29,         // Keyboard ESCAPE
         KEY_BACKSPACE = 0x2a,   // Keyboard DELETE (Backspace)
         KEY_TAB = 0x2b,         // Keyboard Tab
-        KEY_SPACE = 0x2c,       // Keyboard Spacebar
+        KEY_SPACE = 0x2c,       // Keyboard Space bar
         KEY_MINUS = 0x2d,       // Keyboard - and _
         KEY_EQUAL = 0x2e,       // Keyboard = and +
         KEY_LEFTBRACE = 0x2f,   // Keyboard [ and {

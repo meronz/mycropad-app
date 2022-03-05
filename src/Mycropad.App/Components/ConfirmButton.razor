@@ -1,28 +1,29 @@
+@using System.Timers
 @implements IDisposable
 
 <button
     @onclick="Click"
-    class="@_class">
+    class="@Class">
     @(_clicked ? "Confirm?" : Text)
 </button>
 
 @code {
 
-    string _baseClass => "transition duration-250 ease-in-out font-bold py-2 px-4 rounded-full";
-    string _class => _clicked 
-        ? $"{_baseClass} bg-red-400 hover:bg-red-600 text-white"
-        : $"{_baseClass} bg-blue-400 hover:bg-blue-600 text-white";
+    string BaseClass => "transition duration-250 ease-in-out font-bold py-2 px-4 rounded-full";
+    string Class => _clicked 
+        ? $"{BaseClass} bg-red-400 hover:bg-red-600 text-white"
+        : $"{BaseClass} bg-blue-400 hover:bg-blue-600 text-white";
 
     bool _clicked = false;
-    System.Timers.Timer _resetTimer;
+    Timer _resetTimer;
     [Parameter] public string Text { get; set; }
     [Parameter] public Func<Task> Clicked { get; set; }
     
     protected override void OnInitialized()
     {
-        _resetTimer = new System.Timers.Timer(5000);
+        _resetTimer = new(5000);
         _resetTimer.AutoReset = false;
-        _resetTimer.Elapsed += (source, args) => { _clicked = false; InvokeAsync(StateHasChanged); };
+        _resetTimer.Elapsed += (_, _) => { _clicked = false; InvokeAsync(StateHasChanged); };
     }
 
     public void Dispose()
@@ -31,7 +32,7 @@
         GC.SuppressFinalize(this);
     }
 
-    private async Task Click()
+    private void Click()
     {
         if(!_clicked)
         {
@@ -40,6 +41,6 @@
             return;
         }
 
-        await Clicked?.Invoke();
+        Clicked?.Invoke();
     }
 }

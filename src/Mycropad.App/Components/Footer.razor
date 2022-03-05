@@ -1,8 +1,8 @@
-﻿@inject IMycropadDevice Device
+﻿@inject IMycropadDevice _device
 @implements IDisposable
 
 <footer class="p-2 mb-1">
-    @if(Device.Connected)
+    @if(_device.Connected)
     {
         <div class="rounded-md bg-green-400 text-white max-w-min px-3 py-1">
             Connected
@@ -19,21 +19,21 @@
 @code {
     private bool _connected = false;
 
-    override protected void OnInitialized()
+    protected override void OnInitialized()
     {
-        Device.OnDeviceConnected += DeviceStatusChange;
-        Device.OnDeviceDisconnected += DeviceStatusChange;
+        _device.OnDeviceConnected += DeviceStatusChange;
+        _device.OnDeviceDisconnected += DeviceStatusChange;
     }
 
     public void Dispose()
     {
-        Device.OnDeviceConnected -= DeviceStatusChange;
-        Device.OnDeviceDisconnected -= DeviceStatusChange;
+        _device.OnDeviceConnected -= DeviceStatusChange;
+        _device.OnDeviceDisconnected -= DeviceStatusChange;
     }
 
     void DeviceStatusChange()
     {
-        _connected = Device.Connected;
-        _ = base.InvokeAsync(StateHasChanged);
+        _connected = _device.Connected;
+        _ = InvokeAsync(StateHasChanged);
     }
 }

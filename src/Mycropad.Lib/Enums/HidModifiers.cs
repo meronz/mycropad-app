@@ -1,4 +1,6 @@
-﻿namespace Mycropad.Lib.Enums
+﻿// ReSharper disable InconsistentNaming
+// ReSharper disable IdentifierTypo
+namespace Mycropad.Lib.Enums
 {
     // Taken from:
     // https://gist.github.com/MightyPork/6da26e382a7ad91b5496ee55fdc73db2

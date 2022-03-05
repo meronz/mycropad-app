@@ -1,5 +1,5 @@
 ﻿<div 
-    style="@_buttonStyle"
+    style="@ButtonStyle"
     class="transition duration-250 ease-in-out bg-white dark:bg-gray-600 hover:bg-blue-300 text-gray-400 hover:text-white shadow-lg rounded-3xl flex justify-center items-center w-32 h-32 m-2 p-2"
     @onclick="Clicked">
     <span class="text-md text-center">@KeyRecord.Name</span>
@@ -9,7 +9,7 @@
     [Parameter] public KeyRecord KeyRecord { get; set; }
     [Parameter] public Func<Task> Clicked { get; set; }
 
-    private string _buttonStyle => KeyRecord.Color == null 
+    private string ButtonStyle => KeyRecord.Color == null 
         ? ""
         : $"background-color: rgb({KeyRecord.Color.R}, {KeyRecord.Color.G}, {KeyRecord.Color.B});";
 

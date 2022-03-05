@@ -1,5 +1,3 @@
-using System;
-
 namespace Mycropad.Lib.Types
 {
     public class LedColor

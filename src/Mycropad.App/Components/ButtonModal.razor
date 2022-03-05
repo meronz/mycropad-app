@@ -1,28 +1,28 @@
+@using System.Globalization
 <div class="flex flex-col h-full">
     <form class="h-80 p-1">
         <div class="my-2">
         <label
-            for="keyname"
+            for="key-name"
             class="text-sm font-medium block mb-2">
             Name
         </label>
-        <input type="text" id="keyname" name="keyname" @bind="KeyRecord.Name">
+        <input type="text" id="key-name" name="key-name" @bind="KeyRecord.Name">
         </div>
         <div class="my-2">
             <label
-                for="macro"
                 class="text-sm font-medium block mb-2">
                 Macro
             </label>
             
-            @for (int j = 0; j < KeyRecord.KeyCodes?.Count; j++)
+            @for (var j = 0; j < KeyRecord.KeyCodes?.Count; j++)
             {
-                int i = j;
+                var i = j;
                 <div class="flex flex-row w-full">
                     <MacroTextBox
                         Id="i"
                         KeyCode="KeyRecord.KeyCodes[i]"
-                        KeyCodeChanged="async (kc) => await KeyCodeChanged(i, kc)"
+                        KeyCodeChanged="async kc => await KeyCodeChanged(i, kc)"
                     />
                     <button
                         id=@($"remove-btn-{i}")
@@ -38,12 +38,12 @@
             }
             <div class="flex flex-row w-full items-end">
             @{
-                var btnClass = "h-10 w-10 ml-2 p-2 " + (_isAddEnabled ? "" : "text-gray-600 dark:text-gray-400");
+                var btnClass = "h-10 w-10 ml-2 p-2 " + (IsAddEnabled ? "" : "text-gray-600 dark:text-gray-400");
                 <button
                     id="add"
                     class="@btnClass"
                     @onclick="() => KeyRecord.KeyCodes.Add(null)"
-                    disabled="@(!_isAddEnabled)"
+                    disabled="@(!IsAddEnabled)"
                     type="button"
                 >
                     <svg viewBox="0 0 24 24">
@@ -61,7 +61,7 @@
                 class="text-sm font-medium block mb-2">
                 Color
             </label>
-            <input type="color" id="ledcolor" name="ledcolor" value="@_colorString" @onchange="ColorChanged">
+            <input type="color" id="ledcolor" name="ledcolor" value="@ColorString" @onchange="ColorChanged">
             </div>
         }
     </form>
@@ -69,8 +69,8 @@
         <button
             id="save-btn"
             @onclick="Save"
-            disabled="@(!_saveEnabled)"
-            class="@_saveClass">
+            disabled="@(!SaveEnabled)"
+            class="@SaveClass">
             Save
         </button>
         <button
@@ -88,11 +88,11 @@
 
     [CascadingParameter] BlazoredModalInstance ModalInstance { get; set; }
     
-    private string _colorString => $"#{KeyRecord.Color.R:X2}{KeyRecord.Color.G:X2}{KeyRecord.Color.B:X2}";
-    private bool _isAddEnabled => KeyRecord.KeyCodes.Count == 0 || KeyRecord.KeyCodes.Last() != null;
-    private bool _saveEnabled => KeyRecord.KeyCodes.All(_ => _ != null);
-    private string _saveClass => "text-white font-bold py-2 px-4 rounded-full " + 
-        (_saveEnabled ? "bg-blue-400 hover:bg-blue-600" : "bg-grey-400");
+    private string ColorString => $"#{KeyRecord.Color.R:X2}{KeyRecord.Color.G:X2}{KeyRecord.Color.B:X2}";
+    private bool IsAddEnabled => KeyRecord.KeyCodes.Count == 0 || KeyRecord.KeyCodes.Last() != null;
+    private bool SaveEnabled => KeyRecord.KeyCodes.All(_ => _ != null);
+    private string SaveClass => "text-white font-bold py-2 px-4 rounded-full " + 
+        (SaveEnabled ? "bg-blue-400 hover:bg-blue-600" : "bg-grey-400");
 
     protected override async Task OnParametersSetAsync()
     {
@@ -112,21 +112,22 @@
         await ModalInstance.CancelAsync();
     }
     
-    private async Task KeyCodeChanged(int index, KeyCode keyCode)
+    private Task KeyCodeChanged(int index, KeyCode keyCode)
     {
         KeyRecord.KeyCodes[index] = keyCode;
-        await InvokeAsync(StateHasChanged);
+        return InvokeAsync(StateHasChanged);
     }
 
-    private async Task ColorChanged(ChangeEventArgs e)
+    private Task ColorChanged(ChangeEventArgs e)
     {
-        var rgbstring = e.Value.ToString();
+        var rgbString = e.Value?.ToString();
+        if (rgbString is null) return Task.CompletedTask;
 
-        KeyRecord.Color = new LedColor(
-            byte.Parse(rgbstring[1..3], System.Globalization.NumberStyles.HexNumber),
-            byte.Parse(rgbstring[3..5], System.Globalization.NumberStyles.HexNumber),
-            byte.Parse(rgbstring[5..7], System.Globalization.NumberStyles.HexNumber));
+        KeyRecord.Color = new(
+            byte.Parse(rgbString[1..3], NumberStyles.HexNumber),
+            byte.Parse(rgbString[3..5], NumberStyles.HexNumber),
+            byte.Parse(rgbString[5..7], NumberStyles.HexNumber));
 
-        await InvokeAsync(StateHasChanged);
+        return InvokeAsync(StateHasChanged);
     }
 }
