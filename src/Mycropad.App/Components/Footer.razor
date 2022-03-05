@@ -1,7 +1,7 @@
 ﻿@inject IMycropadDevice _device
 @implements IDisposable
 
-<footer class="p-2 mb-1">
+<footer class="p-2 mb-1 select-none">
     @if (_device.Connected)
     {
         <div class="rounded-md bg-green-400 text-white max-w-min px-3 py-1">
