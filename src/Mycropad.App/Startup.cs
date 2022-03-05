@@ -64,9 +64,9 @@ namespace Mycropad.App
             if (HybridSupport.IsElectronActive) ElectronBootstrap();
 
 
-            // Start DeviceManager
-            app.ApplicationServices.GetRequiredService<DeviceManager>().Start();
+            // Start DeviceManager after profiles have been loaded.
             _profileManager = app.ApplicationServices.GetRequiredService<ProfileManager>();
+            app.ApplicationServices.GetRequiredService<DeviceManager>().Start();
         }
 
         private async void ElectronBootstrap()
