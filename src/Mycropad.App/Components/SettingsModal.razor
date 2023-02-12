@@ -1,5 +1,5 @@
-@inject DeviceManager _deviceManager
-@inject ProfileManager _profileManager
+@inject DeviceManager DeviceManager
+@inject ProfileManager ProfileManager
 
 <div class="flex flex-col h-full">
     <div class="flex flex-row py-4">
@@ -26,13 +26,13 @@
 
     async Task ResetKeymapClick()
     {
-        _deviceManager.ResetKeymap();
+        DeviceManager.ResetKeymap();
         await ModalInstance.CloseAsync();
     }
 
     async Task ResetProfilesClick()
     {
-        _profileManager.Reset();
+        ProfileManager.Reset();
         await ModalInstance.CloseAsync();
     }
 

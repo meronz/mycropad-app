@@ -10,220 +10,219 @@ using Mycropad.App.Entity;
 using Mycropad.Lib;
 using Mycropad.Lib.Enums;
 
-namespace Mycropad.App.Services
+namespace Mycropad.App.Services;
+
+public class ProfileManager : IEnumerable<KeyProfile>, IDisposable
 {
-    public class ProfileManager : IEnumerable<KeyProfile>, IDisposable
+    private const string PROFILES_FILENAME = "profiles.json";
+
+    private static Dictionary<Keys, KeyRecord> _defaultDeviceKeymap;
+    private readonly DeviceManager _deviceManager;
+
+    private readonly JsonSerializerOptions _jsonOptions = new()
     {
-        private const string PROFILES_FILENAME = "profiles.json";
+        WriteIndented = true,
+    };
 
-        private static Dictionary<Keys, KeyRecord> _defaultDeviceKeymap;
-        private readonly DeviceManager _deviceManager;
+    private readonly ILogger<ProfileManager> _logger;
+    private List<KeyProfile> _profiles;
 
-        private readonly JsonSerializerOptions _jsonOptions = new()
+    public ProfileManager(ILogger<ProfileManager> logger, DeviceManager deviceManager)
+    {
+        _logger = logger;
+        _deviceManager = deviceManager;
+        _deviceManager.OnDeviceConnected += DeviceConnected;
+        Load();
+    }
+
+    public Guid CurrentProfileId { get; private set; }
+    public Func<Task> OnProfilesUpdated { get; set; }
+
+    public static Dictionary<Keys, KeyRecord> DefaultKeymap =>
+        _defaultDeviceKeymap ??= new()
         {
-            WriteIndented = true,
+            {Keys.Key1, new(HidKeys.KEY_F1)},
+            {Keys.Key2, new(HidKeys.KEY_F2)},
+            {Keys.Key3, new(HidKeys.KEY_F3)},
+            {Keys.Key4, new(HidKeys.KEY_F4)},
+            {Keys.Key5, new(HidKeys.KEY_F5)},
+            {Keys.Key6, new(HidKeys.KEY_F6)},
+            {Keys.Key7, new(HidKeys.KEY_F7)},
+            {Keys.Key8, new(HidKeys.KEY_F8)},
+            {Keys.RotCW, new(HidKeys.KEY_Y, HidModifiers.MOD_LCTRL)},
+            {Keys.RotCCW, new(HidKeys.KEY_Z, HidModifiers.MOD_LCTRL)},
+            {Keys.RotClick, new(HidKeys.KEY_F11)},
         };
 
-        private readonly ILogger<ProfileManager> _logger;
-        private List<KeyProfile> _profiles;
+    public void Dispose()
+    {
+        _deviceManager.OnDeviceConnected += DeviceConnected;
+        GC.SuppressFinalize(this);
+    }
 
-        public ProfileManager(ILogger<ProfileManager> logger, DeviceManager deviceManager)
+    public IEnumerator<KeyProfile> GetEnumerator()
+    {
+        return _profiles
+            .OrderBy(x => !x.IsDefault)
+            .GetEnumerator();
+    }
+
+    IEnumerator IEnumerable.GetEnumerator()
+    {
+        return _profiles
+            .OrderBy(x => !x.IsDefault)
+            .GetEnumerator();
+    }
+
+    private void DeviceConnected()
+    {
+        try
         {
-            _logger = logger;
-            _deviceManager = deviceManager;
-            _deviceManager.OnDeviceConnected += DeviceConnected;
-            Load();
+            SwitchProfile(CurrentProfileId, true);
         }
-
-        public Guid CurrentProfileId { get; private set; }
-        public Func<Task> OnProfilesUpdated { get; set; }
-
-        public static Dictionary<Keys, KeyRecord> DefaultKeymap =>
-            _defaultDeviceKeymap ??= new()
-            {
-                {Keys.Key1, new(HidKeys.KEY_F1)},
-                {Keys.Key2, new(HidKeys.KEY_F2)},
-                {Keys.Key3, new(HidKeys.KEY_F3)},
-                {Keys.Key4, new(HidKeys.KEY_F4)},
-                {Keys.Key5, new(HidKeys.KEY_F5)},
-                {Keys.Key6, new(HidKeys.KEY_F6)},
-                {Keys.Key7, new(HidKeys.KEY_F7)},
-                {Keys.Key8, new(HidKeys.KEY_F8)},
-                {Keys.RotCW, new(HidKeys.KEY_Y, HidModifiers.MOD_LCTRL)},
-                {Keys.RotCCW, new(HidKeys.KEY_Z, HidModifiers.MOD_LCTRL)},
-                {Keys.RotClick, new(HidKeys.KEY_F11)},
-            };
-
-        public void Dispose()
+        catch (Exception ex)
         {
-            _deviceManager.OnDeviceConnected += DeviceConnected;
-            GC.SuppressFinalize(this);
+            _logger.LogError(ex, "ProfileManager.DeviceConnected");
         }
+    }
 
-        public IEnumerator<KeyProfile> GetEnumerator()
+    public void Load()
+    {
+        try
         {
-            return _profiles
-                .OrderBy(x => !x.IsDefault)
-                .GetEnumerator();
-        }
-
-        IEnumerator IEnumerable.GetEnumerator()
-        {
-            return _profiles
-                .OrderBy(x => !x.IsDefault)
-                .GetEnumerator();
-        }
-
-        private void DeviceConnected()
-        {
-            try
-            {
-                SwitchProfile(CurrentProfileId, true);
-            }
-            catch (Exception ex)
-            {
-                _logger.LogError(ex, "ProfileManager.DeviceConnected");
-            }
-        }
-
-        public void Load()
-        {
-            try
-            {
-                _logger.LogInformation("Load profiles");
-                var dirPath = Path.Combine(PlatformUtils.GetHomeDirectory(), "mycropad");
-                if (!Directory.Exists(dirPath)) Directory.CreateDirectory(dirPath);
-
-                var path = Path.Combine(dirPath, PROFILES_FILENAME);
-                LoadFromFile(path);
-            }
-            catch (Exception ex)
-            {
-                _logger.LogError(ex, $"Exception in {nameof(ProfileManager)}.{nameof(Load)}");
-                Reset();
-            }
-
-            CurrentProfileId = GetDefault().Id;
-            OnProfilesUpdated?.Invoke();
-        }
-
-        public void Reset()
-        {
-            _logger.LogInformation("Reset to default profiles");
-            LoadDefault();
-            Save();
-
-            CurrentProfileId = GetDefault().Id;
-            OnProfilesUpdated?.Invoke();
-        }
-
-        public void SwitchProfile(Guid profileId, bool force = false)
-        {
-            if (CurrentProfileId == profileId && !force) return;
-
-            var profile = GetProfile(profileId);
-            _deviceManager.SwitchKeymap(profile.GetDeviceKeyMap());
-            if (profile.LedsPattern == LedsPattern.Fixed) _deviceManager.LedsSetFixedMap(profile.GetDeviceLedMap());
-
-            _deviceManager.LedsSwitchPattern(profile.LedsPattern);
-
-            CurrentProfileId = profileId;
-
-            if (profile.IsDefault) _deviceManager.SetDefaultKeymap(profile.GetDeviceKeyMap());
-
-            OnProfilesUpdated?.Invoke();
-        }
-
-        private void LoadDefault()
-        {
-            _profiles = new()
-            {
-                new()
-                {
-                    Id = Guid.NewGuid(),
-                    Name = "Default",
-                    IsDefault = true,
-                    Keymap = DefaultKeymap,
-                    LedsPattern = LedsPattern.Rainbow,
-                },
-            };
-        }
-
-        private void LoadFromFile(string path)
-        {
-            var json = File.ReadAllText(path);
-            
-            TryDeserializeV1(json, out _profiles);
-            if (_profiles != null) return;
-            
-            TryDeserializeV0(json, out _profiles);
-            if (_profiles != null) return;
-
-            throw new("Load failed");
-        }
-
-        private void TryDeserializeV1(string json, out List<KeyProfile> profiles)
-        {
-            try
-            {
-                profiles = JsonSerializer.Deserialize<List<KeyProfile>>(json, _jsonOptions) ?? new();
-                if (!profiles.Any() || !profiles.Any(x => x.Keymap?.Any() ?? false)) profiles = null;
-            }
-            catch { profiles = null; }
-        }
-        
-        private void TryDeserializeV0(string json, out List<KeyProfile> profiles)
-        {
-            try
-            {
-                var profilesV0 = JsonSerializer.Deserialize<List<KeyProfileV0>>(json, _jsonOptions) ?? new();
-                if (!profilesV0.Any() || !profilesV0.Any(x => x.Keymap?.KeyCodes?.Any() ?? false)) profiles = null;
-                profiles = profilesV0.Select(x => new KeyProfile(x)).ToList();
-            }
-            catch { profiles = null; }
-        }
-
-        private void Save()
-        {
-            _logger.LogInformation("Save profiles");
+            _logger.LogInformation("Load profiles");
             var dirPath = Path.Combine(PlatformUtils.GetHomeDirectory(), "mycropad");
             if (!Directory.Exists(dirPath)) Directory.CreateDirectory(dirPath);
 
             var path = Path.Combine(dirPath, PROFILES_FILENAME);
-            var json = JsonSerializer.Serialize(_profiles, _jsonOptions);
-            File.WriteAllText(path, json);
+            LoadFromFile(path);
         }
-
-        private KeyProfile GetDefault()
+        catch (Exception ex)
         {
-            return _profiles.First(x => x.IsDefault);
+            _logger.LogError(ex, $"Exception in {nameof(ProfileManager)}.{nameof(Load)}");
+            Reset();
         }
 
-        public KeyProfile GetProfile(Guid profileId)
+        CurrentProfileId = GetDefault().Id;
+        OnProfilesUpdated?.Invoke();
+    }
+
+    public void Reset()
+    {
+        _logger.LogInformation("Reset to default profiles");
+        LoadDefault();
+        Save();
+
+        CurrentProfileId = GetDefault().Id;
+        OnProfilesUpdated?.Invoke();
+    }
+
+    public void SwitchProfile(Guid profileId, bool force = false)
+    {
+        if (CurrentProfileId == profileId && !force) return;
+
+        var profile = GetProfile(profileId);
+        _deviceManager.SwitchKeymap(profile.GetDeviceKeyMap());
+        if (profile.LedsPattern == LedsPattern.Fixed) _deviceManager.LedsSetFixedMap(profile.GetDeviceLedMap());
+
+        _deviceManager.LedsSwitchPattern(profile.LedsPattern);
+
+        CurrentProfileId = profileId;
+
+        if (profile.IsDefault) _deviceManager.SetDefaultKeymap(profile.GetDeviceKeyMap());
+
+        OnProfilesUpdated?.Invoke();
+    }
+
+    private void LoadDefault()
+    {
+        _profiles = new()
         {
-            return _profiles.First(x => x.Id == profileId);
-        }
+            new()
+            {
+                Id = Guid.NewGuid(),
+                Name = "Default",
+                IsDefault = true,
+                Keymap = DefaultKeymap,
+                LedsPattern = LedsPattern.Rainbow,
+            },
+        };
+    }
 
-        public void AddProfile(KeyProfile profile)
+    private void LoadFromFile(string path)
+    {
+        var json = File.ReadAllText(path);
+            
+        TryDeserializeV1(json, out _profiles);
+        if (_profiles != null) return;
+            
+        TryDeserializeV0(json, out _profiles);
+        if (_profiles != null) return;
+
+        throw new("Load failed");
+    }
+
+    private void TryDeserializeV1(string json, out List<KeyProfile> profiles)
+    {
+        try
         {
-            _profiles.Add(profile);
-            Save();
+            profiles = JsonSerializer.Deserialize<List<KeyProfile>>(json, _jsonOptions) ?? new();
+            if (!profiles.Any() || !profiles.Any(x => x.Keymap?.Any() ?? false)) profiles = null;
         }
-
-        private void DeleteProfile(Guid profileId)
+        catch { profiles = null; }
+    }
+        
+    private void TryDeserializeV0(string json, out List<KeyProfile> profiles)
+    {
+        try
         {
-            var profile = GetProfile(profileId);
-            _profiles.Remove(profile);
-            Save();
+            var profilesV0 = JsonSerializer.Deserialize<List<KeyProfileV0>>(json, _jsonOptions) ?? new();
+            if (!profilesV0.Any() || !profilesV0.Any(x => x.Keymap?.KeyCodes?.Any() ?? false)) profiles = null;
+            profiles = profilesV0.Select(x => new KeyProfile(x)).ToList();
         }
+        catch { profiles = null; }
+    }
 
-        public void UpdateProfile(KeyProfile profile)
-        {
-            DeleteProfile(profile.Id);
-            _profiles.Add(profile);
-            Save();
+    private void Save()
+    {
+        _logger.LogInformation("Save profiles");
+        var dirPath = Path.Combine(PlatformUtils.GetHomeDirectory(), "mycropad");
+        if (!Directory.Exists(dirPath)) Directory.CreateDirectory(dirPath);
 
-            if (profile.Id == CurrentProfileId) SwitchProfile(profile.Id, true);
-        }
+        var path = Path.Combine(dirPath, PROFILES_FILENAME);
+        var json = JsonSerializer.Serialize(_profiles, _jsonOptions);
+        File.WriteAllText(path, json);
+    }
+
+    private KeyProfile GetDefault()
+    {
+        return _profiles.First(x => x.IsDefault);
+    }
+
+    public KeyProfile GetProfile(Guid profileId)
+    {
+        return _profiles.First(x => x.Id == profileId);
+    }
+
+    public void AddProfile(KeyProfile profile)
+    {
+        _profiles.Add(profile);
+        Save();
+    }
+
+    private void DeleteProfile(Guid profileId)
+    {
+        var profile = GetProfile(profileId);
+        _profiles.Remove(profile);
+        Save();
+    }
+
+    public void UpdateProfile(KeyProfile profile)
+    {
+        DeleteProfile(profile.Id);
+        _profiles.Add(profile);
+        Save();
+
+        if (profile.Id == CurrentProfileId) SwitchProfile(profile.Id, true);
     }
 }

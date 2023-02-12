@@ -1,6 +1,6 @@
 ﻿@page "/"
-@inject ILogger<Index> _logger
-@inject ProfileManager _profiles
+@inject ILogger<Index> Logger
+@inject ProfileManager Profiles
 @implements IDisposable
 
 <div class="flex flex-col">
@@ -13,7 +13,7 @@
                 class="text-gray-600 dark:text-gray-400 bg-gray-100 dark:bg-gray-600 border border-gray-500 rounded-full hover:border-gray-400 h-10 pl-5 pr-10 focus:outline-none appearance-none"
                 value="@_selectedProfileId"
                 @onchange="ProfileSelect">
-                @foreach (var p in _profiles)
+                @foreach (var p in Profiles)
                 {
                     <option value="@p.Id" selected="@(p.Id == _selectedProfileId)">@p.Name</option>
                 }
@@ -45,25 +45,27 @@
     public IModalService Modal { get; set; }
 
     private Guid _selectedProfileId;
-    private KeyProfile SelectedProfile => _profiles.GetProfile(_profiles.CurrentProfileId);
+    private KeyProfile SelectedProfile => Profiles.GetProfile(Profiles.CurrentProfileId);
 
     protected override void OnInitialized()
     {
-        _selectedProfileId = _profiles.CurrentProfileId;
-        _profiles.OnProfilesUpdated += ProfileUpdated;
+        _selectedProfileId = Profiles.CurrentProfileId;
+        Profiles.OnProfilesUpdated += ProfileUpdated;
     }
 
     public void Dispose()
     {
-        _profiles.OnProfilesUpdated -= ProfileUpdated;
+        Profiles.OnProfilesUpdated -= ProfileUpdated;
         GC.SuppressFinalize(this);
     }
 
     private async Task ProfileAdd()
     {
-        var parameters = new ModalParameters();
-        parameters.Add(nameof(EditProfileModal.ProfileName), "");
-        parameters.Add(nameof(EditProfileModal.LedsPattern), LedsPattern.Fixed);
+        var parameters = new ModalParameters
+        {
+            {nameof(EditProfileModal.ProfileName), ""},
+            {nameof(EditProfileModal.LedsPattern), LedsPattern.Fixed},
+        };
         var options = new ModalOptions
         {
             HideCloseButton = true,
@@ -75,23 +77,30 @@
         var result = await modal.Result;
         if (!result.Cancelled)
         {
-            var profile = new KeyProfile
+            var profileName = (result.Data as dynamic)?.ProfileName;
+            var ledsPattern = (result.Data as dynamic)?.LedsPattern;
+            if (string.IsNullOrWhiteSpace(profileName) && ledsPattern is not null)
             {
-                Id = Guid.NewGuid(),
-                Name = (result.Data as dynamic).ProfileName,
-                Keymap = ProfileManager.DefaultKeymap,
-                LedsPattern = (result.Data as dynamic).LedsPattern,
-            };
-            _profiles.AddProfile(profile);
-            _profiles.SwitchProfile(profile.Id);
+                var profile = new KeyProfile
+                {
+                    Id = Guid.NewGuid(),
+                    Name = profileName,
+                    Keymap = ProfileManager.DefaultKeymap,
+                    LedsPattern = ledsPattern,
+                };
+                Profiles.AddProfile(profile);
+                Profiles.SwitchProfile(profile.Id);
+            }
         }
     }
 
     private async Task ProfileEdit()
     {
-        var parameters = new ModalParameters();
-        parameters.Add(nameof(EditProfileModal.ProfileName), SelectedProfile.Name);
-        parameters.Add(nameof(EditProfileModal.LedsPattern), SelectedProfile.LedsPattern);
+        var parameters = new ModalParameters
+        {
+            {nameof(EditProfileModal.ProfileName), SelectedProfile.Name},
+            {nameof(EditProfileModal.LedsPattern), SelectedProfile.LedsPattern},
+        };
         var options = new ModalOptions
         {
             HideCloseButton = true,
@@ -103,9 +112,14 @@
         var result = await modal.Result;
         if (!result.Cancelled)
         {
-            SelectedProfile.Name = (result.Data as dynamic).ProfileName;
-            SelectedProfile.LedsPattern = (result.Data as dynamic).LedsPattern;
-            _profiles.UpdateProfile(SelectedProfile);
+            var profileName = (result.Data as dynamic)?.ProfileName;
+            var ledsPattern = (result.Data as dynamic)?.LedsPattern;
+            if (string.IsNullOrWhiteSpace(profileName) && ledsPattern is not null)
+            {
+                SelectedProfile.Name = profileName;
+                SelectedProfile.LedsPattern = ledsPattern;
+                Profiles.UpdateProfile(SelectedProfile);
+            }
         }
     }
 
@@ -120,14 +134,14 @@
 
     private Task ProfileUpdated()
     {
-        _selectedProfileId = _profiles.CurrentProfileId;
+        _selectedProfileId = Profiles.CurrentProfileId;
         return InvokeAsync(StateHasChanged);
     }
 
     private Task SwitchProfile()
     {
-        _logger.LogInformation($"Selected {SelectedProfile.Name}");
-        _profiles.SwitchProfile(_selectedProfileId);
+        Logger.LogInformation($"Selected {SelectedProfile.Name}");
+        Profiles.SwitchProfile(_selectedProfileId);
         return InvokeAsync(StateHasChanged);
     }
 
