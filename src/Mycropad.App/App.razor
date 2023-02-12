@@ -1,4 +1,7 @@
-﻿<CascadingBlazoredModal>
+﻿<CascadingBlazoredModal
+    Class="custom-modal"
+    Position="ModalPosition.Custom"
+    PositionCustomClass="custom-modal-position">
     <Router AppAssembly="@typeof(Program).Assembly" PreferExactMatches="@true">
         <Found Context="routeData">
             <RouteView RouteData="@routeData" DefaultLayout="@typeof(MainLayout)"/>
