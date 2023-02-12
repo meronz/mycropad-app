@@ -1,0 +1,28 @@
+﻿@using Mycropad.Lib.Profiles
+<span
+    style="@ButtonStyle"
+    class="transition duration-250 ease-in-out bg-white dark:bg-gray-600 hover:bg-blue-300 text-gray-400 hover:text-white shadow-lg rounded-3xl flex justify-center items-center w-32 h-32 m-2"
+    @onclick="InvokeClicked">
+    <span class="w-full h-full p-2 text-md text-center flex flex-col justify-center items-center font-semibold mix-blend-multiply hover:mix-blend-soft-light">
+        <span class="select-none">@KeyRecord.Name</span>
+    </span>
+</span>
+
+@code {
+
+    [Parameter]
+    public KeyRecord KeyRecord { get; set; } = null!;
+
+    [Parameter]
+    public Func<Task>? Clicked { get; set; }
+
+    private string ButtonStyle => 
+        $"background-color: rgb({KeyRecord.Color.R}, {KeyRecord.Color.G}, {KeyRecord.Color.B});";
+
+    protected override async Task OnParametersSetAsync()
+    {
+        await InvokeAsync(StateHasChanged);
+    }
+
+    private Task InvokeClicked() => Clicked is not null ? Clicked() : Task.CompletedTask;
+}

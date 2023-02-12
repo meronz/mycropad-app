@@ -45,18 +45,18 @@ jobs:
           node-version: '14'
 
       - name: Install npm dependencies
-        run: cd src/Mycropad.App && npm install
+        run: cd src/Mycropad.App.Electron && npm install
 
       - name: Linux build
         if: startsWith(matrix.os, 'ubuntu')
-        working-directory: src/Mycropad.App
+        working-directory: src/Mycropad.App.Electron
         run: electronize build /target $ELECTRON_TARGET
         env:
           ELECTRON_TARGET: ${{ matrix.target }}
 
       - name: Windows build
         if: startsWith(matrix.os, 'windows')
-        working-directory: src/Mycropad.App
+        working-directory: src/Mycropad.App.Electron
         run: electronize build /target $Env:ELECTRON_TARGET
         env:
           ELECTRON_TARGET: ${{ matrix.target }}
@@ -67,7 +67,7 @@ jobs:
         with:
           name: Linux snap
           path: |
-            src/Mycropad.App/bin/Desktop/*.snap
+            src/Mycropad.App.Electron/bin/Desktop/*.snap
 
       - name: Archive Windows setup
         uses: actions/upload-artifact@v2
@@ -75,7 +75,7 @@ jobs:
         with:
           name: Windows setup
           path: |
-            src/Mycropad.App/bin/Desktop/*Setup*.exe
+            src/Mycropad.App.Electron/bin/Desktop/*Setup*.exe
 
   release:
     if: startsWith(github.ref, 'refs/tags/')
