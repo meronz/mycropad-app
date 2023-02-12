@@ -70,7 +70,7 @@
         {
             HideCloseButton = true,
             Class = "modal-window",
-            Animation = ModalAnimation.FadeIn(0.150),
+            AnimationType = ModalAnimationType.FadeInOut,
         };
 
         var modal = Modal.Show<SettingsModal>("Settings", options);
