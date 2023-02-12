@@ -3,14 +3,5 @@ module.exports = {
         './**/*.html',
         './**/*.razor'
     ],
-    darkMode: 'media', // or 'media' or 'class'
-    theme: {
-        extend: {},
-    },
-    variants: {
-        extend: {
-            mixBlendMode: ['hover'],
-        },
-    },
     plugins: [],
 }
