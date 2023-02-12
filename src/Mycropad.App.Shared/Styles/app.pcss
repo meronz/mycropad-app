@@ -1,0 +1,106 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+html, body {
+    font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif;
+    @apply bg-gray-100 dark:bg-gray-800;
+    @apply text-gray-800 dark:text-gray-200;
+}
+
+#blazor-error-ui {
+    background: lightyellow;
+    bottom: 0;
+    box-shadow: 0 -1px 2px rgba(0, 0, 0, 0.2);
+    display: none;
+    left: 0;
+    padding: 0.6rem 1.25rem 0.7rem 1.25rem;
+    position: fixed;
+    width: 100%;
+    z-index: 1000;
+}
+
+#blazor-error-ui .dismiss {
+    cursor: pointer;
+    position: absolute;
+    right: 0.75rem;
+    top: 0.5rem;
+}
+
+button:focus {
+    outline: none;
+    outline: none -webkit-focus-ring-color;
+}
+
+.modal-window {
+    width: 50vh;
+    min-width: fit-content;
+    display: flex;
+    z-index: 102;
+    flex-direction: column;
+    box-shadow: 0 2px 2px rgba(0,0,0,.25);
+    @apply bg-gray-100 dark:bg-gray-800;
+    @apply text-gray-800 dark:text-gray-200;
+    @apply rounded-md p-5
+}
+
+.custom-modal-position {
+    display: flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+}
+
+#titlebar #drag-region {
+    width: 100%;
+    height: 100%;
+    -webkit-app-region: drag;
+}
+
+#titlebar {
+    user-select: none;
+}
+
+#window-controls {
+    -webkit-app-region: no-drag;
+}
+
+#window-controls .button {
+    user-select: none;
+}
+
+.blazored-typeahead {
+    border: 0px !important;
+}
+
+.blazored-typeahead__input-multiselect-wrapper {
+    @apply bg-gray-100 dark:bg-gray-600 border border-gray-300 rounded-lg;
+}
+
+.blazored-typeahead__input-multiselect-wrapper input {
+    background: none;
+    @apply sm:text-sm mr-3;
+}
+
+.blazored-typeahead__multi-value {
+    @apply bg-gray-300 dark:bg-gray-400 border border-gray-300 sm:text-sm
+}
+
+.blazored-typeahead__result {
+    @apply bg-gray-100 dark:bg-gray-600 sm:text-sm;
+}
+
+.blazored-typeahead__results {
+    @apply bg-gray-100 dark:bg-gray-600 border border-gray-300 rounded-lg sm:text-sm;
+}
+
+.blazored-typeahead__notfound {
+    @apply bg-gray-100 dark:bg-gray-600 border border-gray-300 rounded-lg sm:text-sm;
+}
+
+.blazored-typeahead__results > .blazored-typeahead__active-item {
+    @apply bg-green-500;
+}
+
+.blazored-modal-header {
+    @apply select-none;
+}

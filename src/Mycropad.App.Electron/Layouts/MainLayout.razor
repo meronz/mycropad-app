@@ -1,0 +1,37 @@
+﻿@inject IWindowProvider WindowProvider
+@inherits LayoutComponentBase
+
+<div class="flex flex-col h-screen">
+    <header id="titlebar" class="h-10 flex flex-row">
+        <div id="drag-region" class="flex flex-row h-full">
+            <div id="titlebar-name" class="flex flex-row flex-grow items-center mx-5">
+                <span>Mycropad</span>
+            </div>
+            <div id="window-controls" class="flex flex-row-reverse items-center align-items-end h-full">
+                <!-- Close -->
+                <div class="text-gray-600 my-auto py-2 px-4 hover:bg-red-600 hover:text-white"
+                     @onclick="WindowProvider.Close">
+                    <svg style="width:24px;height:24px" viewBox="0 0 24 24">
+                        <path fill="currentColor" d="M19,6.41L17.59,5L12,10.59L6.41,5L5,6.41L10.59,12L5,17.59L6.41,19L12,13.41L17.59,19L19,17.59L13.41,12L19,6.41Z"/>
+                    </svg>
+                </div>
+
+                <!-- Minimize -->
+                <div class="text-gray-600 my-auto py-2 px-4 hover:bg-blue-300 hover:text-white"
+                     @onclick="WindowProvider.Hide">
+                    <svg style="width:24px;height:24px" viewBox="0 0 24 24">
+                        <path fill="currentColor" d="M20,14H4V10H20"/>
+                    </svg>
+                </div>
+            </div>
+        </div>
+    </header>
+    <main class="mb-auto flex flex-col items-center">
+        @Body
+    </main>
+    <Footer></Footer>
+</div>
+
+@code {
+
+}

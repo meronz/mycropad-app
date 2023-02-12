@@ -1,14 +1,13 @@
-namespace Mycropad.Lib.Device.Messages
-{
-    public enum CommandTypes
-    {
-        Heartbeat = 0,
-        SetKeymap = 1,
-        ReadKeymap = 2,
-        DefaultKeymap = 3,
-        SwitchKeymap = 4,
+namespace Mycropad.Lib.Device.Messages;
 
-        LedsSwitchPattern = 50,
-        LedsSetFixedMap = 51,
-    }
+public enum CommandTypes
+{
+    Heartbeat = 0,
+    SetKeymap = 1,
+    ReadKeymap = 2,
+    DefaultKeymap = 3,
+    SwitchKeymap = 4,
+
+    LedsSwitchPattern = 50,
+    LedsSetFixedMap = 51,
 }

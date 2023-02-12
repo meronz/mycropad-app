@@ -1,0 +1,22 @@
+﻿@using Mycropad.Lib.Device
+@inherits LayoutComponentBase
+@inject DeviceManager DeviceManager
+
+<div class="flex flex-col h-screen">
+    <main class="mb-auto mt-4 flex flex-col items-center">
+        @Body
+    </main>
+    <Footer ConnectionStateClicked="ConnectionStateClicked">
+    </Footer>
+</div>
+
+@code {
+
+    private async Task ConnectionStateClicked()
+    {
+        // The device manager must be started in a user interaction context to be able to access the device thus
+        // automatic reconnection is not possible.
+        await DeviceManager.Start(autoReconnect: false);
+    }
+
+}

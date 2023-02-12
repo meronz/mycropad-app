@@ -1,0 +1,80 @@
+<div class="flex flex-col h-full">
+    <form class="h-80 p-1">
+        <div class="my-4">
+            <label
+                for="name"
+                class="select-none text-sm font-medium block mb-2">
+                Profile name
+            </label>
+            <input
+                type="text"
+                id="name"
+                class="bg-gray-100 dark:bg-gray-600 border border-gray-300 sm:text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5"
+                placeholder="Profile"
+                @bind-value="@ProfileName"
+                required>
+        </div>
+        <div class="my-4">
+            <label
+                for="name"
+                class="select-none text-sm font-medium block mb-2">
+                Leds Pattern
+            </label>
+            <select
+                class="text-gray-600 dark:text-gray-400 bg-gray-100 dark:bg-gray-600 border border-gray-500 rounded-full hover:border-gray-400 h-10 pl-5 pr-10 focus:outline-none appearance-none"
+                value="@LedsPattern"
+                @onchange="LedsPatternChanged">
+                @foreach (var p in Enum.GetValues<LedsPattern>())
+                {
+                    <option value="@p" selected="@(p == LedsPattern)">
+                        @(Enum.GetName(p))
+                    </option>
+                }
+            </select>
+        </div>
+    </form>
+    <div class="p-2">
+        <button
+            @onclick="Save"
+            class="bg-blue-400 hover:bg-blue-600 text-white font-bold py-2 px-4 rounded-full">
+            Save
+        </button>
+        <button
+            @onclick="Cancel"
+            class="bg-transparent hover:bg-gray-200 text-gray-400 hover:text-gray-600 font-semibold py-2 px-4 rounded-full">
+            Cancel
+        </button>
+    </div>
+</div>
+
+@code {
+
+    [Parameter]
+    public string ProfileName { get; set; } = "";
+
+    [Parameter]
+    public LedsPattern LedsPattern { get; set; }
+
+    [CascadingParameter]
+    BlazoredModalInstance ModalInstance { get; set; } = null!;
+
+    async Task Save()
+    {
+        await ModalInstance.CloseAsync(ModalResult.Ok(new {ProfileName, LedsPattern}));
+    }
+
+    async Task Cancel()
+    {
+        await ModalInstance.CancelAsync();
+    }
+
+    Task LedsPatternChanged(ChangeEventArgs e)
+    {
+        if (!Enum.TryParse<LedsPattern>(e.Value?.ToString(), out var ledsPattern))
+            return Task.CompletedTask;
+
+        LedsPattern = ledsPattern;
+        return InvokeAsync(StateHasChanged);
+    }
+
+}
