@@ -9,24 +9,24 @@
 
 @code {
 
-    string BaseClass => "transition duration-250 ease-in-out font-bold py-2 px-4 rounded-full";
+    private string BaseClass => "transition duration-250 ease-in-out font-bold py-2 px-4 rounded-full";
 
-    string Class => _clicked
+    private string Class => _clicked
         ? $"{BaseClass} bg-red-400 hover:bg-red-600 text-white"
         : $"{BaseClass} bg-blue-400 hover:bg-blue-600 text-white";
 
-    bool _clicked = false;
-    Timer _resetTimer;
+    private bool _clicked = false;
+    
+    private readonly Timer _resetTimer = new(5000);
 
     [Parameter]
-    public string Text { get; set; }
+    public string Text { get; set; } = "";
 
     [Parameter]
-    public Func<Task> Clicked { get; set; }
+    public Func<Task>? Clicked { get; set; }
 
     protected override void OnInitialized()
     {
-        _resetTimer = new(5000);
         _resetTimer.AutoReset = false;
         _resetTimer.Elapsed += (_, _) =>
         {

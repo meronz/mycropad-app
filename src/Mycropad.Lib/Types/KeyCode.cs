@@ -2,7 +2,7 @@ using Mycropad.Lib.Enums;
 
 namespace Mycropad.Lib.Types;
 
-public record KeyCode
+public record struct KeyCode
 {
     // Default constructor needed for JSON serialization
     // ReSharper disable once MemberCanBePrivate.Global

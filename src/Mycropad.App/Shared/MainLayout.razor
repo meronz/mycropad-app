@@ -43,7 +43,7 @@
 @code {
 
     [CascadingParameter]
-    public IModalService Modal { get; set; }
+    public IModalService Modal { get; set; } = null!;
 
     private void Minimize()
     {

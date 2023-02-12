@@ -16,7 +16,6 @@ public class ProfileManager : IEnumerable<KeyProfile>, IDisposable
 {
     private const string PROFILES_FILENAME = "profiles.json";
 
-    private static Dictionary<Keys, KeyRecord> _defaultDeviceKeymap;
     private readonly DeviceManager _deviceManager;
 
     private readonly JsonSerializerOptions _jsonOptions = new()
@@ -30,29 +29,29 @@ public class ProfileManager : IEnumerable<KeyProfile>, IDisposable
     public ProfileManager(ILogger<ProfileManager> logger, DeviceManager deviceManager)
     {
         _logger = logger;
+        _profiles = DefaultProfile;
         _deviceManager = deviceManager;
         _deviceManager.OnDeviceConnected += DeviceConnected;
         Load();
     }
 
     public Guid CurrentProfileId { get; private set; }
-    public Func<Task> OnProfilesUpdated { get; set; }
+    public Func<Task>? OnProfilesUpdated { get; set; } = () => Task.CompletedTask;
 
-    public static Dictionary<Keys, KeyRecord> DefaultKeymap =>
-        _defaultDeviceKeymap ??= new()
-        {
-            {Keys.Key1, new(HidKeys.KEY_F1)},
-            {Keys.Key2, new(HidKeys.KEY_F2)},
-            {Keys.Key3, new(HidKeys.KEY_F3)},
-            {Keys.Key4, new(HidKeys.KEY_F4)},
-            {Keys.Key5, new(HidKeys.KEY_F5)},
-            {Keys.Key6, new(HidKeys.KEY_F6)},
-            {Keys.Key7, new(HidKeys.KEY_F7)},
-            {Keys.Key8, new(HidKeys.KEY_F8)},
-            {Keys.RotCW, new(HidKeys.KEY_Y, HidModifiers.MOD_LCTRL)},
-            {Keys.RotCCW, new(HidKeys.KEY_Z, HidModifiers.MOD_LCTRL)},
-            {Keys.RotClick, new(HidKeys.KEY_F11)},
-        };
+    public static Dictionary<Keys, KeyRecord> DefaultKeymap { get; } = new()
+    {
+        {Keys.Key1, new(HidKeys.KEY_F1)},
+        {Keys.Key2, new(HidKeys.KEY_F2)},
+        {Keys.Key3, new(HidKeys.KEY_F3)},
+        {Keys.Key4, new(HidKeys.KEY_F4)},
+        {Keys.Key5, new(HidKeys.KEY_F5)},
+        {Keys.Key6, new(HidKeys.KEY_F6)},
+        {Keys.Key7, new(HidKeys.KEY_F7)},
+        {Keys.Key8, new(HidKeys.KEY_F8)},
+        {Keys.RotCW, new(HidKeys.KEY_Y, HidModifiers.MOD_LCTRL)},
+        {Keys.RotCCW, new(HidKeys.KEY_Z, HidModifiers.MOD_LCTRL)},
+        {Keys.RotClick, new(HidKeys.KEY_F11)},
+    };
 
     public void Dispose()
     {
@@ -110,7 +109,7 @@ public class ProfileManager : IEnumerable<KeyProfile>, IDisposable
     public void Reset()
     {
         _logger.LogInformation("Reset to default profiles");
-        LoadDefault();
+        _profiles = DefaultProfile;
         Save();
 
         CurrentProfileId = GetDefault().Id;
@@ -134,53 +133,70 @@ public class ProfileManager : IEnumerable<KeyProfile>, IDisposable
         OnProfilesUpdated?.Invoke();
     }
 
-    private void LoadDefault()
+    private List<KeyProfile> DefaultProfile => new()
     {
-        _profiles = new()
+        new ()
         {
-            new()
-            {
-                Id = Guid.NewGuid(),
-                Name = "Default",
-                IsDefault = true,
-                Keymap = DefaultKeymap,
-                LedsPattern = LedsPattern.Rainbow,
-            },
-        };
-    }
+            Id = Guid.NewGuid(),
+            Name = "Default",
+            IsDefault = true,
+            Keymap = DefaultKeymap,
+            LedsPattern = LedsPattern.Rainbow,
+        },
+    };
 
     private void LoadFromFile(string path)
     {
         var json = File.ReadAllText(path);
             
-        TryDeserializeV1(json, out _profiles);
-        if (_profiles != null) return;
+        var profiles = TryDeserializeV1(json);
+        if (profiles is not null)
+        {
+            _profiles = profiles;
+            return;
+        }
             
-        TryDeserializeV0(json, out _profiles);
-        if (_profiles != null) return;
+        profiles = TryDeserializeV0(json);
+        if(profiles is not null)
+        {
+            _profiles = profiles;
+            return;
+        }
 
         throw new("Load failed");
     }
 
-    private void TryDeserializeV1(string json, out List<KeyProfile> profiles)
+    private List<KeyProfile>? TryDeserializeV1(string json)
     {
         try
         {
-            profiles = JsonSerializer.Deserialize<List<KeyProfile>>(json, _jsonOptions) ?? new();
-            if (!profiles.Any() || !profiles.Any(x => x.Keymap?.Any() ?? false)) profiles = null;
+            var profiles = JsonSerializer.Deserialize<List<KeyProfile>>(json, _jsonOptions) ?? new();
+            if (profiles.Any() && profiles.Any(x => x.Keymap?.Any() ?? false)) return profiles;
         }
-        catch { profiles = null; }
+        catch
+        {
+            // ignored
+        }
+
+        return  null;
     }
         
-    private void TryDeserializeV0(string json, out List<KeyProfile> profiles)
+    private List<KeyProfile>? TryDeserializeV0(string json)
     {
         try
         {
             var profilesV0 = JsonSerializer.Deserialize<List<KeyProfileV0>>(json, _jsonOptions) ?? new();
-            if (!profilesV0.Any() || !profilesV0.Any(x => x.Keymap?.KeyCodes?.Any() ?? false)) profiles = null;
-            profiles = profilesV0.Select(x => new KeyProfile(x)).ToList();
+            if (profilesV0.Any() && profilesV0.Any(x => x.Keymap.KeyCodes.Any()))
+            {
+                return profilesV0.Select(x => new KeyProfile(x)).ToList();
+            }
         }
-        catch { profiles = null; }
+        catch
+        {
+            // ignored
+        }
+
+        return null;
     }
 
     private void Save()

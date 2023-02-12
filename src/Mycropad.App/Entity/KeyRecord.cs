@@ -19,7 +19,7 @@ public record KeyRecord
         Color = new(0x82, 0x00, 0xAC);
     }
 
-    public string Name { get; set; }
-    public List<KeyCode> KeyCodes { get; set; }
-    public LedColor Color { get; set; }
+    public string Name { get; set; } = string.Empty;
+    public List<KeyCode> KeyCodes { get; set; } = new();
+    public LedColor Color { get; set; } = new(0, 0, 0);
 }

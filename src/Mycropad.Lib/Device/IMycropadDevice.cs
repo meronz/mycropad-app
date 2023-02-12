@@ -11,8 +11,8 @@ namespace Mycropad.Lib.Device;
 public interface IMycropadDevice
 {
     bool Connected { get; }
-    Action OnDeviceConnected { get; set; }
-    Action OnDeviceDisconnected { get; set; }
+    Action? OnDeviceConnected { get; set; }
+    Action? OnDeviceDisconnected { get; set; }
 
     void Heartbeat();
     void DefaultKeymap();

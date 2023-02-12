@@ -20,13 +20,13 @@
 @code {
 
     [Parameter]
-    public string Id { get; set; }
+    public string Id { get; set; } = "";
 
     [Parameter]
     public KeyCode KeyCode { get; set; }
 
     [Parameter]
-    public Func<KeyCode, Task> KeyCodeChanged { get; set; }
+    public Func<KeyCode?, Task>? KeyCodeChanged { get; set; }
 
     private string _validationMessage = "";
     private List<string> _selectedKeysString = new();
@@ -56,10 +56,7 @@
     protected override async Task OnParametersSetAsync()
     {
         _selectedKeysString.Clear();
-        if (KeyCode != null)
-        {
-            _selectedKeysString.AddRange(KeyCode.ToMacroStrings());
-        }
+        _selectedKeysString.AddRange(KeyCode.ToMacroStrings());
         await InvokeAsync(StateHasChanged);
     }
 

@@ -21,20 +21,18 @@ public sealed class MycropadDeviceSerial : MycropadDeviceBase, IMycropadDevice, 
 
     private MycropadDeviceSerial()
     {
-        OnDeviceConnected = () => { };
-        OnDeviceDisconnected = () => { };
     }
 
     public static MycropadDeviceSerial Instance { get; } = new();
 
     public bool Connected => _device.IsOpen;
-    public Action OnDeviceConnected { get; set; }
-    public Action OnDeviceDisconnected { get; set; }
+    public Action? OnDeviceConnected { get; set; }
+    public Action? OnDeviceDisconnected { get; set; }
 
     public void Start()
     {
         OpenDevice();
-        OnDeviceConnected();
+        OnDeviceConnected?.Invoke();
     }
 
 
@@ -196,7 +194,7 @@ public sealed class MycropadDeviceSerial : MycropadDeviceBase, IMycropadDevice, 
         catch (Exception)
         {
             _device.Close();
-            OnDeviceDisconnected();
+            OnDeviceDisconnected?.Invoke();
         }
 
         return (Array.Empty<byte>(), -1);
@@ -212,7 +210,7 @@ public sealed class MycropadDeviceSerial : MycropadDeviceBase, IMycropadDevice, 
         catch (Exception)
         {
             _device.Close();
-            OnDeviceDisconnected();
+            OnDeviceDisconnected?.Invoke();
         }
     }
 

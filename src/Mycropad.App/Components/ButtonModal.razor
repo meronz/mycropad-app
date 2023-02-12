@@ -16,7 +16,7 @@
                 var i = j;
                 <div class="flex flex-row w-full">
                     <MacroTextBox
-                        Id="i"
+                        Id="@($"textbox-{i}")"
                         KeyCode="KeyRecord.KeyCodes[i]"
                         KeyCodeChanged="async kc => await KeyCodeChanged(i, kc)"/>
                     <button
@@ -36,7 +36,7 @@
                     <button
                         id="add"
                         class="@btnClass"
-                        @onclick="() => KeyRecord.KeyCodes.Add(null)"
+                        @onclick="() => KeyRecord.KeyCodes!.Add(default)"
                         disabled="@(!IsAddEnabled)"
                         type="button">
                         <svg viewBox="0 0 24 24">
@@ -70,14 +70,14 @@
     public Keys Key { get; set; }
 
     [Parameter]
-    public KeyRecord KeyRecord { get; set; }
+    public KeyRecord KeyRecord { get; set; } = new();
 
     [CascadingParameter]
-    BlazoredModalInstance ModalInstance { get; set; }
+    BlazoredModalInstance ModalInstance { get; set; } = null!;
 
     private string ColorString => $"#{KeyRecord.Color.R:X2}{KeyRecord.Color.G:X2}{KeyRecord.Color.B:X2}";
-    private bool IsAddEnabled => KeyRecord.KeyCodes.Count == 0 || KeyRecord.KeyCodes.Last() != null;
-    private bool SaveEnabled => KeyRecord.KeyCodes.All(_ => _ != null);
+    private bool IsAddEnabled => KeyRecord.KeyCodes.Count == 0 || KeyRecord.KeyCodes.Last() != default;
+    private bool SaveEnabled => KeyRecord.KeyCodes.All(_ => _ != default);
 
     private string SaveClass => "text-white font-bold py-2 px-4 rounded-full " +
                                 (SaveEnabled ? "bg-blue-400 hover:bg-blue-600" : "bg-grey-400");
@@ -100,9 +100,9 @@
         await ModalInstance.CancelAsync();
     }
 
-    private Task KeyCodeChanged(int index, KeyCode keyCode)
+    private Task KeyCodeChanged(int index, KeyCode? keyCode)
     {
-        KeyRecord.KeyCodes[index] = keyCode;
+        if(keyCode is not null) KeyRecord.KeyCodes[index] = keyCode.Value;
         return InvokeAsync(StateHasChanged);
     }
 

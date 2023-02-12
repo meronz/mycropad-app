@@ -14,22 +14,22 @@ public record KeyProfileV0
 {
     public record KeyProfileV0KeyMap
     {
-        public List<List<KeyCode>> KeyCodes { get; set; }
+        public List<List<KeyCode>> KeyCodes { get; set; } = new();
     }
         
-    public Guid Id { get; set; }
-    public string Name { get; set; }
-    public KeyProfileV0KeyMap Keymap { get; set; }
+    public Guid Id { get; set; } = Guid.Empty;
+    public string Name { get; set; } = string.Empty;
+    public KeyProfileV0KeyMap Keymap { get; set; } = new();
     public bool IsDefault { get; set; }
     public LedsPattern LedsPattern { get; set; }
-    public LedColor[] LedsMap { get; set; }
+    public LedColor[] LedsMap { get; set; } = Array.Empty<LedColor>();
 }
     
 public record KeyProfile
 {
     public Guid Id { get; set; }
-    public string Name { get; set; }
-    public Dictionary<Keys, KeyRecord> Keymap { get; set; }
+    public string Name { get; set; } = string.Empty;
+    public Dictionary<Keys, KeyRecord> Keymap { get; set; } = new();
     public bool IsDefault { get; set; }
     public LedsPattern LedsPattern { get; set; }
 

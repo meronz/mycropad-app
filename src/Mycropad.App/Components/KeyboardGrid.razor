@@ -21,10 +21,10 @@
 @code {
 
     [CascadingParameter]
-    public IModalService Modal { get; set; }
+    public IModalService Modal { get; set; } = null!;
 
     [Parameter]
-    public KeyProfile Profile { get; set; }
+    public KeyProfile Profile { get; set; } = null!;
 
     protected override void OnInitialized()
     {
@@ -62,9 +62,9 @@
 
         var modal = Modal.Show<ButtonModal>($"{key} settings", parameters, options);
         var result = await modal.Result;
-        if (!result.Cancelled)
+        if (result is {Cancelled: false, Data: KeyRecord keyRecord})
         {
-            Profile.Keymap[key] = (KeyRecord) result.Data;
+            Profile.Keymap[key] = keyRecord;
             ProfileManager.UpdateProfile(Profile);
         }
     }

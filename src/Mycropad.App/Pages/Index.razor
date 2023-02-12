@@ -42,7 +42,7 @@
 @code {
 
     [CascadingParameter]
-    public IModalService Modal { get; set; }
+    public IModalService Modal { get; set; } = null!;
 
     private Guid _selectedProfileId;
     private KeyProfile SelectedProfile => Profiles.GetProfile(Profiles.CurrentProfileId);
@@ -79,12 +79,12 @@
         {
             var profileName = (result.Data as dynamic)?.ProfileName;
             var ledsPattern = (result.Data as dynamic)?.LedsPattern;
-            if (string.IsNullOrWhiteSpace(profileName) && ledsPattern is not null)
+            if (!string.IsNullOrWhiteSpace(profileName) && ledsPattern is not null)
             {
                 var profile = new KeyProfile
                 {
                     Id = Guid.NewGuid(),
-                    Name = profileName,
+                    Name = profileName!,
                     Keymap = ProfileManager.DefaultKeymap,
                     LedsPattern = ledsPattern,
                 };
@@ -114,9 +114,9 @@
         {
             var profileName = (result.Data as dynamic)?.ProfileName;
             var ledsPattern = (result.Data as dynamic)?.LedsPattern;
-            if (string.IsNullOrWhiteSpace(profileName) && ledsPattern is not null)
+            if (!string.IsNullOrWhiteSpace(profileName) && ledsPattern is not null)
             {
-                SelectedProfile.Name = profileName;
+                SelectedProfile.Name = profileName!;
                 SelectedProfile.LedsPattern = ledsPattern;
                 Profiles.UpdateProfile(SelectedProfile);
             }

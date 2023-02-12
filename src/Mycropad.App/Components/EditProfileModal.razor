@@ -50,13 +50,13 @@
 @code {
 
     [Parameter]
-    public string ProfileName { get; set; }
+    public string ProfileName { get; set; } = "";
 
     [Parameter]
     public LedsPattern LedsPattern { get; set; }
 
     [CascadingParameter]
-    BlazoredModalInstance ModalInstance { get; set; }
+    BlazoredModalInstance ModalInstance { get; set; } = null!;
 
     async Task Save()
     {

@@ -19,10 +19,10 @@
 @code {
 
     [CascadingParameter]
-    public IModalService Modal { get; set; }
+    public IModalService Modal { get; set; } = null!;
 
     [CascadingParameter]
-    BlazoredModalInstance ModalInstance { get; set; }
+    BlazoredModalInstance ModalInstance { get; set; } = null!;
 
     async Task ResetKeymapClick()
     {

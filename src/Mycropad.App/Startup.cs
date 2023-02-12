@@ -21,7 +21,7 @@ public class Startup
 {
     private readonly IConfiguration _configuration;
     private bool _trayShown;
-    private ProfileManager _profileManager;
+    private ProfileManager _profileManager = null!;
 
     public Startup(IConfiguration configuration)
     {

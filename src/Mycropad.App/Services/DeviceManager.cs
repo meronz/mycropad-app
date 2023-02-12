@@ -22,7 +22,7 @@ public class DeviceManager : IDisposable
         _deviceThread = new(DeviceThread);
     }
 
-    public Action OnDeviceConnected { get; set; }
+    public Action? OnDeviceConnected { get; set; }
 
     public void Dispose()
     {
@@ -107,9 +107,10 @@ public class DeviceManager : IDisposable
         _deviceThread.Start();
     }
 
-    private void DeviceThread(object state)
+    private void DeviceThread(object? state)
     {
         while (!_closing)
+        {
             try
             {
                 if (!_device.Connected)
@@ -127,5 +128,6 @@ public class DeviceManager : IDisposable
             {
                 Thread.Sleep(100);
             }
+        }
     }
 }
