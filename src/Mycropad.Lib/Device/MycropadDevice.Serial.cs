@@ -15,16 +15,18 @@ public sealed class MycropadDeviceSerial : MycropadDeviceBase, IMycropadDevice, 
 {
     private const uint USB_VID = 0xCAFE;
     private const uint USB_PID = 0x4005;
-    private static MycropadDeviceSerial _instance;
 
     private readonly SerialPort _device = new();
     private readonly object _deviceMutex = new();
 
     private MycropadDeviceSerial()
     {
+        OnDeviceConnected = () => { };
+        OnDeviceDisconnected = () => { };
     }
 
-    public static MycropadDeviceSerial Instance => _instance ??= new();
+    public static MycropadDeviceSerial Instance { get; } = new();
+
     public bool Connected => _device.IsOpen;
     public Action OnDeviceConnected { get; set; }
     public Action OnDeviceDisconnected { get; set; }
@@ -32,7 +34,7 @@ public sealed class MycropadDeviceSerial : MycropadDeviceBase, IMycropadDevice, 
     public void Start()
     {
         OpenDevice();
-        OnDeviceConnected?.Invoke();
+        OnDeviceConnected();
     }
 
 
@@ -194,10 +196,10 @@ public sealed class MycropadDeviceSerial : MycropadDeviceBase, IMycropadDevice, 
         catch (Exception)
         {
             _device.Close();
-            OnDeviceDisconnected?.Invoke();
+            OnDeviceDisconnected();
         }
 
-        return (null, -1);
+        return (Array.Empty<byte>(), -1);
     }
 
     private void Write(byte[] data)
@@ -210,7 +212,7 @@ public sealed class MycropadDeviceSerial : MycropadDeviceBase, IMycropadDevice, 
         catch (Exception)
         {
             _device.Close();
-            OnDeviceDisconnected?.Invoke();
+            OnDeviceDisconnected();
         }
     }
 
@@ -221,7 +223,7 @@ public sealed class MycropadDeviceSerial : MycropadDeviceBase, IMycropadDevice, 
     private void Dispose(bool disposing)
     {
         if (_disposed) return;
-        if (disposing) _device?.Close();
+        if (disposing) _device.Close();
 
         _disposed = true;
     }

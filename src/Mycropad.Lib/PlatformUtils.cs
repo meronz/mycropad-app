@@ -59,9 +59,9 @@ public static class PlatformUtils
                 {
                     var rk5 = OpenSubKeyOrThrow(rk4, s2);
                     var rk6 = OpenSubKeyOrThrow(rk5, "Device Parameters");
-                    var portName = (string) rk6.GetValue("PortName");
+                    var portName = rk6.GetValue("PortName")?.ToString();
                     if (!string.IsNullOrEmpty(portName) && SerialPort.GetPortNames().Contains(portName))
-                        return (string) rk6.GetValue("PortName");
+                        return portName;
                 }
             }
         }
@@ -76,10 +76,10 @@ public static class PlatformUtils
             var snapDataDir = Environment.GetEnvironmentVariable("SNAP_USER_COMMON");
             return !string.IsNullOrEmpty(snapDataDir)
                 ? snapDataDir
-                : Environment.GetEnvironmentVariable("HOME");
+                : Environment.GetEnvironmentVariable("HOME")!;
         }
 
-        if (RuntimeInformation.IsOSPlatform(OSPlatform.OSX)) return Environment.GetEnvironmentVariable("HOME");
+        if (RuntimeInformation.IsOSPlatform(OSPlatform.OSX)) return Environment.GetEnvironmentVariable("HOME")!;
 
         if (RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
             return Environment.ExpandEnvironmentVariables("%HOMEDRIVE%%HOMEPATH%");
