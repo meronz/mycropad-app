@@ -1,0 +1,30 @@
+﻿<div class="bg-white dark:bg-gray-600 shadow-lg rounded-full m-12 w-48 h-48 flex items-center p-3">
+    <div class="flex flex-row flex-grow items-center justify-between">
+        <div class="transition duration-250 ease-in-out rounded-full hover:bg-blue-300 text-gray-400 hover:text-white p-2"
+             @onclick="() => InvokeClicked(Keys.RotCCW)">
+            <svg style="width:24px;height:24px" viewBox="0 0 24 24">
+                <path fill="currentColor" d="M20 4V6H13.5C11 6 9 8 9 10.5V16.17L12.09 13.09L13.5 14.5L8 20L2.5 14.5L3.91 13.08L7 16.17V10.5C7 6.91 9.91 4 13.5 4H20Z"/>
+            </svg>
+        </div>
+        <div class="transition duration-250 ease-in-out rounded-full hover:bg-blue-300 text-gray-400 hover:text-white p-2"
+             @onclick="() => InvokeClicked(Keys.RotClick)">
+            <svg style="width:24px;height:24px" viewBox="0 0 24 24">
+                <path fill="currentColor" d="M12,20A8,8 0 0,1 4,12A8,8 0 0,1 12,4A8,8 0 0,1 20,12A8,8 0 0,1 12,20M12,2A10,10 0 0,0 2,12A10,10 0 0,0 12,22A10,10 0 0,0 22,12A10,10 0 0,0 12,2Z"/>
+            </svg>
+        </div>
+        <div class="transition duration-250 ease-in-out rounded-full hover:bg-blue-300 text-gray-400 hover:text-white p-2"
+             @onclick="() => InvokeClicked(Keys.RotCW)">
+            <svg style="width:24px;height:24px" viewBox="0 0 24 24">
+                <path fill="currentColor" d="M21.5 14.5L16 20L10.5 14.5L11.91 13.09L15 16.17V10.5C15 8 13 6 10.5 6H4V4H10.5C14.09 4 17 6.91 17 10.5V16.17L20.09 13.08L21.5 14.5Z"/>
+            </svg>
+        </div>
+    </div>
+</div>
+
+@code {
+
+    [Parameter]
+    public Func<Keys, Task>? Clicked { get; set; }
+
+    private Task InvokeClicked(Keys key) => Clicked is not null ? Clicked.Invoke(key) : Task.CompletedTask;
+}

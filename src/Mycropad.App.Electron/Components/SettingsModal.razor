@@ -1,0 +1,39 @@
+@inject DeviceManager DeviceManager
+@inject ProfileManager ProfileManager
+
+<div class="flex flex-col h-full">
+    <div class="flex flex-row py-4">
+        <ConfirmButton
+            Clicked="ResetKeymapClick"
+            Text="Reset keymap">
+        </ConfirmButton>
+    </div>
+    <div class="flex flex-row">
+        <ConfirmButton
+            Clicked="ResetProfilesClick"
+            Text="Reset profiles">
+        </ConfirmButton>
+    </div>
+</div>
+
+@code {
+
+    [CascadingParameter]
+    public IModalService Modal { get; set; } = null!;
+
+    [CascadingParameter]
+    BlazoredModalInstance ModalInstance { get; set; } = null!;
+
+    async Task ResetKeymapClick()
+    {
+        DeviceManager.ResetKeymap();
+        await ModalInstance.CloseAsync();
+    }
+
+    async Task ResetProfilesClick()
+    {
+        ProfileManager.Reset();
+        await ModalInstance.CloseAsync();
+    }
+
+}
