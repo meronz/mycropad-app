@@ -17,11 +17,13 @@ public static class PlatformUtils
     /// Returns the (first) virtual serial port for the specified usb device
     public static string FindSerialPort(uint vid, uint pid)
     {
-        if (RuntimeInformation.IsOSPlatform(OSPlatform.Linux)) return FindSerialPortLinux(vid, pid);
+#pragma warning disable CA1416
+        if (IsLinux) return FindSerialPortLinux(vid, pid);
 
-        if (RuntimeInformation.IsOSPlatform(OSPlatform.Windows)) return FindSerialPortWindows(vid, pid);
+        if (IsWindows) return FindSerialPortWindows(vid, pid);
 
-        if (RuntimeInformation.IsOSPlatform(OSPlatform.OSX)) return FindSerialPortMacOs(vid, pid);
+        if (IsMacOS) return FindSerialPortMacOs(vid, pid);
+#pragma warning restore CA1416
 
         throw new NotSupportedException($"{RuntimeInformation.OSDescription} not supported");
     }
@@ -74,6 +76,7 @@ public static class PlatformUtils
     }
 
     [SupportedOSPlatform("macos")]
+    [SupportedOSPlatform("maccatalyst")]
     private static string FindSerialPortMacOs(uint vid, uint pid)
     {
         using var proc = new Process
@@ -147,7 +150,7 @@ public static class PlatformUtils
 
     public static string GetHomeDirectory()
     {
-        if (RuntimeInformation.IsOSPlatform(OSPlatform.Linux))
+        if (IsLinux)
         {
             var snapDataDir = Environment.GetEnvironmentVariable("SNAP_USER_COMMON");
             return !string.IsNullOrEmpty(snapDataDir)
@@ -155,11 +158,18 @@ public static class PlatformUtils
                 : Environment.GetEnvironmentVariable("HOME")!;
         }
 
-        if (RuntimeInformation.IsOSPlatform(OSPlatform.OSX)) return Environment.GetEnvironmentVariable("HOME")!;
+        if (IsMacOS) return Environment.GetEnvironmentVariable("HOME")!;
 
-        if (RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
+        if (IsWindows)
             return Environment.ExpandEnvironmentVariables("%HOMEDRIVE%%HOMEPATH%");
 
         throw new NotSupportedException($"{RuntimeInformation.OSDescription} not supported");
     }
+
+
+    private static bool IsLinux => RuntimeInformation.IsOSPlatform(OSPlatform.Linux);
+
+    private static bool IsMacOS => RuntimeInformation.IsOSPlatform(OSPlatform.OSX) ||
+                                   RuntimeInformation.RuntimeIdentifier.StartsWith("maccatalyst");
+    private static bool IsWindows => RuntimeInformation.IsOSPlatform(OSPlatform.Windows);
 }

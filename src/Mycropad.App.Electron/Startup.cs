@@ -2,7 +2,6 @@ using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
-using Blazored.Modal;
 using ElectronNET.API;
 using ElectronNET.API.Entities;
 using Microsoft.AspNetCore.Builder;
@@ -11,9 +10,9 @@ using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Mycropad.App.Services;
+using Mycropad.App.Shared;
 using Mycropad.App.Shared.Interfaces;
 using Mycropad.App.Shared.Services;
-using Mycropad.Lib.Device;
 
 #pragma warning disable CA1416
 
@@ -34,11 +33,7 @@ public class Startup
     {
         services.AddRazorPages();
         services.AddServerSideBlazor();
-        services.AddBlazoredModal();
-
-        services.AddSingleton<IMycropadDevice>(MycropadDeviceSerial.Instance);
-        services.AddSingleton<DeviceManager>();
-        services.AddSingleton<ProfileManager>();
+        services.ConfigureMycropadApp();
         services.AddSingleton<IWindowProvider, ElectronWindowProvider>();
     }
 
