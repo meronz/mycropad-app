@@ -11,6 +11,8 @@ using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Mycropad.App.Services;
+using Mycropad.App.Shared.Interfaces;
+using Mycropad.App.Shared.Services;
 using Mycropad.Lib.Device;
 
 #pragma warning disable CA1416
@@ -37,6 +39,7 @@ public class Startup
         services.AddSingleton<IMycropadDevice>(MycropadDeviceSerial.Instance);
         services.AddSingleton<DeviceManager>();
         services.AddSingleton<ProfileManager>();
+        services.AddSingleton<IWindowProvider, ElectronWindowProvider>();
     }
 
     public void Configure(IApplicationBuilder app, IWebHostEnvironment env)

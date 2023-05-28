@@ -6,7 +6,7 @@
       "commandLineArgs": "start",
       "workingDirectory": "."
     },
-    "Mycropad.App.Electron": {
+    "Mycropad.App.Electron (Blazor)": {
       "commandName": "Project",
       "dotnetRunMessages": "true",
       "launchBrowser": true,

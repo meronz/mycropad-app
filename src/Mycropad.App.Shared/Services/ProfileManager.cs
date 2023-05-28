@@ -1,16 +1,11 @@
-using System;
 using System.Collections;
-using System.Collections.Generic;
-using System.IO;
-using System.Linq;
 using System.Text.Json;
-using System.Threading.Tasks;
 using Microsoft.Extensions.Logging;
-using Mycropad.App.Entity;
+using Mycropad.App.Shared.Entity;
 using Mycropad.Lib;
 using Mycropad.Lib.Enums;
 
-namespace Mycropad.App.Services;
+namespace Mycropad.App.Shared.Services;
 
 public class ProfileManager : IEnumerable<KeyProfile>, IDisposable
 {

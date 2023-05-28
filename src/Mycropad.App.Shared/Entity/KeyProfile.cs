@@ -1,6 +1,3 @@
-using System;
-using System.Collections.Generic;
-using System.Linq;
 using Mycropad.Lib.Enums;
 using Mycropad.Lib.Types;
 
@@ -8,7 +5,7 @@ using Mycropad.Lib.Types;
 // ReSharper disable CollectionNeverUpdated.Global
 // ReSharper disable UnusedAutoPropertyAccessor.Global
 // ReSharper disable PropertyCanBeMadeInitOnly.Global
-namespace Mycropad.App.Entity;
+namespace Mycropad.App.Shared.Entity;
 
 public record KeyProfileV0
 {

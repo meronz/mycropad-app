@@ -1,8 +1,7 @@
-using System.Collections.Generic;
 using Mycropad.Lib.Enums;
 using Mycropad.Lib.Types;
 
-namespace Mycropad.App.Entity;
+namespace Mycropad.App.Shared.Entity;
 
 public record KeyRecord
 {

@@ -10,18 +10,13 @@
         </Content>
     </ItemGroup>
     <ItemGroup>
-        <PackageReference Include="Blazored.Modal" Version="7.1.0" />
-        <PackageReference Include="Blazored.Typeahead" Version="4.7.0" />
         <PackageReference Include="ElectronNET.API" Version="13.5.1" />
+        <PackageReference Include="Blazored.Modal" Version="7.1.0" />
     </ItemGroup>
     <ItemGroup>
         <ProjectReference Include="..\Mycropad.Lib\Mycropad.Lib.csproj" />
+        <ProjectReference Include="..\Mycropad.App.Shared\Mycropad.App.Shared.csproj" />
     </ItemGroup>
-
-    <Target Name="PostBuild" AfterTargets="PostBuildEvent" Inputs="wwwroot\css\app.postcss" Outputs="wwwroot\css\app.min.css">
-        <Exec Command="npm run buildcss" />
-    </Target>
-
     <ItemGroup>
         <None Remove="Assets\trayicon.png" />
     </ItemGroup>
