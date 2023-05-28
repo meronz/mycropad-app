@@ -22,6 +22,7 @@ public class Program
     // DELAY 1000";
 
     [SupportedOSPlatform("linux")]
+    [SupportedOSPlatform("macos")]
     public static async Task Main()
     {
         var rand = new Random();

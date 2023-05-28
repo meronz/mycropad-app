@@ -11,6 +11,7 @@ namespace Mycropad.Lib.Device;
 
 [SupportedOSPlatform("linux")]
 [SupportedOSPlatform("windows")]
+[SupportedOSPlatform("macos")]
 public sealed class MycropadDeviceSerial : MycropadDeviceBase, IMycropadDevice, IDisposable
 {
     private const uint USB_VID = 0xCAFE;

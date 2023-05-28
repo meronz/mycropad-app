@@ -1,4 +1,5 @@
 using System;
+using System.Diagnostics;
 using System.Globalization;
 using System.IO;
 using System.IO.Ports;
@@ -6,6 +7,7 @@ using System.Linq;
 using System.Runtime.InteropServices;
 using System.Runtime.Versioning;
 using System.Text.RegularExpressions;
+using Claunia.PropertyList;
 using Microsoft.Win32;
 
 namespace Mycropad.Lib;
@@ -18,6 +20,8 @@ public static class PlatformUtils
         if (RuntimeInformation.IsOSPlatform(OSPlatform.Linux)) return FindSerialPortLinux(vid, pid);
 
         if (RuntimeInformation.IsOSPlatform(OSPlatform.Windows)) return FindSerialPortWindows(vid, pid);
+
+        if (RuntimeInformation.IsOSPlatform(OSPlatform.OSX)) return FindSerialPortMacOs(vid, pid);
 
         throw new NotSupportedException($"{RuntimeInformation.OSDescription} not supported");
     }
@@ -67,6 +71,78 @@ public static class PlatformUtils
         }
 
         throw new("Device not found");
+    }
+
+    [SupportedOSPlatform("macos")]
+    private static string FindSerialPortMacOs(uint vid, uint pid)
+    {
+        using var proc = new Process
+        {
+            StartInfo = new()
+            {
+                FileName = "/usr/sbin/ioreg",
+                Arguments = "-r -c IOUSBHostDevice -l -a",
+                RedirectStandardOutput = true,
+                UseShellExecute = false,
+                CreateNoWindow = true
+            }
+        };
+        proc.Start();
+
+        var ms = new MemoryStream();
+        while (!proc.StandardOutput.EndOfStream)
+        {
+            var line = proc.StandardOutput.ReadLine();
+            if(line is not null)
+                ms.Write(proc.StandardOutput.CurrentEncoding.GetBytes(line));
+        }
+        if (!proc.WaitForExit(TimeSpan.FromSeconds(30))) throw new("Process did not terminate after 30 seconds.");
+        if(proc.ExitCode != 0) throw new("Process did not terminate with 0 exit code.");
+
+        ms.Position = 0;
+
+        var devPath = ParseIORegPlist(ms, vid, pid);
+        if (devPath is not null) return devPath;
+
+        throw new("Device not found");
+    }
+
+    private static string? ParseIORegPlist(MemoryStream ms, uint vid, uint pid)
+    {
+        string? RecurseChildren(NSDictionary dict)
+        {
+            // We have reached the interesting key. Get the device path (IODialinDevice)
+            if (dict.Compare("CFBundleIdentifier", "com.apple.driver.usb.cdc.acm") &&
+                dict.Compare("idVendor", vid) &&
+                dict.Compare("idProduct", pid))
+            {
+                foreach (var childDict in dict.TryEnumerate("IORegistryEntryChildren"))
+                {
+                    if (((NSDictionary)childDict).TryGetValue("IODialinDevice", out var ioDialinDevice))
+                        return ((NSString)ioDialinDevice).Content;
+                }
+            }
+
+            string? devPath = null;
+            foreach (var child in dict.TryEnumerate("IORegistryEntryChildren"))
+            {
+                devPath = RecurseChildren((NSDictionary)child);
+                if (devPath is not null) return devPath;
+            }
+
+            return devPath;
+        }
+
+        var rootArray = (NSArray)PropertyListParser.Parse(ms);
+
+        string? devPath = null;
+        foreach (var dict in rootArray)
+        {
+            devPath = RecurseChildren((NSDictionary)dict);
+            if (devPath is not null) return devPath;
+        }
+
+        return devPath;
     }
 
     public static string GetHomeDirectory()
