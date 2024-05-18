@@ -9,14 +9,14 @@ using Microsoft.AspNetCore.Hosting;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
-using Mycropad.App.Services;
+using Mycropad.App.Electron.Services;
 using Mycropad.App.Shared;
 using Mycropad.App.Shared.Interfaces;
 using Mycropad.App.Shared.Services;
 
 #pragma warning disable CA1416
 
-namespace Mycropad.App;
+namespace Mycropad.App.Electron;
 
 public class Startup
 {
@@ -72,7 +72,7 @@ public class Startup
         var startMinimized = _configuration.GetValue<int>("START_MINIMIZED") != 0;
         Console.WriteLine($"Minimized: {startMinimized}");
 
-        var browserWindow = await Electron.WindowManager.CreateWindowAsync(new BrowserWindowOptions
+        var browserWindow = await ElectronNET.API.Electron.WindowManager.CreateWindowAsync(new BrowserWindowOptions
         {
             Width = 800,
             Height = 600,
@@ -111,10 +111,10 @@ public class Startup
 
         // Electron.Tray.Destroy is bugged upstream:
         // https://github.com/electron/electron/issues/17622
-        if (_trayShown) Electron.Tray.Destroy();
+        if (_trayShown) ElectronNET.API.Electron.Tray.Destroy();
 
-        Electron.Tray.Show(iconPath, menu.ToArray());
-        Electron.Tray.SetToolTip("Mycropad");
+        ElectronNET.API.Electron.Tray.Show(iconPath, menu.ToArray());
+        ElectronNET.API.Electron.Tray.SetToolTip("Mycropad");
         _trayShown = true;
     }
 }
