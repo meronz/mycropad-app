@@ -121,8 +121,11 @@ public class DeviceManager : IDisposable
                     Thread.Sleep(2000);
                 }
             }
-            catch (Exception)
+            catch (Exception ex)
             {
+                #if DEBUG
+                    _logger.LogError(ex, "DeviceThread error");
+                #endif
                 Thread.Sleep(100);
             }
         }
