@@ -39,9 +39,9 @@ public class MycropadDesktopSerialPort : ISerialPort
 
     public void DiscardOutBuffer() => _port.DiscardOutBuffer();
 
-    public int Read(byte[] responseData, int offset, int remainingLength) => _port.Read(responseData, offset, remainingLength);
+    public int Read(byte[] buffer, int offset, int count) => _port.Read(buffer, offset, count);
 
     public void Close() => _port.Close();
 
-    public void Write(byte[] data, int i, int dataLength) => _port.Write(data, i, dataLength);
+    public void Write(byte[] buffer, int offset, int count) => _port.Write(buffer, offset, count);
 }

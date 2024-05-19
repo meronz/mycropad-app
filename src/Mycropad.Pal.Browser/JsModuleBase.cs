@@ -10,9 +10,19 @@ public class JsModuleBase : IAsyncDisposable
     {
         _moduleTask = new(() => jsRuntime.InvokeAsync<IJSObjectReference>(
             "import", $"./_content/Mycropad.Pal.Browser/{moduleName}.js").AsTask());
+        _ = _moduleTask.Value;
     }
 
-    protected Task<IJSObjectReference> JsModule() => _moduleTask.Value;
+    private IJSObjectReference? _reference;
+
+    protected IJSInProcessObjectReference SyncJsModule
+    {
+        get
+        {
+            _reference ??= _moduleTask.Value.Result;
+            return (IJSInProcessObjectReference)_reference;
+        }
+    }
 
     public async ValueTask DisposeAsync()
     {

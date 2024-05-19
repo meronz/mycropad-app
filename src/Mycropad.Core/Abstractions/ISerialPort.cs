@@ -9,7 +9,7 @@ public interface ISerialPort
     void Open(uint usbVid, uint usbPid);
     public void DiscardInBuffer();
     public void DiscardOutBuffer();
-    public int Read(byte[] responseData, int offset, int remainingLength);
+    public int Read(byte[] buffer, int offset, int count);
     public void Close();
-    public void Write(byte[] data, int i, int dataLength);
+    public void Write(byte[] buffer, int offset, int count);
 }

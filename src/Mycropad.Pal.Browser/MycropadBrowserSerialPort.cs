@@ -3,45 +3,42 @@ using Mycropad.Lib.Serial;
 
 namespace Mycropad.Pal.Browser;
 
-public class MycropadBrowserSerialPort(IJSRuntime jsRuntime) : JsModuleBase(jsRuntime, "serialPort"), ISerialPort
+public class MycropadBrowserSerialPort : JsModuleBase, ISerialPort
 {
-    public async ValueTask<string> Prompt(string message)
-    {
-        var module = await JsModule();
-        return await module.InvokeAsync<string>("showPrompt", message);
-    }
+    public MycropadBrowserSerialPort(IJSRuntime jsRuntime) : base(jsRuntime, "serialPort") { }
 
     public bool IsOpen { get; }
     public string PortName { get; set; }
     public int WriteTimeout { get; set; }
     public int ReadTimeout { get; set; }
+
     public void Open(uint usbVid, uint usbPid)
     {
-
+        SyncJsModule.InvokeVoid("open", usbVid, usbPid);
     }
 
     public void DiscardInBuffer()
     {
-        throw new NotImplementedException();
+        SyncJsModule.InvokeVoid("discardInBuffer");
     }
 
     public void DiscardOutBuffer()
     {
-        throw new NotImplementedException();
+        SyncJsModule.InvokeVoid("discardOutBuffer");
     }
 
-    public int Read(byte[] responseData, int offset, int remainingLength)
+    public int Read(byte[] buffer, int offset, int count)
     {
-        throw new NotImplementedException();
+        return SyncJsModule.Invoke<int>("read", buffer, offset, count);
     }
 
     public void Close()
     {
-        throw new NotImplementedException();
+        SyncJsModule.InvokeVoid("close");
     }
 
-    public void Write(byte[] data, int i, int dataLength)
+    public void Write(byte[] buffer, int offset, int count)
     {
-        throw new NotImplementedException();
+        SyncJsModule.InvokeVoid("write", buffer, offset, count);
     }
 }
