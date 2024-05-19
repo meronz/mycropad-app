@@ -89,7 +89,7 @@
                     LedsPattern = ledsPattern,
                 };
                 Profiles.AddProfile(profile);
-                Profiles.SwitchProfile(profile.Id);
+                await Profiles.SwitchProfile(profile.Id);
             }
         }
     }
@@ -118,7 +118,7 @@
             {
                 SelectedProfile.Name = profileName!;
                 SelectedProfile.LedsPattern = ledsPattern;
-                Profiles.UpdateProfile(SelectedProfile);
+                await Profiles.UpdateProfile(SelectedProfile);
             }
         }
     }
@@ -138,11 +138,11 @@
         return InvokeAsync(StateHasChanged);
     }
 
-    private Task SwitchProfile()
+    private async Task SwitchProfile()
     {
         Logger.LogInformation($"Selected {SelectedProfile.Name}");
-        Profiles.SwitchProfile(_selectedProfileId);
-        return InvokeAsync(StateHasChanged);
+        await Profiles.SwitchProfile(_selectedProfileId);
+        await InvokeAsync(StateHasChanged);
     }
 
 }

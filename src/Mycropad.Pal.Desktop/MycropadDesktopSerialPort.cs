@@ -1,5 +1,5 @@
 using System.IO.Ports;
-using Mycropad.Lib.Serial;
+using Mycropad.Core.Abstractions;
 
 namespace Mycropad.Pal.Desktop;
 
@@ -8,12 +8,6 @@ public class MycropadDesktopSerialPort : ISerialPort
     private readonly SerialPort _port = new();
 
     public bool IsOpen => _port.IsOpen;
-
-    public string PortName
-    {
-        get => _port.PortName;
-        set => _port.PortName = value;
-    }
 
     public int WriteTimeout
     {
@@ -27,21 +21,40 @@ public class MycropadDesktopSerialPort : ISerialPort
         set => _port.ReadTimeout = value;
     }
 
-    public void Open() => _port.Open();
-
-    public void Open(uint usbVid, uint usbPid)
+    public Task Open(uint usbVid, uint usbPid)
     {
         _port.PortName = DesktopPlatformUtils.FindSerialPort(usbVid, usbPid);
         _port.Open();
+        return Task.CompletedTask;
     }
 
-    public void DiscardInBuffer() => _port.DiscardInBuffer();
+    public Task DiscardInBuffer()
+    {
+        _port.DiscardInBuffer();
+        return Task.CompletedTask;
+    }
 
-    public void DiscardOutBuffer() => _port.DiscardOutBuffer();
+    public Task DiscardOutBuffer()
+    {
+        _port.DiscardOutBuffer();
+        return Task.CompletedTask;
+    }
 
-    public int Read(byte[] buffer, int offset, int count) => _port.Read(buffer, offset, count);
+    public Task<int> Read(byte[] buffer, int offset, int count)
+    {
+        var read = _port.Read(buffer, offset, count);
+        return Task.FromResult(read);
+    }
 
-    public void Close() => _port.Close();
+    public Task Close()
+    {
+        _port.Close();
+        return Task.CompletedTask;
+    }
 
-    public void Write(byte[] buffer, int offset, int count) => _port.Write(buffer, offset, count);
+    public Task Write(byte[] buffer, int offset, int count)
+    {
+        _port.Write(buffer, offset, count);
+        return Task.CompletedTask;
+    }
 }

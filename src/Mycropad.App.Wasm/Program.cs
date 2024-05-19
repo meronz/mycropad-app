@@ -5,7 +5,6 @@ using Mycropad.App.Wasm;
 using Mycropad.Core.Abstractions;
 using Mycropad.Lib.Device;
 using Mycropad.Lib.Profiles;
-using Mycropad.Lib.Serial;
 using Mycropad.Pal.Browser;
 
 var builder = WebAssemblyHostBuilder.CreateDefault(args);

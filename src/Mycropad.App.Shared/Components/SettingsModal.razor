@@ -27,7 +27,7 @@
 
     async Task ResetKeymapClick()
     {
-        DeviceManager.ResetKeymap();
+        await DeviceManager.ResetKeymap();
         await ModalInstance.CloseAsync();
     }
 

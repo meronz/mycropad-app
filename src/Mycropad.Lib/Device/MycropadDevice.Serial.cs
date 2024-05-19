@@ -1,144 +1,134 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Threading;
+using System.Threading.Tasks;
+using Mycropad.Core;
+using Mycropad.Core.Abstractions;
 using Mycropad.Lib.Device.Messages;
 using Mycropad.Lib.Enums;
-using Mycropad.Lib.Serial;
 using Mycropad.Lib.Types;
 
 namespace Mycropad.Lib.Device;
 
-public sealed class MycropadDeviceSerial(ISerialPort device) : MycropadDeviceBase, IMycropadDevice, IDisposable
+public sealed class MycropadDeviceSerial(ISerialPort device) : MycropadDeviceBase, IMycropadDevice, IAsyncDisposable
 {
     private const uint USB_VID = 0xCAFE;
     private const uint USB_PID = 0x4005;
 
-    private readonly object _deviceMutex = new();
+    private readonly SemaphoreSlim _deviceSemaphore = new(1, 1);
 
     public bool Connected => device.IsOpen;
     public Action? OnDeviceConnected { get; set; }
     public Action? OnDeviceDisconnected { get; set; }
 
-    public void Start()
+
+    public async Task Start()
     {
-        OpenDevice();
+        await OpenDevice();
         OnDeviceConnected?.Invoke();
     }
 
 
-    public void Heartbeat()
+    public async Task Heartbeat()
     {
-        lock (_deviceMutex)
-        {
-            var data = Command(CommandTypes.Heartbeat);
-            Write(data);
-            var (readData, readLength) = Read();
+        using var guard = new Guard(_deviceSemaphore);
+        var data = Command(CommandTypes.Heartbeat);
+        await Write(data);
+        var (readData, readLength) = await Read();
 
-            var (cmd, ok, _) = Response(readData, readLength);
-            if (cmd != CommandTypes.Heartbeat) throw new($"Bad CommandType {cmd}");
-            if (!ok) throw new($"{cmd} failed!");
-        }
+        var (cmd, ok, _) = Response(readData, readLength);
+        if (cmd != CommandTypes.Heartbeat) throw new($"Bad CommandType {cmd}");
+        if (!ok) throw new($"{cmd} failed!");
     }
 
-    public void SetKeymap(DeviceKeymap deviceKeymap)
+    public async Task SetKeymap(DeviceKeymap deviceKeymap)
     {
-        lock (_deviceMutex)
-        {
-            var data = Command(CommandTypes.SetKeymap, deviceKeymap.ToBytes());
-            Write(data);
+        using var guard = new Guard(_deviceSemaphore);
+        var data = Command(CommandTypes.SetKeymap, deviceKeymap.ToBytes());
+        await Write(data);
 
-            var (readData, readLength) = Read();
-            var (cmd, ok, _) = Response(readData, readLength);
-            if (cmd != CommandTypes.SetKeymap) throw new($"Bad CommandType {cmd}");
-            if (!ok) throw new($"{cmd} failed!");
-        }
+        var (readData, readLength) = await Read();
+        var (cmd, ok, _) = Response(readData, readLength);
+        if (cmd != CommandTypes.SetKeymap) throw new($"Bad CommandType {cmd}");
+        if (!ok) throw new($"{cmd} failed!");
     }
 
-    public DeviceKeymap ReadKeymap()
+    public async Task<DeviceKeymap> ReadKeymap()
     {
-        lock (_deviceMutex)
-        {
-            var data = Command(CommandTypes.ReadKeymap);
-            Write(data);
+        using var guard = new Guard(_deviceSemaphore);
+        var data = Command(CommandTypes.ReadKeymap);
+        await Write(data);
 
-            var (readData, readLength) = Read();
-            var (cmd, ok, keymapBytes) = Response(readData, readLength);
+        var (readData, readLength) = await Read();
+        var (cmd, ok, keymapBytes) = Response(readData, readLength);
 
-            if (cmd != CommandTypes.ReadKeymap) throw new($"Bad CommandType {cmd}");
-            if (!ok) throw new($"{cmd} failed!");
+        if (cmd != CommandTypes.ReadKeymap) throw new($"Bad CommandType {cmd}");
+        if (!ok) throw new($"{cmd} failed!");
 
-            return DeviceKeymap.FromBytes(keymapBytes);
-        }
+        return DeviceKeymap.FromBytes(keymapBytes);
     }
 
-    public void DefaultKeymap()
+    public async Task DefaultKeymap()
     {
-        lock (_deviceMutex)
-        {
-            var data = Command(CommandTypes.DefaultKeymap);
-            Write(data);
-            var (readData, readLength) = Read();
+        using var guard = new Guard(_deviceSemaphore);
+        var data = Command(CommandTypes.DefaultKeymap);
+        await Write(data);
+        var (readData, readLength) = await Read();
 
-            var (cmd, ok, _) = Response(readData, readLength);
-            if (cmd != CommandTypes.DefaultKeymap) throw new($"Bad CommandType {cmd}");
-            if (!ok) throw new($"{cmd} failed!");
-        }
+        var (cmd, ok, _) = Response(readData, readLength);
+        if (cmd != CommandTypes.DefaultKeymap) throw new($"Bad CommandType {cmd}");
+        if (!ok) throw new($"{cmd} failed!");
     }
 
-    public void SwitchKeymap(DeviceKeymap deviceKeymap)
+    public async Task SwitchKeymap(DeviceKeymap deviceKeymap)
     {
-        lock (_deviceMutex)
-        {
-            var data = Command(CommandTypes.SwitchKeymap, deviceKeymap.ToBytes());
-            Write(data);
+        using var guard = new Guard(_deviceSemaphore);
+        var data = Command(CommandTypes.SwitchKeymap, deviceKeymap.ToBytes());
+        await Write(data);
 
-            var (readData, readLength) = Read();
-            var (cmd, ok, _) = Response(readData, readLength);
-            if (cmd != CommandTypes.SwitchKeymap) throw new($"Bad CommandType {cmd}");
-            if (!ok) throw new($"{cmd} failed!");
-        }
+        var (readData, readLength) = await Read();
+        var (cmd, ok, _) = Response(readData, readLength);
+        if (cmd != CommandTypes.SwitchKeymap) throw new($"Bad CommandType {cmd}");
+        if (!ok) throw new($"{cmd} failed!");
     }
 
-    public void LedsSwitchPattern(LedsPattern pattern)
+    public async Task LedsSwitchPattern(LedsPattern pattern)
     {
-        lock (_deviceMutex)
-        {
-            var data = Command(CommandTypes.LedsSwitchPattern, new[] {(byte) pattern});
-            Write(data);
+        using var guard = new Guard(_deviceSemaphore);
+        var data = Command(CommandTypes.LedsSwitchPattern, new[] {(byte) pattern});
+        await Write(data);
 
-            var (readData, readLength) = Read();
-            var (cmd, ok, _) = Response(readData, readLength);
-            if (cmd != CommandTypes.LedsSwitchPattern) throw new($"Bad CommandType {cmd}");
-            if (!ok) throw new($"{cmd} failed!");
-        }
+        var (readData, readLength) = await Read();
+        var (cmd, ok, _) = Response(readData, readLength);
+        if (cmd != CommandTypes.LedsSwitchPattern) throw new($"Bad CommandType {cmd}");
+        if (!ok) throw new($"{cmd} failed!");
     }
 
-    public void LedsSetFixedMap(IEnumerable<LedColor> map)
+    public async Task LedsSetFixedMap(IEnumerable<LedColor> map)
     {
-        lock (_deviceMutex)
-        {
-            var mapBytes = map.Take(8).SelectMany(x => BitConverter.GetBytes(x.ToUInt32())).ToArray();
-            var data = Command(CommandTypes.LedsSetFixedMap, mapBytes);
-            Write(data);
+        using var guard = new Guard(_deviceSemaphore);
+        var mapBytes = map.Take(8).SelectMany(x => BitConverter.GetBytes(x.ToUInt32())).ToArray();
+        var data = Command(CommandTypes.LedsSetFixedMap, mapBytes);
+        await Write(data);
 
-            var (readData, readLength) = Read();
-            var (cmd, ok, _) = Response(readData, readLength);
-            if (cmd != CommandTypes.LedsSetFixedMap) throw new($"Bad CommandType {cmd}");
-            if (!ok) throw new($"{cmd} failed!");
-        }
+        var (readData, readLength) = await Read();
+        var (cmd, ok, _) = Response(readData, readLength);
+        if (cmd != CommandTypes.LedsSetFixedMap) throw new($"Bad CommandType {cmd}");
+        if (!ok) throw new($"{cmd} failed!");
     }
 
-    private void OpenDevice()
+    private async Task OpenDevice()
     {
         device.WriteTimeout = 500;
         device.ReadTimeout = 500;
 
-        device.Open(USB_VID, USB_PID);
-        device.DiscardInBuffer();
-        device.DiscardOutBuffer();
+        await device.Open(USB_VID, USB_PID);
+        await device.DiscardInBuffer();
+        await device.DiscardOutBuffer();
     }
 
-    private (byte[] data, int length) Read()
+    private async Task<(byte[] data, int length)> Read()
     {
         try
         {
@@ -150,7 +140,7 @@ public sealed class MycropadDeviceSerial(ISerialPort device) : MycropadDeviceBas
             do
             {
                 var remainingLength = responseData.Length - offset;
-                var bytesRead = device.Read(responseData, offset, remainingLength);
+                var bytesRead = await device.Read(responseData, offset, remainingLength);
                 offset += bytesRead;
 
                 if (remainingLength == 0)
@@ -182,43 +172,30 @@ public sealed class MycropadDeviceSerial(ISerialPort device) : MycropadDeviceBas
         }
         catch (Exception)
         {
-            device.Close();
+            await device.Close();
             OnDeviceDisconnected?.Invoke();
         }
 
-        return (Array.Empty<byte>(), -1);
+        return ([], -1);
     }
 
-    private void Write(byte[] data)
+    private async Task Write(byte[] data)
     {
         try
         {
-            device.DiscardInBuffer();
-            device.Write(data, 0, data.Length);
+            await device.DiscardInBuffer();
+            await device.Write(data, 0, data.Length);
         }
         catch (Exception)
         {
-            device.Close();
+            await device.Close();
             OnDeviceDisconnected?.Invoke();
         }
     }
 
-    #region IDisposable
-
-    private bool _disposed;
-
-    private void Dispose(bool disposing)
+    public async ValueTask DisposeAsync()
     {
-        if (_disposed) return;
-        if (disposing) device.Close();
-
-        _disposed = true;
+        _deviceSemaphore.Dispose();
+        await device.Close();
     }
-
-    public void Dispose()
-    {
-        Dispose(true);
-    }
-
-    #endregion
 }

@@ -1,7 +1,6 @@
 using System;
 using System.Collections;
 using System.Collections.Generic;
-using System.IO;
 using System.Linq;
 using System.Text.Json;
 using System.Threading.Tasks;
@@ -116,19 +115,19 @@ public class ProfileManager : IEnumerable<KeyProfile>, IDisposable
         OnProfilesUpdated?.Invoke();
     }
 
-    public void SwitchProfile(Guid profileId, bool force = false)
+    public async Task SwitchProfile(Guid profileId, bool force = false)
     {
         if (CurrentProfileId == profileId && !force) return;
 
         var profile = GetProfile(profileId);
-        _deviceManager.SwitchKeymap(profile.GetDeviceKeyMap());
-        if (profile.LedsPattern == LedsPattern.Fixed) _deviceManager.LedsSetFixedMap(profile.GetDeviceLedMap());
+        await _deviceManager.SwitchKeymap(profile.GetDeviceKeyMap());
+        if (profile.LedsPattern == LedsPattern.Fixed) await _deviceManager.LedsSetFixedMap(profile.GetDeviceLedMap());
 
-        _deviceManager.LedsSwitchPattern(profile.LedsPattern);
+        await _deviceManager.LedsSwitchPattern(profile.LedsPattern);
 
         CurrentProfileId = profileId;
 
-        if (profile.IsDefault) _deviceManager.SetDefaultKeymap(profile.GetDeviceKeyMap());
+        if (profile.IsDefault) await _deviceManager.SetDefaultKeymap(profile.GetDeviceKeyMap());
 
         OnProfilesUpdated?.Invoke();
     }
@@ -227,12 +226,12 @@ public class ProfileManager : IEnumerable<KeyProfile>, IDisposable
         Save();
     }
 
-    public void UpdateProfile(KeyProfile profile)
+    public async Task UpdateProfile(KeyProfile profile)
     {
         DeleteProfile(profile.Id);
         _profiles.Add(profile);
         Save();
 
-        if (profile.Id == CurrentProfileId) SwitchProfile(profile.Id, true);
+        if (profile.Id == CurrentProfileId) await SwitchProfile(profile.Id, true);
     }
 }

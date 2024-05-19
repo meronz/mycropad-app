@@ -13,16 +13,7 @@ public class JsModuleBase : IAsyncDisposable
         _ = _moduleTask.Value;
     }
 
-    private IJSObjectReference? _reference;
-
-    protected IJSInProcessObjectReference SyncJsModule
-    {
-        get
-        {
-            _reference ??= _moduleTask.Value.Result;
-            return (IJSInProcessObjectReference)_reference;
-        }
-    }
+    protected Task<IJSObjectReference> JsModule => _moduleTask.Value;
 
     public async ValueTask DisposeAsync()
     {

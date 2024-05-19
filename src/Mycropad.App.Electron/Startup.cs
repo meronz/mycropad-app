@@ -15,7 +15,6 @@ using Mycropad.App.Shared.Interfaces;
 using Mycropad.Core.Abstractions;
 using Mycropad.Lib.Device;
 using Mycropad.Lib.Profiles;
-using Mycropad.Lib.Serial;
 using Mycropad.Pal.Desktop;
 
 #pragma warning disable CA1416

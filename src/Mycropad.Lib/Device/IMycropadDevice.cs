@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Threading.Tasks;
 using Mycropad.Lib.Enums;
 using Mycropad.Lib.Types;
 
@@ -14,12 +15,12 @@ public interface IMycropadDevice
     Action? OnDeviceConnected { get; set; }
     Action? OnDeviceDisconnected { get; set; }
 
-    void Heartbeat();
-    void DefaultKeymap();
-    void SetKeymap(DeviceKeymap deviceKeymap);
-    DeviceKeymap ReadKeymap();
-    void Start();
-    void SwitchKeymap(DeviceKeymap deviceKeymap);
-    void LedsSwitchPattern(LedsPattern pattern);
-    void LedsSetFixedMap(IEnumerable<LedColor> map);
+    Task Heartbeat();
+    Task DefaultKeymap();
+    Task SetKeymap(DeviceKeymap deviceKeymap);
+    Task<DeviceKeymap> ReadKeymap();
+    Task Start();
+    Task SwitchKeymap(DeviceKeymap deviceKeymap);
+    Task LedsSwitchPattern(LedsPattern pattern);
+    Task LedsSetFixedMap(IEnumerable<LedColor> map);
 }

@@ -1,5 +1,5 @@
 using Microsoft.JSInterop;
-using Mycropad.Lib.Serial;
+using Mycropad.Core.Abstractions;
 
 namespace Mycropad.Pal.Browser;
 
@@ -8,37 +8,42 @@ public class MycropadBrowserSerialPort : JsModuleBase, ISerialPort
     public MycropadBrowserSerialPort(IJSRuntime jsRuntime) : base(jsRuntime, "serialPort") { }
 
     public bool IsOpen { get; }
-    public string PortName { get; set; }
     public int WriteTimeout { get; set; }
     public int ReadTimeout { get; set; }
 
-    public void Open(uint usbVid, uint usbPid)
+    public async Task Open(uint usbVid, uint usbPid)
     {
-        SyncJsModule.InvokeVoid("open", usbVid, usbPid);
+        var module = await JsModule;
+        await module.InvokeVoidAsync("open", usbVid, usbPid);
     }
 
-    public void DiscardInBuffer()
+    public async Task DiscardInBuffer()
     {
-        SyncJsModule.InvokeVoid("discardInBuffer");
+        var module = await JsModule;
+        await module.InvokeVoidAsync("discardInBuffer");
     }
 
-    public void DiscardOutBuffer()
+    public async Task DiscardOutBuffer()
     {
-        SyncJsModule.InvokeVoid("discardOutBuffer");
+        var module = await JsModule;
+        await module.InvokeVoidAsync("discardOutBuffer");
     }
 
-    public int Read(byte[] buffer, int offset, int count)
+    public async Task<int> Read(byte[] buffer, int offset, int count)
     {
-        return SyncJsModule.Invoke<int>("read", buffer, offset, count);
+        var module = await JsModule;
+        return await module.InvokeAsync<int>("read", buffer, offset, count);
     }
 
-    public void Close()
+    public async Task Close()
     {
-        SyncJsModule.InvokeVoid("close");
+        var module = await JsModule;
+        await module.InvokeVoidAsync("close");
     }
 
-    public void Write(byte[] buffer, int offset, int count)
+    public async Task Write(byte[] buffer, int offset, int count)
     {
-        SyncJsModule.InvokeVoid("write", buffer, offset, count);
+        var module = await JsModule;
+        await module.InvokeVoidAsync("write", buffer, offset, count);
     }
 }
