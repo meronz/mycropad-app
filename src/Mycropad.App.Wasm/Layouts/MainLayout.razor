@@ -3,14 +3,7 @@
 @inject DeviceManager DeviceManager
 
 <div class="flex flex-col h-screen">
-    <header id="titlebar" class="h-10 flex flex-row">
-        <div id="drag-region" class="flex flex-row h-full">
-            <div id="titlebar-name" class="flex flex-row flex-grow items-center mx-5">
-                <span>Mycropad</span>
-            </div>
-        </div>
-    </header>
-    <main class="mb-auto flex flex-col items-center">
+    <main class="mb-auto mt-4 flex flex-col items-center">
         @Body
     </main>
     <Footer ConnectionStateClicked="ConnectionStateClicked">
