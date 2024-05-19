@@ -1,7 +1,8 @@
+using System.Collections.Generic;
 using Mycropad.Lib.Enums;
 using Mycropad.Lib.Types;
 
-namespace Mycropad.App.Shared.Entity;
+namespace Mycropad.Lib.Profiles;
 
 public record KeyRecord
 {
@@ -14,7 +15,7 @@ public record KeyRecord
     public KeyRecord(HidKeys hidKey, HidModifiers hidModifiers = HidModifiers.MOD_NONE)
     {
         Name = hidKey.ToString();
-        KeyCodes = new() {new(hidKey, hidModifiers)};
+        KeyCodes = [new(hidKey, hidModifiers)];
         Color = new(0x82, 0x00, 0xAC);
     }
 

@@ -12,7 +12,11 @@ using Microsoft.Extensions.Hosting;
 using Mycropad.App.Electron.Services;
 using Mycropad.App.Shared;
 using Mycropad.App.Shared.Interfaces;
-using Mycropad.App.Shared.Services;
+using Mycropad.Core.Abstractions;
+using Mycropad.Lib.Device;
+using Mycropad.Lib.Profiles;
+using Mycropad.Lib.Serial;
+using Mycropad.Pal.Desktop;
 
 #pragma warning disable CA1416
 
@@ -33,7 +37,10 @@ public class Startup
     {
         services.AddRazorPages();
         services.AddServerSideBlazor();
-        services.ConfigureMycropadApp();
+
+        services.AddSingleton<IUserStorage>(new MycropadDesktopUserStorage())
+            .AddSingleton<ISerialPort>(new MycropadDesktopSerialPort())
+            .ConfigureMycropadApp();
         services.AddSingleton<IWindowProvider, ElectronWindowProvider>();
     }
 

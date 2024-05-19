@@ -1,9 +1,11 @@
+using System;
+using System.Collections.Generic;
+using System.Threading;
 using Microsoft.Extensions.Logging;
-using Mycropad.Lib.Device;
 using Mycropad.Lib.Enums;
 using Mycropad.Lib.Types;
 
-namespace Mycropad.App.Shared.Services;
+namespace Mycropad.Lib.Device;
 
 public class DeviceManager : IDisposable
 {

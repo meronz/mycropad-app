@@ -10,6 +10,7 @@
   <ItemGroup>
     <ProjectReference Include="..\Mycropad.Lib\Mycropad.Lib.csproj" />
     <ProjectReference Include="..\Mycropad.App.Shared\Mycropad.App.Shared.csproj" />
+    <ProjectReference Include="..\Mycropad.Pal.Desktop\Mycropad.Pal.Desktop.csproj" />
   </ItemGroup>
   <ItemGroup>
     <None Remove="Assets\trayicon.png" />
@@ -23,5 +24,8 @@
     <Content Update="electron.manifest.json">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
+  </ItemGroup>
+  <ItemGroup>
+    <AdditionalFiles Include="Layouts\MainLayout.razor" />
   </ItemGroup>
 </Project>

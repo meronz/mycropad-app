@@ -1,32 +1,21 @@
 using System;
 using System.Collections.Generic;
-using System.IO.Ports;
 using System.Linq;
-using System.Runtime.Versioning;
 using Mycropad.Lib.Device.Messages;
 using Mycropad.Lib.Enums;
+using Mycropad.Lib.Serial;
 using Mycropad.Lib.Types;
 
 namespace Mycropad.Lib.Device;
 
-[SupportedOSPlatform("linux")]
-[SupportedOSPlatform("windows")]
-[SupportedOSPlatform("macos")]
-public sealed class MycropadDeviceSerial : MycropadDeviceBase, IMycropadDevice, IDisposable
+public sealed class MycropadDeviceSerial(ISerialPort device) : MycropadDeviceBase, IMycropadDevice, IDisposable
 {
     private const uint USB_VID = 0xCAFE;
     private const uint USB_PID = 0x4005;
 
-    private readonly SerialPort _device = new();
     private readonly object _deviceMutex = new();
 
-    private MycropadDeviceSerial()
-    {
-    }
-
-    public static MycropadDeviceSerial Instance { get; } = new();
-
-    public bool Connected => _device.IsOpen;
+    public bool Connected => device.IsOpen;
     public Action? OnDeviceConnected { get; set; }
     public Action? OnDeviceDisconnected { get; set; }
 
@@ -141,13 +130,12 @@ public sealed class MycropadDeviceSerial : MycropadDeviceBase, IMycropadDevice, 
 
     private void OpenDevice()
     {
-        _device.PortName = PlatformUtils.FindSerialPort(USB_VID, USB_PID);
-        _device.WriteTimeout = 500;
-        _device.ReadTimeout = 500;
+        device.WriteTimeout = 500;
+        device.ReadTimeout = 500;
 
-        _device.Open();
-        _device.DiscardInBuffer();
-        _device.DiscardOutBuffer();
+        device.Open(USB_VID, USB_PID);
+        device.DiscardInBuffer();
+        device.DiscardOutBuffer();
     }
 
     private (byte[] data, int length) Read()
@@ -162,7 +150,7 @@ public sealed class MycropadDeviceSerial : MycropadDeviceBase, IMycropadDevice, 
             do
             {
                 var remainingLength = responseData.Length - offset;
-                var bytesRead = _device.Read(responseData, offset, remainingLength);
+                var bytesRead = device.Read(responseData, offset, remainingLength);
                 offset += bytesRead;
 
                 if (remainingLength == 0)
@@ -194,7 +182,7 @@ public sealed class MycropadDeviceSerial : MycropadDeviceBase, IMycropadDevice, 
         }
         catch (Exception)
         {
-            _device.Close();
+            device.Close();
             OnDeviceDisconnected?.Invoke();
         }
 
@@ -205,12 +193,12 @@ public sealed class MycropadDeviceSerial : MycropadDeviceBase, IMycropadDevice, 
     {
         try
         {
-            _device.DiscardInBuffer();
-            _device.Write(data, 0, data.Length);
+            device.DiscardInBuffer();
+            device.Write(data, 0, data.Length);
         }
         catch (Exception)
         {
-            _device.Close();
+            device.Close();
             OnDeviceDisconnected?.Invoke();
         }
     }
@@ -222,14 +210,13 @@ public sealed class MycropadDeviceSerial : MycropadDeviceBase, IMycropadDevice, 
     private void Dispose(bool disposing)
     {
         if (_disposed) return;
-        if (disposing) _device.Close();
+        if (disposing) device.Close();
 
         _disposed = true;
     }
 
     public void Dispose()
     {
-        // Do not change this code. Put cleanup code in 'Dispose(bool disposing)' method
         Dispose(true);
     }
 

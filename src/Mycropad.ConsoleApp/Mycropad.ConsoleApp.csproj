@@ -8,6 +8,7 @@
 
     <ItemGroup>
         <ProjectReference Include="..\Mycropad.Lib\Mycropad.Lib.csproj" />
+        <ProjectReference Include="..\Mycropad.Pal.Desktop\Mycropad.Pal.Desktop.csproj" />
     </ItemGroup>
 
     <ItemGroup>

@@ -1,8 +1,6 @@
-using System.Collections.Generic;
-using System.Linq;
 using Claunia.PropertyList;
 
-namespace Mycropad.Lib;
+namespace Mycropad.Pal.Desktop;
 
 public static class PListExtensions
 {
@@ -25,6 +23,6 @@ public static class PListExtensions
             return nsArray;
         }
 
-        return Enumerable.Empty<NSObject>();
+        return [];
     }
 }

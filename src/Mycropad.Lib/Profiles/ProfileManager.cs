@@ -1,17 +1,23 @@
+using System;
 using System.Collections;
+using System.Collections.Generic;
+using System.IO;
+using System.Linq;
 using System.Text.Json;
+using System.Threading.Tasks;
 using Microsoft.Extensions.Logging;
-using Mycropad.App.Shared.Entity;
-using Mycropad.Lib;
+using Mycropad.Core.Abstractions;
+using Mycropad.Lib.Device;
 using Mycropad.Lib.Enums;
 
-namespace Mycropad.App.Shared.Services;
+namespace Mycropad.Lib.Profiles;
 
 public class ProfileManager : IEnumerable<KeyProfile>, IDisposable
 {
     private const string PROFILES_FILENAME = "profiles.json";
 
     private readonly DeviceManager _deviceManager;
+    private readonly IUserStorage _storage;
 
     private readonly JsonSerializerOptions _jsonOptions = new()
     {
@@ -21,11 +27,12 @@ public class ProfileManager : IEnumerable<KeyProfile>, IDisposable
     private readonly ILogger<ProfileManager> _logger;
     private List<KeyProfile> _profiles;
 
-    public ProfileManager(ILogger<ProfileManager> logger, DeviceManager deviceManager)
+    public ProfileManager(ILogger<ProfileManager> logger, DeviceManager deviceManager, IUserStorage storage)
     {
         _logger = logger;
         _profiles = DefaultProfile;
         _deviceManager = deviceManager;
+        _storage = storage;
         _deviceManager.OnDeviceConnected += DeviceConnected;
         Load();
     }
@@ -85,11 +92,9 @@ public class ProfileManager : IEnumerable<KeyProfile>, IDisposable
         try
         {
             _logger.LogInformation("Load profiles");
-            var dirPath = Path.Combine(PlatformUtils.GetHomeDirectory(), "mycropad");
-            if (!Directory.Exists(dirPath)) Directory.CreateDirectory(dirPath);
 
-            var path = Path.Combine(dirPath, PROFILES_FILENAME);
-            LoadFromFile(path);
+            var json = _storage.Read(PROFILES_FILENAME);
+            LoadFromFile(json);
         }
         catch (Exception ex)
         {
@@ -140,10 +145,8 @@ public class ProfileManager : IEnumerable<KeyProfile>, IDisposable
         },
     };
 
-    private void LoadFromFile(string path)
+    private void LoadFromFile(string json)
     {
-        var json = File.ReadAllText(path);
-            
         var profiles = TryDeserializeV1(json);
         if (profiles is not null)
         {
@@ -197,12 +200,8 @@ public class ProfileManager : IEnumerable<KeyProfile>, IDisposable
     private void Save()
     {
         _logger.LogInformation("Save profiles");
-        var dirPath = Path.Combine(PlatformUtils.GetHomeDirectory(), "mycropad");
-        if (!Directory.Exists(dirPath)) Directory.CreateDirectory(dirPath);
-
-        var path = Path.Combine(dirPath, PROFILES_FILENAME);
         var json = JsonSerializer.Serialize(_profiles, _jsonOptions);
-        File.WriteAllText(path, json);
+        _storage.Write("PROFILES_FILENAME", json);
     }
 
     private KeyProfile GetDefault()

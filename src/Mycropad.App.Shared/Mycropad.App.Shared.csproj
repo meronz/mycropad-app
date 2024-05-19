@@ -27,5 +27,9 @@
           <CopyToPublishDirectory>Never</CopyToPublishDirectory>
         </Content>
     </ItemGroup>
+    
+    <ItemGroup>
+      <UpToDateCheckInput Remove="Layouts\MainLayout.razor" />
+    </ItemGroup>
 
 </Project>

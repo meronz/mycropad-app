@@ -1,18 +1,15 @@
-using System;
 using System.Diagnostics;
 using System.Globalization;
-using System.IO;
 using System.IO.Ports;
-using System.Linq;
 using System.Runtime.InteropServices;
 using System.Runtime.Versioning;
 using System.Text.RegularExpressions;
 using Claunia.PropertyList;
 using Microsoft.Win32;
 
-namespace Mycropad.Lib;
+namespace Mycropad.Pal.Desktop;
 
-public static class PlatformUtils
+public static class DesktopPlatformUtils
 {
     /// Returns the (first) virtual serial port for the specified usb device
     public static string FindSerialPort(uint vid, uint pid)
@@ -167,9 +164,11 @@ public static class PlatformUtils
     }
 
 
-    private static bool IsLinux => RuntimeInformation.IsOSPlatform(OSPlatform.Linux);
+    public static bool IsLinux => RuntimeInformation.IsOSPlatform(OSPlatform.Linux);
 
-    private static bool IsMacOS => RuntimeInformation.IsOSPlatform(OSPlatform.OSX) ||
+    public static bool IsMacOS => RuntimeInformation.IsOSPlatform(OSPlatform.OSX) ||
                                    RuntimeInformation.RuntimeIdentifier.StartsWith("maccatalyst");
-    private static bool IsWindows => RuntimeInformation.IsOSPlatform(OSPlatform.Windows);
+    public static bool IsWindows => RuntimeInformation.IsOSPlatform(OSPlatform.Windows);
+
+    public static bool IsBrowserWasm => RuntimeInformation.IsOSPlatform(OSPlatform.Create("browser-wasm"));
 }
