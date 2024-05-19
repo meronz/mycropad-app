@@ -23,8 +23,10 @@ jobs:
         include:
           - os: ubuntu-22.04
             target: linux
+            name: linux
           - os: windows-latest
             target: win
+            name: windows
 
     steps:
       - name: Checkout
@@ -48,6 +50,13 @@ jobs:
       - uses: actions/setup-node@v2
         with:
           node-version: '14'
+
+      - name: Install tailwindcss CLI
+        run: |
+          curl -sLO https://github.com/tailwindlabs/tailwindcss/releases/latest/download/tailwindcss-${{ matrix.name }}-amd64
+          chmod +x tailwindcss-${{ matrix.name }}-amd64
+          mv tailwindcss-${{ matrix.name }}-amd64 /tmp/bin/tailwindcss
+          echo "/tmp/bin/" >> $GITHUB_PATH
 
       - name: Install npm dependencies
         run: cd src/Mycropad.App.Electron && npm install
