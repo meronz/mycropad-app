@@ -14,4 +14,5 @@ mv tailwindcss-linux-x64 /tmp/bin/tailwindcss
 export PATH=$PATH:/tmp/bin
 
 echo "Build"
+./dotnet/dotnet build src/Mycropad.App.Shared/ -c Release
 ./dotnet/dotnet publish src/Mycropad.App.Wasm/ -c Release -o output
