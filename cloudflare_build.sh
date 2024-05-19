@@ -8,4 +8,4 @@ chmod +x tailwindcss-linux-amd64
 mkdir -p /tmp/bin
 mv tailwindcss-linux-amd64 /tmp/bin/tailwindcss
 export PATH=$PATH:/tmp/bin
-./dotnet/dotnet publish -c Release -o output
+./dotnet/dotnet publish src/Mycropad.App.Wasm/ -c Release -o output
