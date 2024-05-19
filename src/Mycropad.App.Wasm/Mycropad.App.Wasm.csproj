@@ -21,8 +21,4 @@
       <ProjectReference Include="..\Mycropad.Pal.Browser\Mycropad.Pal.Browser.csproj" />
     </ItemGroup>
 
-    <ItemGroup>
-      <AdditionalFiles Include="Layouts\MainLayout.razor" />
-    </ItemGroup>
-
 </Project>

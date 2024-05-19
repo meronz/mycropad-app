@@ -1,4 +1,6 @@
-﻿@inherits LayoutComponentBase
+﻿@using Mycropad.Lib.Device
+@inherits LayoutComponentBase
+@inject DeviceManager DeviceManager
 
 <div class="flex flex-col h-screen">
     <header id="titlebar" class="h-10 flex flex-row">
@@ -11,9 +13,18 @@
     <main class="mb-auto flex flex-col items-center">
         @Body
     </main>
-    <Footer></Footer>
+    <Footer ConnectionStateClicked="ConnectionStateClicked">
+        <button @onclick="ConnectionStateClicked">
+            Connect
+        </button>
+    </Footer>
 </div>
 
 @code {
+
+    private async Task ConnectionStateClicked()
+    {
+        await DeviceManager.StartNoThread();
+    }
 
 }

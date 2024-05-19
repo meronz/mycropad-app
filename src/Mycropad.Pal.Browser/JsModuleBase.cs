@@ -15,7 +15,7 @@ public class JsModuleBase : IAsyncDisposable
 
     protected Task<IJSObjectReference> JsModule => _moduleTask.Value;
 
-    public async ValueTask DisposeAsync()
+    public virtual async ValueTask DisposeAsync()
     {
         if (_moduleTask.IsValueCreated)
         {

@@ -3,7 +3,6 @@ using Microsoft.AspNetCore.Components.WebAssembly.Hosting;
 using Mycropad.App.Shared;
 using Mycropad.App.Wasm;
 using Mycropad.Core.Abstractions;
-using Mycropad.Lib.Device;
 using Mycropad.Lib.Profiles;
 using Mycropad.Pal.Browser;
 
@@ -18,16 +17,5 @@ builder.Services
     .ConfigureMycropadApp();
 
 var app = builder.Build();
-
-// Start DeviceManager after profiles have been loaded.
-try
-{
-    var profileManager = app.Services.GetRequiredService<ProfileManager>();
-    app.Services.GetRequiredService<DeviceManager>().Start();
-}
-catch (Exception e)
-{
-    Console.WriteLine(e);
-}
-
+app.Services.GetRequiredService<ProfileManager>();
 await app.RunAsync();

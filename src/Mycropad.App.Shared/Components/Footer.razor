@@ -2,7 +2,7 @@
 @implements IDisposable
 
 <footer class="p-2 mb-1 select-none flex flex-row h-full">
-    <div class="flex flex-row flex-grow items-center">
+    <div class="flex flex-row flex-grow items-center" @onclick="ConnectionStateClicked">
         @if (Device.Connected)
         {
             <div class="rounded-md bg-green-400 text-white max-w-min px-3 py-1">
@@ -25,11 +25,13 @@
             </svg>
         </div>
     </div>
-
 </footer>
 
 @code {
     private bool _connected = false;
+
+    [Parameter] public RenderFragment? ChildContent { get; set; }
+    [Parameter] public EventCallback ConnectionStateClicked { get; set; }
 
     protected override void OnInitialized()
     {

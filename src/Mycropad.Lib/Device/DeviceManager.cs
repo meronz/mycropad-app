@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.Threading;
+using System.Threading.Tasks;
 using Microsoft.Extensions.Logging;
 using Mycropad.Lib.Enums;
 using Mycropad.Lib.Types;
@@ -30,12 +31,12 @@ public class DeviceManager : IDisposable
         GC.SuppressFinalize(this);
     }
 
-    public void ResetKeymap()
+    public async Task ResetKeymap()
     {
         try
         {
             _logger.LogDebug("ResetKeymap start");
-            _device.DefaultKeymap();
+            await _device.DefaultKeymap();
             _logger.LogDebug("Resetting keymap done");
         }
         catch (Exception e)
@@ -44,12 +45,12 @@ public class DeviceManager : IDisposable
         }
     }
 
-    public void SetDefaultKeymap(DeviceKeymap deviceKeymap)
+    public async Task SetDefaultKeymap(DeviceKeymap deviceKeymap)
     {
         try
         {
             _logger.LogDebug("SetDefaultKeymap start");
-            _device.SetKeymap(deviceKeymap);
+            await _device.SetKeymap(deviceKeymap);
             _logger.LogDebug("SetDefaultKeymap done");
         }
         catch (Exception e)
@@ -58,12 +59,12 @@ public class DeviceManager : IDisposable
         }
     }
 
-    public void SwitchKeymap(DeviceKeymap km)
+    public async Task SwitchKeymap(DeviceKeymap km)
     {
         try
         {
             _logger.LogDebug("SwitchKeymap start");
-            _device.SwitchKeymap(km);
+            await _device.SwitchKeymap(km);
             _logger.LogDebug("SwitchKeymap done");
         }
         catch (Exception e)
@@ -72,12 +73,12 @@ public class DeviceManager : IDisposable
         }
     }
 
-    public void LedsSwitchPattern(LedsPattern pattern)
+    public async Task LedsSwitchPattern(LedsPattern pattern)
     {
         try
         {
             _logger.LogDebug("LedsSwitchPattern start");
-            _device.LedsSwitchPattern(pattern);
+            await _device.LedsSwitchPattern(pattern);
             _logger.LogDebug("LedsSwitchPattern done");
         }
         catch (Exception e)
@@ -86,12 +87,12 @@ public class DeviceManager : IDisposable
         }
     }
 
-    public void LedsSetFixedMap(IEnumerable<LedColor> ledsMap)
+    public async Task LedsSetFixedMap(IEnumerable<LedColor> ledsMap)
     {
         try
         {
             _logger.LogDebug("LedsSetFixedMap start");
-            _device.LedsSetFixedMap(ledsMap);
+            await _device.LedsSetFixedMap(ledsMap);
             _logger.LogDebug("LedsSetFixedMap done");
         }
         catch (Exception e)
@@ -106,7 +107,15 @@ public class DeviceManager : IDisposable
         _deviceThread.Start();
     }
 
-    private void DeviceThread(object? state)
+    public async Task StartNoThread()
+    {
+        _closing = false;
+        await _device.Start();
+        OnDeviceConnected?.Invoke();
+        await _device.Heartbeat();
+    }
+
+    private async void DeviceThread(object? state)
     {
         while (!_closing)
         {
@@ -114,21 +123,21 @@ public class DeviceManager : IDisposable
             {
                 if (!_device.Connected)
                 {
-                    _device.Start();
+                    await _device.Start();
                     OnDeviceConnected?.Invoke();
                 }
                 else
                 {
-                    _device.Heartbeat();
-                    Thread.Sleep(2000);
+                    await _device.Heartbeat();
+                    await Task.Delay(2000);
                 }
             }
             catch (Exception ex)
             {
                 #if DEBUG
-                    _logger.LogError(ex, "DeviceThread error");
+                    _logger.LogError(ex, "DeviceTask error");
                 #endif
-                Thread.Sleep(100);
+                await Task.Delay(100);
             }
         }
     }

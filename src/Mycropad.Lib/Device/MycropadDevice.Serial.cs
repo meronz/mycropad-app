@@ -3,7 +3,6 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
-using Mycropad.Core;
 using Mycropad.Core.Abstractions;
 using Mycropad.Lib.Device.Messages;
 using Mycropad.Lib.Enums;
@@ -29,103 +28,166 @@ public sealed class MycropadDeviceSerial(ISerialPort device) : MycropadDeviceBas
         OnDeviceConnected?.Invoke();
     }
 
-
     public async Task Heartbeat()
     {
-        using var guard = new Guard(_deviceSemaphore);
-        var data = Command(CommandTypes.Heartbeat);
-        await Write(data);
-        var (readData, readLength) = await Read();
+        try
+        {
+            await _deviceSemaphore.WaitAsync();
+            var data = Command(CommandTypes.Heartbeat);
+            await Write(data);
+            var (readData, readLength) = await Read();
 
-        var (cmd, ok, _) = Response(readData, readLength);
-        if (cmd != CommandTypes.Heartbeat) throw new($"Bad CommandType {cmd}");
-        if (!ok) throw new($"{cmd} failed!");
+            var (cmd, ok, _) = Response(readData, readLength);
+
+            if (cmd != CommandTypes.Heartbeat) throw new($"Bad CommandType {cmd}");
+            if (!ok) throw new($"{cmd} failed!");
+        }
+        finally
+        {
+            _deviceSemaphore.Release();
+        }
     }
 
     public async Task SetKeymap(DeviceKeymap deviceKeymap)
     {
-        using var guard = new Guard(_deviceSemaphore);
-        var data = Command(CommandTypes.SetKeymap, deviceKeymap.ToBytes());
-        await Write(data);
+        try
+        {
+            await _deviceSemaphore.WaitAsync();
+            var data = Command(CommandTypes.SetKeymap, deviceKeymap.ToBytes());
+            await Write(data);
 
-        var (readData, readLength) = await Read();
-        var (cmd, ok, _) = Response(readData, readLength);
-        if (cmd != CommandTypes.SetKeymap) throw new($"Bad CommandType {cmd}");
-        if (!ok) throw new($"{cmd} failed!");
+            var (readData, readLength) = await Read();
+            var (cmd, ok, _) = Response(readData, readLength);
+
+            if (cmd != CommandTypes.SetKeymap) throw new($"Bad CommandType {cmd}");
+            if (!ok) throw new($"{cmd} failed!");
+        }
+        finally
+        {
+            _deviceSemaphore.Release();
+        }
     }
 
     public async Task<DeviceKeymap> ReadKeymap()
     {
-        using var guard = new Guard(_deviceSemaphore);
-        var data = Command(CommandTypes.ReadKeymap);
-        await Write(data);
+        try
+        {
+            await _deviceSemaphore.WaitAsync();
+            var data = Command(CommandTypes.ReadKeymap);
+            await Write(data);
 
-        var (readData, readLength) = await Read();
-        var (cmd, ok, keymapBytes) = Response(readData, readLength);
+            var (readData, readLength) = await Read();
+            var (cmd, ok, keymapBytes) = Response(readData, readLength);
 
-        if (cmd != CommandTypes.ReadKeymap) throw new($"Bad CommandType {cmd}");
-        if (!ok) throw new($"{cmd} failed!");
+            if (cmd != CommandTypes.ReadKeymap) throw new($"Bad CommandType {cmd}");
+            if (!ok) throw new($"{cmd} failed!");
 
-        return DeviceKeymap.FromBytes(keymapBytes);
+            return DeviceKeymap.FromBytes(keymapBytes);
+        }
+        finally
+        {
+            _deviceSemaphore.Release();
+        }
     }
 
     public async Task DefaultKeymap()
     {
-        using var guard = new Guard(_deviceSemaphore);
-        var data = Command(CommandTypes.DefaultKeymap);
-        await Write(data);
-        var (readData, readLength) = await Read();
+        try
+        {
+            await _deviceSemaphore.WaitAsync();
+            var data = Command(CommandTypes.DefaultKeymap);
+            await Write(data);
+            var (readData, readLength) = await Read();
 
-        var (cmd, ok, _) = Response(readData, readLength);
-        if (cmd != CommandTypes.DefaultKeymap) throw new($"Bad CommandType {cmd}");
-        if (!ok) throw new($"{cmd} failed!");
+            var (cmd, ok, _) = Response(readData, readLength);
+
+            if (cmd != CommandTypes.DefaultKeymap) throw new($"Bad CommandType {cmd}");
+            if (!ok) throw new($"{cmd} failed!");
+        }
+        finally
+        {
+            _deviceSemaphore.Release();
+        }
     }
 
     public async Task SwitchKeymap(DeviceKeymap deviceKeymap)
     {
-        using var guard = new Guard(_deviceSemaphore);
-        var data = Command(CommandTypes.SwitchKeymap, deviceKeymap.ToBytes());
-        await Write(data);
+        try
+        {
+            await _deviceSemaphore.WaitAsync();
+            var data = Command(CommandTypes.SwitchKeymap, deviceKeymap.ToBytes());
+            await Write(data);
 
-        var (readData, readLength) = await Read();
-        var (cmd, ok, _) = Response(readData, readLength);
-        if (cmd != CommandTypes.SwitchKeymap) throw new($"Bad CommandType {cmd}");
-        if (!ok) throw new($"{cmd} failed!");
+            var (readData, readLength) = await Read();
+            var (cmd, ok, _) = Response(readData, readLength);
+
+            if (cmd != CommandTypes.SwitchKeymap) throw new($"Bad CommandType {cmd}");
+            if (!ok) throw new($"{cmd} failed!");
+        }
+        finally
+        {
+            _deviceSemaphore.Release();
+        }
     }
 
     public async Task LedsSwitchPattern(LedsPattern pattern)
     {
-        using var guard = new Guard(_deviceSemaphore);
-        var data = Command(CommandTypes.LedsSwitchPattern, new[] {(byte) pattern});
-        await Write(data);
+        try
+        {
+            await _deviceSemaphore.WaitAsync();
+            var data = Command(CommandTypes.LedsSwitchPattern, new[] {(byte) pattern});
+            await Write(data);
 
-        var (readData, readLength) = await Read();
-        var (cmd, ok, _) = Response(readData, readLength);
-        if (cmd != CommandTypes.LedsSwitchPattern) throw new($"Bad CommandType {cmd}");
-        if (!ok) throw new($"{cmd} failed!");
+            var (readData, readLength) = await Read();
+            var (cmd, ok, _) = Response(readData, readLength);
+
+            if (cmd != CommandTypes.LedsSwitchPattern) throw new($"Bad CommandType {cmd}");
+            if (!ok) throw new($"{cmd} failed!");
+        }
+        finally
+        {
+            _deviceSemaphore.Release();
+        }
     }
 
     public async Task LedsSetFixedMap(IEnumerable<LedColor> map)
     {
-        using var guard = new Guard(_deviceSemaphore);
-        var mapBytes = map.Take(8).SelectMany(x => BitConverter.GetBytes(x.ToUInt32())).ToArray();
-        var data = Command(CommandTypes.LedsSetFixedMap, mapBytes);
-        await Write(data);
+        try
+        {
+            await _deviceSemaphore.WaitAsync();
 
-        var (readData, readLength) = await Read();
-        var (cmd, ok, _) = Response(readData, readLength);
-        if (cmd != CommandTypes.LedsSetFixedMap) throw new($"Bad CommandType {cmd}");
-        if (!ok) throw new($"{cmd} failed!");
+            var mapBytes = map.Take(8).SelectMany(x => BitConverter.GetBytes(x.ToUInt32())).ToArray();
+            var data = Command(CommandTypes.LedsSetFixedMap, mapBytes);
+            await Write(data);
+
+            var (readData, readLength) = await Read();
+            var (cmd, ok, _) = Response(readData, readLength);
+
+            if (cmd != CommandTypes.LedsSetFixedMap) throw new($"Bad CommandType {cmd}");
+            if (!ok) throw new($"{cmd} failed!");
+        }
+        finally
+        {
+            _deviceSemaphore.Release();
+        }
     }
 
     private async Task OpenDevice()
     {
-        device.WriteTimeout = 500;
-        device.ReadTimeout = 500;
+        try
+        {
+            await _deviceSemaphore.WaitAsync();
+            device.WriteTimeout = 500;
+            device.ReadTimeout = 500;
 
-        await device.Open(USB_VID, USB_PID);
-        await device.DiscardInBuffer();
-        await device.DiscardOutBuffer();
+            await device.Open(USB_VID, USB_PID);
+            await device.DiscardInBuffer();
+            await device.DiscardOutBuffer();
+        }
+        finally
+        {
+            _deviceSemaphore.Release();
+        }
     }
 
     private async Task<(byte[] data, int length)> Read()

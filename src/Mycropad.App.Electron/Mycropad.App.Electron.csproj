@@ -25,7 +25,4 @@
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
   </ItemGroup>
-  <ItemGroup>
-    <AdditionalFiles Include="Layouts\MainLayout.razor" />
-  </ItemGroup>
 </Project>
