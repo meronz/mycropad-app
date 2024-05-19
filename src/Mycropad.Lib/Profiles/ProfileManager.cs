@@ -201,7 +201,7 @@ public class ProfileManager : IEnumerable<KeyProfile>, IDisposable
     {
         _logger.LogInformation("Save profiles");
         var json = JsonSerializer.Serialize(_profiles, _jsonOptions);
-        _storage.Write("PROFILES_FILENAME", json);
+        _storage.Write(PROFILES_FILENAME, json);
     }
 
     private KeyProfile GetDefault()
