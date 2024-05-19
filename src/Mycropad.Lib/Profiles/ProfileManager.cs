@@ -78,7 +78,7 @@ public class ProfileManager : IEnumerable<KeyProfile>, IDisposable
     {
         try
         {
-            SwitchProfile(CurrentProfileId, true);
+            _ = SwitchProfile(CurrentProfileId, true);
         }
         catch (Exception ex)
         {

@@ -14,9 +14,6 @@
         @Body
     </main>
     <Footer ConnectionStateClicked="ConnectionStateClicked">
-        <button @onclick="ConnectionStateClicked">
-            Connect
-        </button>
     </Footer>
 </div>
 
@@ -24,7 +21,9 @@
 
     private async Task ConnectionStateClicked()
     {
-        await DeviceManager.StartNoThread();
+        // The device manager must be started in a user interaction context to be able to access the device thus
+        // automatic reconnection is not possible.
+        await DeviceManager.Start(autoReconnect: false);
     }
 
 }

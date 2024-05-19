@@ -11,25 +11,18 @@ namespace Mycropad.Lib.Device;
 public class DeviceManager : IDisposable
 {
     private readonly IMycropadDevice _device;
-    private readonly Thread _deviceThread;
     private readonly ILogger<DeviceManager> _logger;
-    private bool _closing;
+    private readonly Timer _heartbeatTimer;
+    private bool _autoReconnect;
 
     public DeviceManager(ILogger<DeviceManager> logger, IMycropadDevice device)
     {
         _logger = logger;
         _device = device;
-        _deviceThread = new(DeviceThread);
+        _heartbeatTimer = new Timer(Heartbeat, null, Timeout.InfiniteTimeSpan, Timeout.InfiniteTimeSpan);
     }
 
     public Action? OnDeviceConnected { get; set; }
-
-    public void Dispose()
-    {
-        _closing = true;
-        _deviceThread.Join();
-        GC.SuppressFinalize(this);
-    }
 
     public async Task ResetKeymap()
     {
@@ -101,44 +94,41 @@ public class DeviceManager : IDisposable
         }
     }
 
-    public void Start()
+    public async Task Start(bool autoReconnect = true)
     {
-        _closing = false;
-        _deviceThread.Start();
-    }
-
-    public async Task StartNoThread()
-    {
-        _closing = false;
-        await _device.Start();
-        OnDeviceConnected?.Invoke();
-        await _device.Heartbeat();
-    }
-
-    private async void DeviceThread(object? state)
-    {
-        while (!_closing)
+        _autoReconnect = autoReconnect;
+        if (!_autoReconnect)
         {
-            try
-            {
-                if (!_device.Connected)
-                {
-                    await _device.Start();
-                    OnDeviceConnected?.Invoke();
-                }
-                else
-                {
-                    await _device.Heartbeat();
-                    await Task.Delay(2000);
-                }
-            }
-            catch (Exception ex)
-            {
-                #if DEBUG
-                    _logger.LogError(ex, "DeviceTask error");
-                #endif
-                await Task.Delay(100);
-            }
+            await _device.Start();
+            OnDeviceConnected?.Invoke();
         }
+        _heartbeatTimer.Change(TimeSpan.Zero, Timeout.InfiniteTimeSpan);
+    }
+
+    private async void Heartbeat(object? _)
+    {
+        try
+        {
+            if (!_device.Connected && _autoReconnect)
+            {
+                await _device.Start();
+                OnDeviceConnected?.Invoke();
+            }
+            else
+            {
+                await _device.Heartbeat();
+            }
+            _heartbeatTimer.Change(TimeSpan.FromSeconds(2), Timeout.InfiniteTimeSpan);
+        }
+        catch
+        {
+            _heartbeatTimer.Change(TimeSpan.FromMilliseconds(100), Timeout.InfiniteTimeSpan);
+        }
+    }
+
+    public void Dispose()
+    {
+        _heartbeatTimer.Dispose();
+        GC.SuppressFinalize(this);
     }
 }
