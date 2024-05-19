@@ -14,8 +14,20 @@ env:
   DOTNET_GENERATE_ASPNET_CERTIFICATE: false
 
 jobs:
-  buildpwa:
-    runs-on: ubuntu-22.04
+  build:
+    runs-on: ${{ matrix.os }}
+
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - os: ubuntu-22.04
+            target: linux
+            name: linux
+          - os: windows-latest
+            target: win
+            name: windows
+
     steps:
       - name: Checkout
         uses: actions/checkout@v2
@@ -26,6 +38,14 @@ jobs:
         uses: actions/setup-dotnet@v1
         with:
           dotnet-version: 8.0.x
+
+      - name: Install .NET 6.0 (for ElectronNET.CLI)
+        uses: actions/setup-dotnet@v1
+        with:
+          dotnet-version: 6.0.x
+
+      - name: Install ElectronNET.CLI
+        run: dotnet tool install ElectronNET.CLI -g
 
       - uses: actions/setup-node@v2
         with:
@@ -39,120 +59,66 @@ jobs:
           mv tailwindcss-${{ matrix.name }}-amd64 /tmp/bin/tailwindcss
           echo "/tmp/bin/" >> $GITHUB_PATH
 
-      - name: PWA build
-        if: startsWith(matrix.target, 'pwa')
-        working-directory: src/Mycropad.App.Wasm
-        run: dotnet publish -c Release -o wasm_publish
+      - name: Install npm dependencies
+        run: cd src/Mycropad.App.Electron && npm install
 
-      - name: Install wrangler
-        run: npm install -g @cloudflare/wrangler
+      - name: Linux build
+        if: startsWith(matrix.os, 'ubuntu')
+        working-directory: src/Mycropad.App.Electron
+        run: electronize build /target $ELECTRON_TARGET
+        env:
+          ELECTRON_TARGET: ${{ matrix.target }}
 
+      - name: Windows build
+        if: startsWith(matrix.os, 'windows')
+        working-directory: src/Mycropad.App.Electron
+        run: electronize build /target $Env:ELECTRON_TARGET
+        env:
+          ELECTRON_TARGET: ${{ matrix.target }}
 
-#  build:
-#    runs-on: ${{ matrix.os }}
-#
-#    strategy:
-#      fail-fast: false
-#      matrix:
-#        include:
-#          - os: ubuntu-22.04
-#            target: linux
-#            name: linux
-#          - os: windows-latest
-#            target: win
-#            name: windows
-#
-#    steps:
-#      - name: Checkout
-#        uses: actions/checkout@v2
-#        with:
-#          fetch-depth: 0
-#
-#      - name: Install .NET 8.0
-#        uses: actions/setup-dotnet@v1
-#        with:
-#          dotnet-version: 8.0.x
-#
-#      - name: Install .NET 6.0 (for ElectronNET.CLI)
-#        uses: actions/setup-dotnet@v1
-#        with:
-#          dotnet-version: 6.0.x
-#
-#      - name: Install ElectronNET.CLI
-#        run: dotnet tool install ElectronNET.CLI -g
-#
-#      - uses: actions/setup-node@v2
-#        with:
-#          node-version: '21'
-#
-#      - name: Install tailwindcss CLI
-#        run: |
-#          curl -sLO https://github.com/tailwindlabs/tailwindcss/releases/latest/download/tailwindcss-${{ matrix.name }}-amd64
-#          chmod +x tailwindcss-${{ matrix.name }}-amd64
-#          mkdir -p /tmp/bin
-#          mv tailwindcss-${{ matrix.name }}-amd64 /tmp/bin/tailwindcss
-#          echo "/tmp/bin/" >> $GITHUB_PATH
-#
-#      - name: Install npm dependencies
-#        run: cd src/Mycropad.App.Electron && npm install
-#
-#      - name: Linux build
-#        if: startsWith(matrix.os, 'ubuntu')
-#        working-directory: src/Mycropad.App.Electron
-#        run: electronize build /target $ELECTRON_TARGET
-#        env:
-#          ELECTRON_TARGET: ${{ matrix.target }}
-#
-#      - name: Windows build
-#        if: startsWith(matrix.os, 'windows')
-#        working-directory: src/Mycropad.App.Electron
-#        run: electronize build /target $Env:ELECTRON_TARGET
-#        env:
-#          ELECTRON_TARGET: ${{ matrix.target }}
-#
-#      - name: Archive Snap
-#        uses: actions/upload-artifact@v2
-#        if: startsWith(matrix.os, 'ubuntu')
-#        with:
-#          name: Linux snap
-#          path: |
-#            src/Mycropad.App.Electron/bin/Desktop/*.snap
-#
-#      - name: Archive Windows setup
-#        uses: actions/upload-artifact@v2
-#        if: startsWith(matrix.os, 'windows')
-#        with:
-#          name: Windows setup
-#          path: |
-#            src/Mycropad.App.Electron/bin/Desktop/*Setup*.exe
-#
-#  release:
-#    if: startsWith(github.ref, 'refs/tags/')
-#    needs:
-#      - build
-#    permissions:
-#      contents: write
-#
-#    runs-on: ubuntu-latest
-#    steps:
-#      - uses: actions/checkout@v2
-#      - uses: actions/download-artifact@v2
-#        with:
-#          name: Linux snap
-#      - uses: actions/download-artifact@v2
-#        with:
-#          name: Windows setup
-#
-#      - name: Generate release changelog
-#        uses: heinrichreimer/github-changelog-generator-action@v2.3
-#        with:
-#          token: ${{ secrets.GITHUB_TOKEN }}
-#          output: CHANGELOG.txt
-#
-#      - name: Release
-#        uses: softprops/action-gh-release@v1
-#        with:
-#          body_path: CHANGELOG.txt
-#          files: |
-#            *Setup*.exe
-#            *.snap
+      - name: Archive Snap
+        uses: actions/upload-artifact@v2
+        if: startsWith(matrix.os, 'ubuntu')
+        with:
+          name: Linux snap
+          path: |
+            src/Mycropad.App.Electron/bin/Desktop/*.snap
+
+      - name: Archive Windows setup
+        uses: actions/upload-artifact@v2
+        if: startsWith(matrix.os, 'windows')
+        with:
+          name: Windows setup
+          path: |
+            src/Mycropad.App.Electron/bin/Desktop/*Setup*.exe
+
+  release:
+    if: startsWith(github.ref, 'refs/tags/')
+    needs:
+      - build
+    permissions:
+      contents: write
+
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v2
+      - uses: actions/download-artifact@v2
+        with:
+          name: Linux snap
+      - uses: actions/download-artifact@v2
+        with:
+          name: Windows setup
+
+      - name: Generate release changelog
+        uses: heinrichreimer/github-changelog-generator-action@v2.3
+        with:
+          token: ${{ secrets.GITHUB_TOKEN }}
+          output: CHANGELOG.txt
+
+      - name: Release
+        uses: softprops/action-gh-release@v1
+        with:
+          body_path: CHANGELOG.txt
+          files: |
+            *Setup*.exe
+            *.snap
